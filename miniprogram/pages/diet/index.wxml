@@ -199,7 +199,9 @@
       <text class="header-subtitle">勾选你喜欢的菜品（已选{{selectedCount.total || 0}}道）</text>
     </view>
 
-<!-- ========== 荤菜区 ========== -->
+<!-- ========== 简化版复选框WXML（4个分类区） ========== -->
+
+<!-- 🔴 荤菜区 -->
 <view class="category-section">
   <view class="category-header">
     <view class="header-left">
@@ -213,34 +215,30 @@
   </view>
   
   <view class="dish-grid">
-  <view 
-    wx:for="{{candidatePool.meat}}" 
-    wx:key="id"
-    wx:for-item="dish"
-    class="dish-card {{selectedDishes.meat && selectedDishes.meat.indexOf(dish.id) > -1 ? 'selected' : ''}}"
-    bindtap="toggleDishSelection"
-    data-type="meat"
-    data-dish-id="{{dish.id}}"
-  >
-    <view class="dish-checkbox {{selectedDishes.meat && selectedDishes.meat.indexOf(dish.id) > -1 ? 'checked' : ''}}">
-      <text wx:if="{{selectedDishes.meat && selectedDishes.meat.indexOf(dish.id) > -1}}" class="check-icon">✓</text>
-    </view>
+    <view 
+      wx:for="{{candidatePool.meat}}" 
+      wx:key="id"
+      wx:for-item="dish"
+      class="dish-card {{selectedDishes.meat && selectedDishes.meat.indexOf(dish.id) > -1 ? 'selected' : ''}}"
+      bindtap="toggleDishSelection"
+      data-type="meat"
+      data-dish-id="{{dish.id}}"
+    >
+      <!-- ✅ 简化：只保留class，用CSS ::after画对勾 -->
+      <view class="dish-checkbox {{selectedDishes.meat && selectedDishes.meat.indexOf(dish.id) > -1 ? 'checked' : ''}}"></view>
       
       <view class="dish-info">
         <text class="dish-name">{{dish.name}}</text>
-        
         <view class="dish-meta">
           <text class="dish-time">⏱️ {{dish.time}}分钟</text>
-          <text wx:if="{{dish.style_tags && dish.style_tags.indexOf('洋气') > -1}}" class="dish-tag trendy">洋气</text>
         </view>
-        
         <text class="dish-reason">{{dish.reason}}</text>
       </view>
     </view>
   </view>
 </view>
 
-<!-- ========== 素菜区 ========== -->
+<!-- 🔴 素菜区 -->
 <view class="category-section">
   <view class="category-header">
     <view class="header-left">
@@ -258,20 +256,17 @@
       wx:for="{{candidatePool.veg}}" 
       wx:key="id"
       wx:for-item="dish"
-      class="dish-card {{selectedDishes.veg.indexOf(dish.id) > -1 ? 'selected' : ''}}"
+      class="dish-card {{selectedDishes.veg && selectedDishes.veg.indexOf(dish.id) > -1 ? 'selected' : ''}}"
       bindtap="toggleDishSelection"
       data-type="veg"
       data-dish-id="{{dish.id}}"
     >
-      <view class="dish-checkbox {{selectedDishes.veg.indexOf(dish.id) > -1 ? 'checked' : ''}}">
-        <text wx:if="{{selectedDishes.veg.indexOf(dish.id) > -1}}" class="check-icon">●</text>
-      </view>
+      <view class="dish-checkbox {{selectedDishes.veg && selectedDishes.veg.indexOf(dish.id) > -1 ? 'checked' : ''}}"></view>
       
       <view class="dish-info">
         <text class="dish-name">{{dish.name}}</text>
         <view class="dish-meta">
           <text class="dish-time">⏱️ {{dish.time}}分钟</text>
-          <text wx:if="{{dish.style_tags && dish.style_tags.indexOf('洋气') > -1}}" class="dish-tag trendy">洋气</text>
         </view>
         <text class="dish-reason">{{dish.reason}}</text>
       </view>
@@ -279,7 +274,7 @@
   </view>
 </view>
 
-<!-- ========== 汤品区 ========== -->
+<!-- 🔴 汤品区 -->
 <view class="category-section">
   <view class="category-header">
     <view class="header-left">
@@ -297,20 +292,17 @@
       wx:for="{{candidatePool.soup}}" 
       wx:key="id"
       wx:for-item="dish"
-      class="dish-card {{selectedDishes.soup.indexOf(dish.id) > -1 ? 'selected' : ''}}"
+      class="dish-card {{selectedDishes.soup && selectedDishes.soup.indexOf(dish.id) > -1 ? 'selected' : ''}}"
       bindtap="toggleDishSelection"
       data-type="soup"
       data-dish-id="{{dish.id}}"
     >
-      <view class="dish-checkbox {{selectedDishes.soup.indexOf(dish.id) > -1 ? 'checked' : ''}}">
-        <text wx:if="{{selectedDishes.soup.indexOf(dish.id) > -1}}" class="check-icon">●</text>
-      </view>
+      <view class="dish-checkbox {{selectedDishes.soup && selectedDishes.soup.indexOf(dish.id) > -1 ? 'checked' : ''}}"></view>
       
       <view class="dish-info">
         <text class="dish-name">{{dish.name}}</text>
         <view class="dish-meta">
           <text class="dish-time">⏱️ {{dish.time}}分钟</text>
-          <text wx:if="{{dish.style_tags && dish.style_tags.indexOf('洋气') > -1}}" class="dish-tag trendy">洋气</text>
         </view>
         <text class="dish-reason">{{dish.reason}}</text>
       </view>
@@ -318,7 +310,7 @@
   </view>
 </view>
 
-<!-- ========== 主食区 ========== -->
+<!-- 🔴 主食区 -->
 <view class="category-section">
   <view class="category-header">
     <view class="header-left">
@@ -336,20 +328,17 @@
       wx:for="{{candidatePool.staple}}" 
       wx:key="id"
       wx:for-item="dish"
-      class="dish-card {{selectedDishes.staple.indexOf(dish.id) > -1 ? 'selected' : ''}}"
+      class="dish-card {{selectedDishes.staple && selectedDishes.staple.indexOf(dish.id) > -1 ? 'selected' : ''}}"
       bindtap="toggleDishSelection"
       data-type="staple"
       data-dish-id="{{dish.id}}"
     >
-      <view class="dish-checkbox {{selectedDishes.staple.indexOf(dish.id) > -1 ? 'checked' : ''}}">
-        <text wx:if="{{selectedDishes.staple.indexOf(dish.id) > -1}}" class="check-icon">●</text>
-      </view>
+      <view class="dish-checkbox {{selectedDishes.staple && selectedDishes.staple.indexOf(dish.id) > -1 ? 'checked' : ''}}"></view>
       
       <view class="dish-info">
         <text class="dish-name">{{dish.name}}</text>
         <view class="dish-meta">
           <text class="dish-time">⏱️ {{dish.time}}分钟</text>
-          <text wx:if="{{dish.style_tags && dish.style_tags.indexOf('洋气') > -1}}" class="dish-tag trendy">洋气</text>
         </view>
         <text class="dish-reason">{{dish.reason}}</text>
       </view>

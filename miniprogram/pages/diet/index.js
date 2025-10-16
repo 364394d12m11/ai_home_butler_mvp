@@ -549,25 +549,24 @@ Page({
   toggleDishSelection: function(e) {
     console.log('========== 🔵 toggleDishSelection 开始 ==========')
     
-    // ⚠️ 阻止冒泡
     if (e && e.stopPropagation) {
       e.stopPropagation()
     }
     
     const { type, dishId } = e.currentTarget.dataset
     
-    console.log('1️⃣ 点击参数:', { type, dishId })
+    console.log('1️⃣ 点击:', { type, dishId })
     
     if (!type || !dishId) {
       console.warn('❌ 参数缺失')
       return
     }
     
-    // ✅ 关键：完整深拷贝整个 selectedDishes 对象
-    const selectedDishes = JSON.parse(JSON.stringify(this.data.selectedDishes || {}))
+    // ✅ 关键修复1：完全深拷贝，不直接修改
+    const selectedDishes = JSON.parse(JSON.stringify(this.data.selectedDishes))
     
     // 确保该类型的数组存在
-    if (!Array.isArray(selectedDishes[type])) {
+    if (!selectedDishes[type]) {
       selectedDishes[type] = []
     }
     
@@ -575,20 +574,19 @@ Page({
     const index = currentList.indexOf(dishId)
     
     console.log('2️⃣ 当前选中列表:', currentList)
-    console.log('3️⃣ dishId 在列表中的位置:', index)
+    console.log('3️⃣ dishId 位置:', index)
     
-    // 切换选中状态
     if (index > -1) {
       // 取消选择
       currentList.splice(index, 1)
-      console.log('4️⃣ 取消选择:', dishId)
+      console.log('4️⃣ 取消选择')
     } else {
       // 添加选择
       currentList.push(dishId)
-      console.log('4️⃣ 添加选择:', dishId)
+      console.log('4️⃣ 添加选择')
     }
     
-    // 重新计算选中数量
+    // 更新计数
     const selectedCount = {
       meat: (selectedDishes.meat || []).length,
       veg: (selectedDishes.veg || []).length,
@@ -597,23 +595,21 @@ Page({
     }
     selectedCount.total = selectedCount.meat + selectedCount.veg + selectedCount.soup + selectedCount.staple
     
-    console.log('5️⃣ 更新后的 selectedDishes:', JSON.stringify(selectedDishes))
-    console.log('6️⃣ 更新后的 selectedCount:', selectedCount)
+    console.log('5️⃣ 更新后 selectedDishes:', selectedDishes)
+    console.log('6️⃣ 更新后 selectedCount:', selectedCount)
     
-    // ✅ 关键：一次性更新，强制刷新
+    // ✅ 关键修复2：使用 callback 确保渲染完成
     this.setData({
       selectedDishes: selectedDishes,
       selectedCount: selectedCount
     }, () => {
-      console.log('7️⃣ setData 完成')
+      console.log('7️⃣ setData 完成，验证数据:')
+      console.log('   - selectedDishes:', this.data.selectedDishes)
+      console.log('   - selectedCount:', this.data.selectedCount)
       
-      // 验证数据是否正确写入
-      console.log('8️⃣ 验证 this.data.selectedDishes:', this.data.selectedDishes)
-      console.log('9️⃣ 验证 this.data.selectedCount:', this.data.selectedCount)
-      
-      // ✅ 强制页面重绘（兜底方案）
-      this.setData({
-        _timestamp: Date.now()
+      // ✅ 关键修复3：强制页面重绘
+      wx.nextTick(() => {
+        console.log('8️⃣ nextTick 完成')
       })
     })
     
