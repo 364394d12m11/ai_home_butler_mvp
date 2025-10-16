@@ -1657,17 +1657,95 @@
   margin-bottom: 40rpx;
 }
 
-/* 🔴 调试：临时显示层级（调试完可删除） */
-/*
+
+/* ========== 🔴 V5.3 候选池勾选修复 - 最终版 ========== */
+
+/* 1. 提升候选池容器层级 */
+.candidate-pool-container {
+  position: relative !important;
+  z-index: 10 !important;
+}
+
+/* 2. 降低底部按钮层级 */
 .pool-footer {
-  background: rgba(255,0,0,0.3) !important;
+  z-index: 50 !important;
 }
 
-.dish-card {
-  border: 2rpx dashed blue !important;
+/* 3. 提升菜品卡片层级并确保可点击 */
+.candidate-pool-container .dish-card {
+  position: relative !important;
+  z-index: 100 !important;
+  pointer-events: auto !important;
 }
 
-.dish-checkbox {
-  border: 3rpx solid red !important;
+/* 4. 复选框最高层级 */
+.candidate-pool-container .dish-checkbox {
+  position: absolute !important;
+  top: 16rpx !important;
+  right: 16rpx !important;
+  width: 52rpx !important;
+  height: 52rpx !important;
+  z-index: 200 !important;
+  pointer-events: auto !important;
+  border-radius: 50%;
+  border: 4rpx solid #D8D8D8;
+  background: white;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
 }
-*/
+
+/* 5. 选中状态的复选框 */
+.candidate-pool-container .dish-checkbox.checked {
+  border-color: #F6A44C !important;
+  background: #F6A44C !important;
+  transform: scale(1.15) !important;
+}
+
+/* 6. 用CSS伪元素画白色对勾 */
+.candidate-pool-container .dish-checkbox.checked::after {
+  content: '✓' !important;
+  display: block !important;
+  width: 100%;
+  height: 100%;
+  text-align: center !important;
+  line-height: 52rpx !important;
+  font-size: 48rpx !important;
+  color: #FFFFFF !important;
+  font-weight: 900 !important;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* 7. 隐藏原 text 标签 */
+.candidate-pool-container .dish-checkbox .check-icon {
+  display: none !important;
+}
+
+/* 8. 选中卡片的样式 */
+.candidate-pool-container .dish-card.selected {
+  border-color: #F6A44C !important;
+  border-width: 4rpx !important;
+  background: rgba(246,164,76,0.12) !important;
+  box-shadow: 0 0 0 3rpx rgba(246,164,76,0.3) !important;
+  transform: scale(1.02);
+  z-index: 101 !important;
+}
+
+/* 9. 候选池的 dish-info 不拦截点击 */
+.candidate-pool-container .dish-info {
+  pointer-events: none !important;
+  padding-right: 68rpx !important;
+}
+
+/* 10. 但文字需要可选中 */
+.candidate-pool-container .dish-info text {
+  pointer-events: auto !important;
+}
+
+/* 11. 移除可能遮挡的伪元素 */
+.candidate-pool-container .dish-card::after {
+  display: none !important;
+}

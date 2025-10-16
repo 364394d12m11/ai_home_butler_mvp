@@ -546,75 +546,79 @@ Page({
     console.log('切换模式:', mode)
   },
 
-  toggleDishSelection: function(e) {
-    console.log('========== 🔵 toggleDishSelection 开始 ==========')
-    
-    if (e && e.stopPropagation) {
-      e.stopPropagation()
-    }
-    
-    const { type, dishId } = e.currentTarget.dataset
-    
-    console.log('1️⃣ 点击:', { type, dishId })
-    
-    if (!type || !dishId) {
-      console.warn('❌ 参数缺失')
-      return
-    }
-    
-    // ✅ 关键修复1：完全深拷贝，不直接修改
-    const selectedDishes = JSON.parse(JSON.stringify(this.data.selectedDishes))
-    
-    // 确保该类型的数组存在
-    if (!selectedDishes[type]) {
-      selectedDishes[type] = []
-    }
-    
-    const currentList = selectedDishes[type]
-    const index = currentList.indexOf(dishId)
-    
-    console.log('2️⃣ 当前选中列表:', currentList)
-    console.log('3️⃣ dishId 位置:', index)
-    
-    if (index > -1) {
-      // 取消选择
-      currentList.splice(index, 1)
-      console.log('4️⃣ 取消选择')
-    } else {
-      // 添加选择
-      currentList.push(dishId)
-      console.log('4️⃣ 添加选择')
-    }
-    
-    // 更新计数
-    const selectedCount = {
-      meat: (selectedDishes.meat || []).length,
-      veg: (selectedDishes.veg || []).length,
-      soup: (selectedDishes.soup || []).length,
-      staple: (selectedDishes.staple || []).length
-    }
-    selectedCount.total = selectedCount.meat + selectedCount.veg + selectedCount.soup + selectedCount.staple
-    
-    console.log('5️⃣ 更新后 selectedDishes:', selectedDishes)
-    console.log('6️⃣ 更新后 selectedCount:', selectedCount)
-    
-    // ✅ 关键修复2：使用 callback 确保渲染完成
-    this.setData({
-      selectedDishes: selectedDishes,
-      selectedCount: selectedCount
-    }, () => {
-      console.log('7️⃣ setData 完成，验证数据:')
-      console.log('   - selectedDishes:', this.data.selectedDishes)
-      console.log('   - selectedCount:', this.data.selectedCount)
-      
-      // ✅ 关键修复3：强制页面重绘
-      wx.nextTick(() => {
-        console.log('8️⃣ nextTick 完成')
-      })
-    })
-    
-    console.log('========== 🔵 toggleDishSelection 结束 ==========')
-  },
+// ========== 在 toggleDishSelection 中强制刷新候选池 ==========
+
+toggleDishSelection: function(e) {
+  console.log('========== 🔵 toggleDishSelection 开始 ==========')
+  
+  if (e && e.stopPropagation) {
+    e.stopPropagation()
+  }
+  
+  const { type, dishId } = e.currentTarget.dataset
+  
+  console.log('1️⃣ 点击参数:', { type, dishId })
+  
+  if (!type || !dishId) {
+    console.warn('❌ 参数缺失')
+    return
+  }
+  
+  // 深拷贝
+  const selectedDishes = JSON.parse(JSON.stringify(this.data.selectedDishes))
+  
+  // 确保数组存在
+  if (!selectedDishes[type]) {
+    selectedDishes[type] = []
+  }
+  
+  const currentList = selectedDishes[type]
+  const index = currentList.indexOf(dishId)
+  
+  if (index > -1) {
+    // 取消选择
+    currentList.splice(index, 1)
+    console.log('❌ 取消选择')
+  } else {
+    // 添加选择
+    currentList.push(dishId)
+    console.log('✅ 添加选择')
+  }
+  
+  // 更新计数
+  const selectedCount = {
+    meat: (selectedDishes.meat || []).length,
+    veg: (selectedDishes.veg || []).length,
+    soup: (selectedDishes.soup || []).length,
+    staple: (selectedDishes.staple || []).length
+  }
+  selectedCount.total = selectedCount.meat + selectedCount.veg + selectedCount.soup + selectedCount.staple
+  
+  // 🔴 关键修复：深拷贝整个候选池，强制触发重新渲染
+  const newCandidatePool = JSON.parse(JSON.stringify(this.data.candidatePool))
+  
+  // 给每个菜品添加 selected 标记
+  Object.keys(newCandidatePool).forEach(category => {
+    newCandidatePool[category] = newCandidatePool[category].map(dish => ({
+      ...dish,
+      selected: selectedDishes[category] && selectedDishes[category].includes(dish.id)
+    }))
+  })
+  
+  console.log('5️⃣ 更新后 selectedDishes:', selectedDishes)
+  console.log('6️⃣ 更新后 selectedCount:', selectedCount)
+  
+  // 🔴 一次性更新所有数据
+  this.setData({
+    selectedDishes: selectedDishes,
+    selectedCount: selectedCount,
+    candidatePool: newCandidatePool  // ← 强制刷新候选池
+  }, () => {
+    console.log('✅ setData 完成')
+  })
+  
+  console.log('========== 🔵 toggleDishSelection 结束 ==========')
+},
   
   getDishById: function(type, dishId) {
     const pool = this.data.candidatePool[type] || []
