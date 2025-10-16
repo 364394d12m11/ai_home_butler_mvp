@@ -1,0 +1,1 @@
+{"name":"getWeather","version":"1.0.0","dependencies":{"axios":"^1.12.2","wx-server-sdk":"^3.0.1"}}

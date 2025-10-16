@@ -1,0 +1,8 @@
+<view class="page">
+  <view class="section card">
+    <view class="title">今日安排</view>
+    <input placeholder="作业/活动，如：英语阅读20min" bindinput="onTask"/>
+    <picker mode="time" bindchange="onPickupTime"><view class="row">接送时间：{{pickup||'选择'}}</view></picker>
+    <button class="btn-primary" bindtap="onSave">保存</button>
+  </view>
+</view>

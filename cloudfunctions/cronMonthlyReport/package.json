@@ -1,0 +1,15 @@
+{
+  "name": "cronmonthlyreport",
+  "version": "1.0.0",
+  "description": "monthly report generator",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "wx-server-sdk": "^3.0.1"
+  },
+  "keywords": []
+}

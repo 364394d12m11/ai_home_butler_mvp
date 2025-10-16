@@ -1,0 +1,204 @@
+<view class="page">
+  <!-- 头部统计 -->
+  <view class="header-stats">
+    <view class="stat-card">
+      <text class="stat-number">{{totalItems}}</text>
+      <text class="stat-label">库存品种</text>
+    </view>
+    <view class="stat-card">
+      <text class="stat-number">{{lowStockCount}}</text>
+      <text class="stat-label">库存不足</text>
+    </view>
+    <view class="stat-card">
+      <text class="stat-number">{{todayExpired}}</text>
+      <text class="stat-label">今日到期</text>
+    </view>
+  </view>
+
+  <!-- 超保守提醒区域 -->
+  <view class="alert-section" wx:if="{{conservativeAlerts.length}}">
+    <view class="alert-header">
+      <text class="alert-title">⚠️ 库存提醒 (超保守模式)</text>
+      <text class="confidence-note">仅显示 ≥80% 置信度的提醒</text>
+    </view>
+    <view class="alert-list">
+      <view class="alert-item confidence-{{item.confidence}}" 
+            wx:for="{{conservativeAlerts}}" wx:key="name">
+        <view class="alert-content">
+          <text class="alert-name">{{item.name}}</text>
+          <text class="alert-message">{{item.message}}</text>
+          <text class="alert-confidence">置信度: {{item.confidence}}%</text>
+        </view>
+        <view class="alert-actions">
+          <button class="alert-btn ignore" bindtap="ignoreAlert" data-item="{{item}}">
+            忽略14天
+          </button>
+          <button class="alert-btn add" bindtap="addToShoppingFromAlert" data-item="{{item}}">
+            加入采购
+          </button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 快速操作 -->
+  <view class="quick-actions">
+    <button class="action-btn primary" bindtap="quickAddItem">
+      📦 快速入库
+    </button>
+    <button class="action-btn secondary" bindtap="scanBarcode">
+      📷 扫码入库
+    </button>
+    <button class="action-btn tertiary" bindtap="voiceAddItem">
+      🎤 语音入库
+    </button>
+  </view>
+
+  <!-- 库存分类展示 -->
+  <view class="inventory-categories">
+    <view class="category-tabs">
+      <view class="category-tab {{activeCategory=='all'?'active':''}}" 
+            bindtap="switchCategory" data-category="all">
+        全部 ({{totalItems}})
+      </view>
+      <view class="category-tab {{activeCategory==item.key?'active':''}}" 
+            wx:for="{{categories}}" wx:key="key"
+            bindtap="switchCategory" data-category="{{item.key}}">
+        {{item.name}} ({{item.count}})
+      </view>
+    </view>
+
+    <view class="category-content">
+      <!-- 搜索框 -->
+      <view class="search-section">
+        <view class="search-box">
+          <text class="search-icon">🔍</text>
+          <input class="search-input" placeholder="搜索库存物品" 
+                 value="{{searchKeyword}}" bindinput="onSearchInput"/>
+        </view>
+        <view class="filter-options" wx:if="{{searchKeyword}}">
+          <text class="filter-tip">按别名搜索: </text>
+          <text class="filter-alias" wx:for="{{searchAliases}}" wx:key="*this"
+                bindtap="selectAlias" data-alias="{{item}}">{{item}}</text>
+        </view>
+      </view>
+
+      <!-- 库存列表 -->
+      <view class="inventory-list">
+        <view class="inventory-item {{item.status}}" 
+              wx:for="{{filteredInventory}}" wx:key="name">
+          <view class="item-header">
+            <view class="item-info">
+              <text class="item-name">{{item.name}}</text>
+              <text class="item-aliases" wx:if="{{item.aliases.length}}">
+                别名: {{item.aliases.join('、')}}
+              </text>
+            </view>
+            <view class="item-status {{item.status}}">
+              <text class="status-text">{{item.statusText}}</text>
+            </view>
+          </view>
+
+          <view class="item-details">
+            <view class="quantity-info">
+              <text class="quantity-current">现有: {{item.quantity}}{{item.unit}}</text>
+              <text class="quantity-daily" wx:if="{{item.dailyConsumption}}">
+                日耗: {{item.dailyConsumption}}{{item.unit}}
+              </text>
+              <text class="quantity-predict" wx:if="{{item.predictedDays}}">
+                预计{{item.predictedDays}}天用完
+              </text>
+            </view>
+            
+            <view class="item-actions">
+              <button class="quantity-btn" bindtap="adjustQuantity" 
+                      data-item="{{item}}" data-action="decrease">-</button>
+              <button class="quantity-btn" bindtap="adjustQuantity" 
+                      data-item="{{item}}" data-action="increase">+</button>
+              <button class="edit-btn" bindtap="editItem" data-item="{{item}}">编辑</button>
+            </view>
+          </view>
+
+          <view class="item-timeline" wx:if="{{item.recentChanges.length}}">
+            <text class="timeline-title">最近变动:</text>
+            <view class="timeline-list">
+              <text class="timeline-item" wx:for="{{item.recentChanges}}" wx:key="date">
+                {{item.date}} {{item.action}} {{item.quantity}}{{item.unit}}
+              </text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 空状态 -->
+      <view class="empty-state" wx:if="{{!filteredInventory.length}}">
+        <text class="empty-icon">📦</text>
+        <text class="empty-text">{{searchKeyword ? '未找到相关库存' : '暂无库存记录'}}</text>
+        <button class="empty-action" bindtap="quickAddItem">立即添加</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 库存趋势 -->
+  <view class="trend-section" wx:if="{{showTrends}}">
+    <view class="trend-header">
+      <text class="trend-title">📈 消耗趋势</text>
+      <view class="trend-period">
+        <text class="period-option {{trendPeriod=='week'?'active':''}}" 
+              bindtap="changeTrendPeriod" data-period="week">本周</text>
+        <text class="period-option {{trendPeriod=='month'?'active':''}}" 
+              bindtap="changeTrendPeriod" data-period="month">本月</text>
+            </view>
+    </view>
+    <view class="trend-chart">
+      <view class="chart-placeholder">
+        <text>消耗趋势图表区域</text>
+        <text>({{trendPeriod=='week'?'周':'月'}}度数据)</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 快速入库弹窗 -->
+  <view class="modal {{showAddModal?'show':''}}" bindtap="closeAddModal">
+    <view class="modal-content" catchtap="">
+      <view class="modal-header">
+        <text class="modal-title">快速入库</text>
+        <text class="close-btn" bindtap="closeAddModal">✕</text>
+      </view>
+      <view class="modal-body">
+        <view class="form-group">
+          <text class="form-label">物品名称</text>
+          <input class="form-input" placeholder="请输入物品名称" 
+                 value="{{newItem.name}}" bindinput="updateNewItem" data-field="name"/>
+        </view>
+        <view class="form-group">
+          <text class="form-label">数量</text>
+          <view class="quantity-input">
+            <input class="form-input quantity" type="digit" placeholder="0" 
+                   value="{{newItem.quantity}}" bindinput="updateNewItem" data-field="quantity"/>
+            <picker class="unit-picker" range="{{unitOptions}}" value="{{newItem.unitIndex}}"
+                    bindchange="selectUnit">
+              <text class="unit-text">{{unitOptions[newItem.unitIndex]}}</text>
+            </picker>
+          </view>
+        </view>
+        <view class="form-group">
+          <text class="form-label">保质期 (可选)</text>
+          <picker class="date-picker" mode="date" value="{{newItem.expireDate}}"
+                  bindchange="selectExpireDate">
+            <text class="date-text">{{newItem.expireDate || '选择日期'}}</text>
+          </picker>
+        </view>
+        <view class="form-group">
+          <text class="form-label">别名 (可选)</text>
+          <input class="form-input" placeholder="用逗号分隔，如: 番茄,洋柿子" 
+                 value="{{newItem.aliases}}" bindinput="updateNewItem" data-field="aliases"/>
+        </view>
+      </view>
+      <view class="modal-footer">
+        <button class="cancel-btn" bindtap="closeAddModal">取消</button>
+        <button class="confirm-btn" bindtap="confirmAddItem">确认入库</button>
+      </view>
+    </view>
+  </view>
+</view>

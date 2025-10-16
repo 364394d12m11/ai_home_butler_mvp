@@ -1,0 +1,9 @@
+{
+  "name": "explainMenu",
+  "version": "1.0.0",
+  "description": "V3.3 智能菜单解释生成",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

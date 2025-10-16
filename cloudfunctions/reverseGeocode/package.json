@@ -1,0 +1,9 @@
+{
+  "name": "reverseGeocode",
+  "version": "1.1.0",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "latest",
+    "axios": "1.6.8"
+  }
+}

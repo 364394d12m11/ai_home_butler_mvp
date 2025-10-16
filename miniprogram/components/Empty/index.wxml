@@ -1,0 +1,1 @@
+<view class="sub" style="padding:8px 0; text-align:center">{{text||"暂无数据"}}</view>

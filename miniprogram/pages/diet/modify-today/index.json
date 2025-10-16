@@ -1,0 +1,11 @@
+{
+  "navigationBarTitleText": "调整今日菜单",
+  "navigationBarBackgroundColor": "#ffffff",
+  "navigationBarTextStyle": "black",
+  "backgroundColor": "#FFF8F3",
+  "backgroundTextStyle": "light",
+  "enablePullDownRefresh": false,
+  "disableScroll": false,
+  "onReachBottomDistance": 50,
+  "usingComponents": {}
+}

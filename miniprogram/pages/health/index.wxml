@@ -1,0 +1,7 @@
+<view class="page">
+  <view class="section card">
+    <input placeholder="补剂/药物，如：维生素D3" bindinput="onName"/>
+    <picker mode="time" bindchange="onTime"><view class="row">提醒时间：{{time||'选择'}}</view></picker>
+    <button class="btn-primary" bindtap="onSave">保存</button>
+  </view>
+</view>

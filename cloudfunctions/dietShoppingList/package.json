@@ -1,0 +1,9 @@
+{
+  "name": "dietShoppingList",
+  "version": "1.0.0",
+  "description": "AI家庭管家购物清单管理",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

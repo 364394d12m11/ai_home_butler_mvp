@@ -1,0 +1,18 @@
+<view class="page">
+  <view class="section card">
+    <input placeholder="标题：如 孩子足球训练" bindinput="onTitle"/>
+    <picker mode="selector" range="{{types}}" bindchange="onType">
+      <view class="row">类型：{{form.type||'请选择'}}</view>
+    </picker>
+    <picker mode="date" bindchange="onDate">
+      <view class="row">时间：{{form.time||'选择日期'}}</view>
+    </picker>
+    <switch checked="{{form.pin}}" bindchange="onPin">置顶</switch>
+    <picker mode="selector" range="{{reminds}}" bindchange="onRemind">
+      <view class="row">提醒：{{form.remind||'当日'}}</view>
+    </picker>
+  </view>
+  <view class="section">
+    <button class="btn-primary" bindtap="onSave">保存</button>
+  </view>
+</view>

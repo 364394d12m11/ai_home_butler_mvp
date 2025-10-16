@@ -1,0 +1,139 @@
+<view class="page">
+  <!-- 头部 -->
+  <view class="header">
+    <view class="title-section">
+      <text class="main-title">调整今日菜单</text>
+      <text class="date-text">{{todayDate}} {{weekday}}</text>
+    </view>
+    <view class="changes-indicator" wx:if="{{hasChanges}}">
+      <text class="indicator-dot"></text>
+      <text class="indicator-text">有修改</text>
+    </view>
+  </view>
+
+  <!-- 过滤选项 -->
+  <view class="filter-section" wx:if="{{showCandidates}}">
+    <view class="filter-header">智能推荐</view>
+    <view class="filter-groups">
+      <view class="filter-group">
+        <text class="filter-label">菜系</text>
+        <view class="filter-chips">
+          <text class="chip {{filterOptions.cuisine === 'all' ? 'active' : ''}}" 
+                bindtap="setFilter" data-type="cuisine" data-value="all">全部</text>
+          <text class="chip {{filterOptions.cuisine === '中式' ? 'active' : ''}}" 
+                bindtap="setFilter" data-type="cuisine" data-value="中式">中式</text>
+          <text class="chip {{filterOptions.cuisine === '西式' ? 'active' : ''}}" 
+                bindtap="setFilter" data-type="cuisine" data-value="西式">西式</text>
+        </view>
+      </view>
+      
+      <view class="filter-group">
+        <text class="filter-label">时长</text>
+        <view class="filter-chips">
+          <text class="chip {{filterOptions.time === 'all' ? 'active' : ''}}" 
+                bindtap="setFilter" data-type="time" data-value="all">全部</text>
+          <text class="chip {{filterOptions.time === 'quick' ? 'active' : ''}}" 
+                bindtap="setFilter" data-type="time" data-value="quick">快手</text>
+        </view>
+      </view>
+      
+      <view class="filter-group">
+        <text class="filter-label">成本</text>
+        <view class="filter-chips">
+          <text class="chip {{filterOptions.cost === 'all' ? 'active' : ''}}" 
+                bindtap="setFilter" data-type="cost" data-value="all">全部</text>
+          <text class="chip {{filterOptions.cost === 'L' ? 'active' : ''}}" 
+                bindtap="setFilter" data-type="cost" data-value="L">实惠</text>
+          <text class="chip {{filterOptions.cost === 'M' ? 'active' : ''}}" 
+                bindtap="setFilter" data-type="cost" data-value="M">中等</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 当前菜单 -->
+  <view class="menu-section">
+    <view class="meal-card" wx:for="{{currentMenu}}" wx:key="name" wx:for-item="meal" wx:for-index="mealIndex">
+      <view class="meal-header">
+        <view class="meal-info">
+          <text class="meal-name">{{meal.name}}</text>
+          <text class="meal-people" bindtap="adjustPortion" data-meal-index="{{mealIndex}}">
+            {{meal.people.adults}}位成人{{meal.people.kids > 0 ? meal.people.kids + '位小孩' : ''}} 
+            <text class="adjust-icon">⚙️</text>
+          </text>
+        </view>
+        <view class="meal-actions">
+          <button class="action-btn" bindtap="addDish" data-meal-index="{{mealIndex}}">➕</button>
+          <button class="action-btn" bindtap="regenerateMeal" data-meal-index="{{mealIndex}}">🔄</button>
+        </view>
+      </view>
+
+      <view class="dishes-grid">
+        <view class="dish-card {{dish.locked ? 'locked' : ''}}" 
+              wx:for="{{meal.dishes}}" wx:key="id" wx:for-item="dish" wx:for-index="dishIndex">
+          
+          <!-- 菜品信息 -->
+          <view class="dish-main" bindtap="replaceDish" 
+                data-meal-index="{{mealIndex}}" data-dish-index="{{dishIndex}}">
+            <text class="dish-emoji">{{dish.emoji || '🍽️'}}</text>
+            <text class="dish-name">{{dish.name}}</text>
+            <view class="dish-tags">
+              <text class="tag cost-{{dish.cost}}">{{dish.costLabel}}</text>
+              <text class="tag">{{dish.time}}分</text>
+            </view>
+          </view>
+
+          <!-- 操作按钮 -->
+          <view class="dish-actions">
+            <button class="lock-btn {{dish.locked ? 'locked' : ''}}" 
+                    bindtap="toggleDishLock" 
+                    data-meal-index="{{mealIndex}}" data-dish-index="{{dishIndex}}">
+              {{dish.locked ? '🔒' : '🔓'}}
+            </button>
+            <button class="remove-btn" wx:if="{{!dish.locked}}"
+                    bindtap="removeDish" 
+                    data-meal-index="{{mealIndex}}" data-dish-index="{{dishIndex}}">
+              ❌
+            </button>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 候选菜品弹层 -->
+  <view class="candidates-overlay" wx:if="{{showCandidates}}" bindtap="closeCandidates">
+    <view class="candidates-modal" catchtap="{{true}}">
+      <view class="modal-header">
+        <text class="modal-title">选择替换菜品</text>
+        <button class="close-btn" bindtap="closeCandidates">✕</button>
+      </view>
+      
+      <view class="candidates-grid">
+        <view class="candidate-card" 
+              wx:for="{{candidateDishes}}" wx:key="id" wx:for-item="dish"
+              bindtap="selectCandidate" data-dish="{{dish}}">
+          <text class="candidate-emoji">{{dish.emoji}}</text>
+          <text class="candidate-name">{{dish.name}}</text>
+          <view class="candidate-tags">
+            <text class="tag cost-{{dish.cost}}">{{dish.costLabel}}</text>
+            <text class="tag">{{dish.time}}分</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部操作栏 -->
+  <view class="bottom-actions">
+    <button class="cancel-btn" bindtap="cancelChanges" disabled="{{saving}}">
+      {{hasChanges ? '取消修改' : '返回'}}
+    </button>
+    <button class="save-btn {{hasChanges ? 'active' : ''}}" 
+            bindtap="saveChanges" 
+            disabled="{{saving || !hasChanges}}"
+            loading="{{saving}}">
+      {{saving ? '保存中...' : (hasChanges ? '保存修改' : '无修改')}}
+    </button>
+  </view>
+</view>

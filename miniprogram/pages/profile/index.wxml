@@ -1,0 +1,162 @@
+<!-- pages/profile/index.wxml - V4.1设置中心 -->
+<view class="profile-page">
+  <!-- 用户信息卡片 -->
+  <view class="user-card">
+    <view class="user-avatar">
+      <text class="avatar-text">{{profile.ai_tone ? profile.ai_tone.charAt(0) : '橙'}}</text>
+    </view>
+    <view class="user-info">
+      <text class="user-name">{{profile.family_profile || '小橙子用户'}}</text>
+      <text class="user-desc">{{profile.city || '未设置城市'}} • AI助手</text>
+    </view>
+
+  </view>
+
+  <!-- 设置分组 -->
+  <view class="settings-container">
+    
+    <!-- AI语气设置 -->
+    <view class="setting-group">
+      <view class="group-title">💬 AI语气风格</view>
+      <view class="setting-item" bindtap="goToToneSettings">
+        <view class="item-left">
+          <text class="item-title">语气风格</text>
+          <text class="item-desc">当前：{{profile.ai_tone || '温柔'}}</text>
+        </view>
+        <view class="item-right">
+          <text class="item-value">{{profile.ai_tone || '温柔'}} 🌸</text>
+          <text class="item-arrow">›</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 天气显示设置 -->
+    <view class="setting-group">
+      <view class="group-title">🌤 天气显示</view>
+      <view class="setting-item">
+        <view class="item-left">
+          <text class="item-title">动态背景</text>
+          <text class="item-desc">根据天气变化背景</text>
+        </view>
+        <view class="item-right">
+          <switch checked="{{settings.weather_dynamic}}" bindchange="toggleWeatherDynamic"/>
+        </view>
+      </view>
+
+      <view class="setting-item">
+        <view class="item-left">
+          <text class="item-title">每日语录</text>
+          <text class="item-desc">AI生成的温馨话语</text>
+        </view>
+        <view class="item-right">
+          <switch checked="{{settings.show_daily_quote}}" bindchange="toggleDailyQuote"/>
+        </view>
+      </view>
+    </view>
+
+    <!-- 饮食与预算 -->
+    <view class="setting-group">
+      <view class="group-title">🍳 饮食与预算</view>
+      <view class="setting-item" bindtap="goToDietSettings">
+        <view class="item-left">
+          <text class="item-title">口味偏好</text>
+          <text class="item-desc">设置饮食习惯和禁忌</text>
+        </view>
+        <view class="item-right">
+          <text class="item-arrow">›</text>
+        </view>
+      </view>
+      <view class="setting-item" bindtap="selectBudgetLevel">
+        <view class="item-left">
+          <text class="item-title">预算等级</text>
+          <text class="item-desc">影响菜品推荐档次</text>
+        </view>
+        <view class="item-right">
+          <text class="item-value">{{settings.budget_level}}</text>
+          <text class="item-arrow">›</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 推送与提醒 -->
+    <view class="setting-group">
+      <view class="group-title">🔔 推送与提醒</view>
+      <view class="setting-item" bindtap="selectPushFrequency">
+        <view class="item-left">
+          <text class="item-title">推送频率</text>
+          <text class="item-desc">控制通知密度</text>
+        </view>
+        <view class="item-right">
+          <text class="item-value">
+            {{settings.push_frequency === 'daily' ? '每日' : settings.push_frequency === 'weekly' ? '每周' : '关闭'}}
+          </text>
+          <text class="item-arrow">›</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 外观设置 -->
+    <view class="setting-group">
+      <view class="group-title">🎨 外观设置</view>
+
+      <view class="setting-item" bindtap="selectAnimations">
+        <view class="item-left">
+          <text class="item-title">动画效果</text>
+          <text class="item-desc">调整动画丰富程度</text>
+        </view>
+        <view class="item-right">
+          <text class="item-value">
+            {{settings.animations === 'off' ? '关闭' : settings.animations === 'low' ? '简化' : settings.animations === 'medium' ? '标准' : '丰富'}}
+          </text>
+          <text class="item-arrow">›</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 数据与隐私 -->
+    <view class="setting-group">
+      <view class="group-title">💾 数据与隐私</view>
+      <view class="setting-item">
+        <view class="item-left">
+          <text class="item-title">云端同步</text>
+          <text class="item-desc">上传使用数据改善推荐</text>
+        </view>
+        <view class="item-right">
+          <switch checked="{{settings.privacy_upload}}" bindchange="togglePrivacyUpload"/>
+        </view>
+      </view>
+      <view class="setting-item danger" bindtap="clearAllData">
+        <view class="item-left">
+          <text class="item-title">清除所有数据</text>
+          <text class="item-desc">删除本地数据和设置</text>
+        </view>
+        <view class="item-right">
+          <text class="item-arrow">›</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 关于 -->
+    <view class="setting-group">
+      <view class="group-title">ℹ️ 关于小橙子</view>
+      <view class="setting-item" bindtap="showAbout">
+        <view class="item-left">
+          <text class="item-title">版本信息</text>
+          <text class="item-desc">v{{version}}</text>
+        </view>
+        <view class="item-right">
+          <text class="item-arrow">›</text>
+        </view>
+      </view>
+      <view class="setting-item" bindtap="showFeedback">
+        <view class="item-left">
+          <text class="item-title">意见反馈</text>
+          <text class="item-desc">帮助我们改进产品</text>
+        </view>
+        <view class="item-right">
+          <text class="item-arrow">›</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

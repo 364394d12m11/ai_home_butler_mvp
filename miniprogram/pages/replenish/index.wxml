@@ -1,0 +1,38 @@
+<view class="page">
+  <view style="text-align:right;padding:10px 12px 0 0;">
+  <text style="color:#1677ff;font-size:13px;" bindtap="goHistory">采购记录</text>
+</view>
+<view style="text-align:right;padding:10px 12px 0 0;">
+  <text style="color:#1677ff" bindtap="goNew">+ 手动添加</text>
+</view>
+
+<view wx:if="{{loading}}" class="empty">加载中…</view>
+<block wx:elif="{{!items.length}}">
+  <view class="empty">暂时不需要补货</view>
+</block>
+
+<block wx:else>
+  <view class="tip">共 {{items.length}} 件建议补货</view>
+
+  <block wx:for="{{items}}" wx:key="name">
+    <view class="card">
+      <image class="thumb" wx:if="{{item.img}}" src="{{item.img}}" mode="aspectFill"></image>
+      <view class="meta">
+        <view class="name">{{item.name}}</view>
+        <view class="sub">
+          <text wx:if="{{item.brand}}">{{item.brand}}</text>
+          <text wx:if="{{item.price}}"> · ¥{{item.price}}</text>
+        </view>
+        <view class="badges">
+          <text class="badge">建议买 {{item.suggestQty}}</text>
+          <text class="reason">{{item.reason}}</text>
+        </view>
+        <view class="ops">
+          <button bindtap="addPurchase" data-item="{{item}}">记一笔</button>
+          <button class="btn ghost" size="mini" bindtap="copyLink" data-link="{{item.link}}" wx:if="{{item.link}}">复制购买链接</button>
+        </view>
+      </view>
+    </view>
+  </block>
+</block>
+</view>

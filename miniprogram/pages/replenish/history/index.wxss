@@ -1,0 +1,8 @@
+.page{ padding: 12px; }
+.date{ font-weight: 600; margin: 12px 0 6px; color:#333; }
+.card{ background:#fff; border-radius:12px; padding:12px; margin-bottom:10px; box-shadow:0 1px 3px rgba(0,0,0,.04); }
+.row{ display:flex; align-items:center; justify-content:space-between; }
+.title{ font-size:16px; color:#111; }
+.sub{ color:#8a8a8a; font-size:12px; margin-top:4px; }
+.more{ text-align:center; color:#1677ff; padding:10px 0; }
+.empty{ color:#aaa; text-align:center; margin-top:20vh; }

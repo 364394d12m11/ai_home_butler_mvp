@@ -1,0 +1,220 @@
+<!-- miniprogram/pages/reports/index.wxml - V3.0 三标签页版 -->
+<view class="page">
+  
+  <!-- 标签页切换器 -->
+  <view class="tabs-header">
+    <view class="tab-item {{currentTab === 'week' ? 'active' : ''}}" 
+          bindtap="switchTab" data-tab="week">
+      <text class="tab-text">周报</text>
+    </view>
+    <view class="tab-item {{currentTab === 'dimensions' ? 'active' : ''}}" 
+          bindtap="switchTab" data-tab="dimensions">
+      <text class="tab-text">家庭画像</text>
+    </view>
+    <view class="tab-item {{currentTab === 'trends' ? 'active' : ''}}" 
+          bindtap="switchTab" data-tab="trends">
+      <text class="tab-text">趋势分析</text>
+    </view>
+    <view class="tab-item {{currentTab === 'reflection' ? 'active' : ''}}" 
+      bindtap="switchTab" data-tab="reflection">
+  <text class="tab-text">每日复盘</text>
+</view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading">
+    <text class="loading-text">分析中...</text>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:elif="{{empty}}" class="empty">
+    <text class="empty-text">暂无数据</text>
+    <button bindtap="regen" class="btn-primary">生成报告</button>
+  </view>
+
+  <!-- 周报内容 -->
+  <view wx:elif="{{currentTab === 'week' && week}}" class="content">
+    <!-- 顶部：时间范围 -->
+    <view class="header">
+      <view class="title">本周报告</view>
+      <view class="range">{{week.span.start}} ～ {{week.span.end}}</view>
+    </view>
+
+    <!-- KPI 三卡 -->
+    <view class="kpis">
+      <view class="kpi-card">
+        <view class="kpi-label">学习按时率</view>
+        <view class="kpi-value">{{week.kpisView.studyOnTimePct}}%</view>
+      </view>
+      <view class="kpi-card">
+        <view class="kpi-label">家务达成率</view>
+        <view class="kpi-value">{{week.kpisView.choresDonePct}}%</view>
+      </view>
+      <view class="kpi-card">
+        <view class="kpi-label">菜单点击</view>
+        <view class="kpi-value">{{week.kpisView.dietClicks}}</view>
+      </view>
+    </view>
+
+    <!-- 本周建议 Top3 -->
+    <view class="section">
+      <view class="section-title">本周建议（Top 3）</view>
+      <view class="suggestions">
+        <view class="suggestion-item" wx:for="{{week.suggestions}}" wx:key="*this">
+          <text class="suggestion-text">• {{item}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 操作 -->
+    <view class="actions">
+      <button bindtap="regen" class="btn-secondary">重新生成</button>
+    </view>
+  </view>
+
+  <!-- 六维画像内容 -->
+  <view wx:elif="{{currentTab === 'dimensions' && sixDimensions}}" class="content">
+    
+    <!-- 整体概览 -->
+    <view class="overview-card">
+      <view class="overview-header">
+        <text class="overview-title">家庭画像概览</text>
+        <view class="overall-score">
+          <text class="score-number">{{sixDimensions.overall.score}}</text>
+          <text class="score-label">综合得分</text>
+        </view>
+      </view>
+      <view class="overview-meta">
+        <text class="balance-text">发展状态：{{sixDimensions.overall.balance}}</text>
+        <text class="level-badge {{sixDimensions.overall.level === '优秀' ? 'excellent' : sixDimensions.overall.level === '良好' ? 'good' : 'normal'}}">
+          {{sixDimensions.overall.level}}
+        </text>
+      </view>
+    </view>
+
+    <!-- 六维详细分析 -->
+    <view class="dimensions-analysis">
+      <view class="section-title">各维度分析</view>
+      
+      <view class="dimension-card" wx:for="{{sixDimensions.dimensions}}" wx:key="key">
+        <view class="dimension-header">
+          <view class="dimension-left">
+            <text class="dimension-emoji">{{item.emoji}}</text>
+            <view class="dimension-info">
+              <text class="dimension-name">{{item.name}}</text>
+              <text class="dimension-desc">{{item.desc}}</text>
+            </view>
+          </view>
+          <view class="dimension-right">
+            <text class="dimension-score">{{item.score}}</text>
+            <text class="dimension-level {{item.level === '优秀' ? 'excellent' : item.level === '良好' ? 'good' : 'normal'}}">
+              {{item.level}}
+            </text>
+          </view>
+        </view>
+        
+        <!-- 洞察 -->
+        <view class="dimension-insights" wx:if="{{item.insights.length > 0}}">
+          <view class="insights-title">洞察：</view>
+          <view class="insights-list">
+            <text class="insight-item" wx:for="{{item.insights}}" wx:key="*this">{{item}}</text>
+          </view>
+        </view>
+        
+        <!-- 行动建议 -->
+        <view class="dimension-actions" wx:if="{{item.actions.length > 0}}">
+          <view class="actions-title">建议：</view>
+          <view class="actions-list">
+            <text class="action-item" wx:for="{{item.actions}}" wx:key="*this">• {{item}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 整体洞察 -->
+    <view class="insights-section" wx:if="{{sixDimensions.insights.length > 0}}">
+      <view class="section-title">整体洞察</view>
+      <view class="insights-card">
+        <view class="insight-item" wx:for="{{sixDimensions.insights}}" wx:key="*this">
+          <text class="insight-icon">💡</text>
+          <text class="insight-text">{{item}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 改进建议 -->
+    <view class="recommendations-section" wx:if="{{sixDimensions.recommendations.length > 0}}">
+      <view class="section-title">改进方向</view>
+      <view class="recommendations-list">
+        <view class="recommendation-card" wx:for="{{sixDimensions.recommendations}}" wx:key="title">
+          <view class="rec-header">
+            <text class="rec-priority {{item.priority === 'high' ? 'high' : item.priority === 'medium' ? 'medium' : 'low'}}">
+              {{item.priority === 'high' ? '重要' : item.priority === 'medium' ? '中等' : '一般'}}
+            </text>
+            <text class="rec-title">{{item.title}}</text>
+          </view>
+          <view class="rec-items">
+            <text class="rec-item" wx:for="{{item.items}}" wx:key="*this">• {{item}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 趋势分析内容 -->
+  <view wx:elif="{{currentTab === 'trends' && trendsData}}" class="content">
+    
+    <!-- 使用统计 -->
+    <view class="usage-section">
+      <view class="section-title">使用统计</view>
+      <view class="usage-cards">
+        <view class="usage-card">
+          <text class="usage-number">{{trendsData.usage.totalDays}}</text>
+          <text class="usage-label">活跃天数</text>
+        </view>
+        <view class="usage-card">
+          <text class="usage-number">{{trendsData.usage.menuGenerations}}</text>
+          <text class="usage-label">菜单生成</text>
+        </view>
+        <view class="usage-card">
+          <text class="usage-number">{{trendsData.usage.averagePerWeek}}</text>
+          <text class="usage-label">周均使用</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 偏好分析 -->
+    <view class="preferences-section">
+      <view class="section-title">偏好趋势</view>
+      
+      <view class="preference-item">
+        <view class="pref-label">饮食目标偏好：</view>
+        <view class="pref-tags">
+          <text class="pref-tag" wx:for="{{trendsData.preferences.favoriteGoals}}" wx:key="*this">{{item}}</text>
+        </view>
+      </view>
+      
+      <view class="preference-item">
+        <view class="pref-label">家庭助手配置：</view>
+        <text class="pref-value">{{trendsData.preferences.helpersUtilization}}</text>
+      </view>
+      
+      <view class="preference-item">
+        <view class="pref-label">预算偏好：</view>
+        <text class="pref-value">{{trendsData.preferences.budgetTrend}}</text>
+      </view>
+    </view>
+
+    <!-- 趋势洞察 -->
+    <view class="trends-insights">
+      <view class="section-title">趋势洞察</view>
+      <view class="insights-card">
+        <view class="insight-item" wx:for="{{trendsData.insights}}" wx:key="*this">
+          <text class="insight-icon">📈</text>
+          <text class="insight-text">{{item}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+</view>

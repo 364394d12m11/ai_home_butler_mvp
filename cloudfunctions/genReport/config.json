@@ -1,0 +1,12 @@
+{
+  "triggers": [
+    { "name": "genReport_daily_2010",  "type": "timer", "config": "0 10 20 * * *", "enable": true },
+    { "name": "genReport_weekly_2000", "type": "timer", "config": "0 0 20 * * 0",  "enable": true },
+    { "name": "genReport_monthly_0900","type": "timer", "config": "0 0 9 1 * *",   "enable": true }
+  ],
+  "environmentVariables": {
+    "TZ": "Asia/Shanghai",
+    "REPORT_TMPL_ID": "",             
+    "EVENT_TMPL_ID": ""              
+  }
+}

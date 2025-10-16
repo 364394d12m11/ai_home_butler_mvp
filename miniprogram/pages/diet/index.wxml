@@ -1,0 +1,532 @@
+<!-- pages/diet/index.wxml - V5.3 完美修复版 -->
+<view class="page">
+  <!-- 头部信息 -->
+  <view class="header">
+    <view class="date-info">
+      <text class="main-title">{{roleConfig[userRole].icon}} {{roleConfig[userRole].title}}</text>
+      <text class="date-text">{{todayDate}} {{weekday}}</text>
+    </view>
+    <text class="subtitle">今天的菜单，我已经帮你搭配好啦～</text>
+  </view>
+
+  <!-- V5.3 模式选择器 -->
+  <view class="mode-selector">
+    <view class="mode-tabs">
+      <view 
+        class="mode-tab {{currentMode === '日常' ? 'active' : ''}}"
+        bindtap="switchMode"
+        data-mode="日常"
+      >
+        <text class="mode-icon">🏠</text>
+        <text class="mode-label">日常</text>
+      </view>
+      
+      <view 
+        class="mode-tab {{currentMode === '目标' ? 'active' : ''}}"
+        bindtap="switchMode"
+        data-mode="目标"
+      >
+        <text class="mode-icon">🎯</text>
+        <text class="mode-label">目标</text>
+      </view>
+      
+      <view 
+        class="mode-tab {{currentMode === '灵感' ? 'active' : ''}}"
+        bindtap="switchMode"
+        data-mode="灵感"
+      >
+        <text class="mode-icon">✨</text>
+        <text class="mode-label">灵感</text>
+      </view>
+    </view>
+  </view>
+
+<!-- ========== 🔴 新增：生成菜单按钮 ========== -->
+<view class="generate-menu-section">
+  <button class="btn-generate-menu" bindtap="generateTodayMenu">
+    ✨ 生成今日菜单
+  </button>
+</view>
+
+<!-- ========== 原菜单显示区域（只在非候选池模式且有菜单时显示） ========== -->
+  
+  <!-- A) 摘要模式 -->
+  <view wx:if="{{!candidateMode && layoutMode === 'summary'}}" class="summary-layout">
+    <view class="summary-card">
+      <view class="summary-row" 
+            wx:for="{{summaryData}}" 
+            wx:key="mealName"
+            bindtap="onSummaryRowTap"
+            bindlongpress="onSummaryRowLongPress"
+            data-section="{{item.section}}">
+        <view class="row-content">
+          <text class="meal-name">{{item.mealName}}</text>
+          <text class="dish-text">{{item.dishText}}</text>
+          <text class="time-text">· 约{{item.totalTime}}分钟</text>
+        </view>
+        <text class="row-arrow">＞</text>
+      </view>
+      
+      <view class="explain-card" wx:if="{{menuExplain}}">
+        <text class="explain-icon">💭</text>
+        <text class="explain-text">{{menuExplain}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- B) Wallet横滑卡片 -->
+  <view wx:if="{{!candidateMode && layoutMode === 'wallet'}}" class="wallet-layout">
+    <swiper class="wallet-swiper" 
+            current="{{currentCardIndex}}"
+            bindchange="onWalletCardChange"
+            display-multiple-items="1"
+            previous-margin="24rpx"
+            next-margin="24rpx">
+      <swiper-item wx:for="{{walletCards}}" wx:key="mealName" class="wallet-slide">
+        <view class="wallet-card" bindtap="onWalletCardTap">
+          <view class="card-header">
+            <text class="card-title">{{item.mealName}}</text>
+            <text class="card-people">({{item.people}}位成人)</text>
+            <view class="card-more" wx:if="{{item.hasMore}}">
+              <text class="more-text">查看全部 ▸</text>
+            </view>
+          </view>
+          <view class="card-dishes">
+            <view class="card-dish" wx:for="{{item.dishes}}" wx:key="id" wx:for-item="dish">
+              <text class="dish-emoji">{{dish.emoji}}</text>
+              <text class="dish-name">{{dish.name}}</text>
+            </view>
+          </view>
+          <view class="card-footer">
+            <text class="total-time">共约 {{item.totalTime}} 分钟</text>
+          </view>
+        </view>
+      </swiper-item>
+    </swiper>
+    
+    <view class="page-control">
+      <view class="page-dot {{currentCardIndex === 0 ? 'active' : ''}}"></view>
+      <view class="page-dot {{currentCardIndex === 1 ? 'active' : ''}}"></view>
+    </view>
+    
+    <view class="explain-card" wx:if="{{menuExplain}}">
+      <text class="explain-icon">💭</text>
+      <text class="explain-text">{{menuExplain}}</text>
+    </view>
+  </view>
+
+  <!-- C) 分段控件Tabs -->
+  <view wx:if="{{!candidateMode && layoutMode === 'tabs'}}" class="tabs-layout">
+    <view class="tabs-control">
+      <text class="tab-item {{tabsData.selectedTab === 'all' ? 'active' : ''}}"
+            bindtap="onTabChange" data-tab="all">全部</text>
+      <text class="tab-item {{tabsData.selectedTab === 'lunch' ? 'active' : ''}}"
+            bindtap="onTabChange" data-tab="lunch">午餐</text>
+      <text class="tab-item {{tabsData.selectedTab === 'dinner' ? 'active' : ''}}"
+            bindtap="onTabChange" data-tab="dinner">晚餐</text>
+    </view>
+    
+    <view class="tabs-content">
+      <view class="meal-section" wx:for="{{tabsData.tabContent}}" wx:key="name">
+        <view class="meal-header">
+          <text class="meal-name">{{item.name}}</text>
+          <text class="meal-people" wx:if="{{item.people}}">({{item.people}}位成人)</text>
+        </view>
+        <view class="dish-list">
+          <view class="dish-item" wx:for="{{item.dishes}}" wx:key="id" wx:for-item="dish">
+            <text class="dish-emoji">{{dish.emoji}}</text>
+            <view class="dish-info">
+              <text class="dish-name">{{dish.name}}</text>
+              <text class="dish-meta">{{dish.time}}分 · {{dish.costLabel}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+      
+      <view class="explain-card" wx:if="{{menuExplain}}">
+        <text class="explain-icon">💭</text>
+        <text class="explain-text">{{menuExplain}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- D) 精致列表（原版布局） -->
+  <view wx:if="{{!candidateMode && layoutMode === 'detailList'}}" class="detail-layout">
+    <view class="menu-content">
+      <view class="meal-section" wx:for="{{todayMenu}}" wx:key="name">
+        <view class="meal-header">
+          <text class="meal-name">{{item.name}}</text>
+          <text class="meal-people" wx:if="{{item.people}}">({{item.people}}位成人)</text>
+        </view>
+        <view class="dish-list">
+          <view class="dish-item" wx:for="{{item.dishes}}" wx:key="id" wx:for-item="dish">
+            <text class="dish-emoji">{{dish.emoji}}</text>
+            <view class="dish-info">
+              <text class="dish-name">{{dish.name}}</text>
+              <text class="dish-meta">{{dish.time}}分 · {{dish.costLabel}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+      
+      <view class="explain-card" wx:if="{{menuExplain}}">
+        <text class="explain-icon">💭</text>
+        <text class="explain-text">{{menuExplain}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 营养点评卡片 -->
+  <view wx:if="{{!candidateMode && showNutritionComment && nutritionComment}}" class="nutrition-comment-card">
+    <view class="comment-icon">✨</view>
+    <view class="comment-content">
+      <text class="comment-title">营养点评</text>
+      <text class="comment-text">{{nutritionComment}}</text>
+    </view>
+  </view>
+
+  <!-- ========== V5.3 候选池界面 ========== -->
+  <view wx:if="{{candidateMode}}" class="candidate-pool-container">
+    
+    <!-- 顶部提示 -->
+    <view class="pool-header">
+      <text class="header-title">今日菜单候选</text>
+      <text class="header-subtitle">勾选你喜欢的菜品（已选{{selectedCount.total || 0}}道）</text>
+    </view>
+
+<!-- ========== 荤菜区 ========== -->
+<view class="category-section">
+  <view class="category-header">
+    <view class="header-left">
+      <text class="category-icon">🍖</text>
+      <text class="category-title">荤菜</text>
+      <text class="category-count">已选 {{selectedCount.meat || 0}} 道</text>
+    </view>
+    <button class="btn-replace-mini" bindtap="replaceCategory" data-type="meat">
+      换一批
+    </button>
+  </view>
+  
+  <view class="dish-grid">
+    <view 
+      wx:for="{{candidatePool.meat}}" 
+      wx:key="id"
+      wx:for-item="dish"
+      class="dish-card {{selectedDishes.meat.indexOf(dish.id) > -1 ? 'selected' : ''}}"
+      bindtap="toggleDishSelection"
+      data-type="meat"
+      data-dish-id="{{dish.id}}"
+    >
+      <view class="dish-checkbox {{selectedDishes.meat.indexOf(dish.id) > -1 ? 'checked' : ''}}">
+        <text wx:if="{{selectedDishes.meat.indexOf(dish.id) > -1}}" class="check-icon">●</text>
+      </view>
+      
+      <view class="dish-info">
+        <text class="dish-name">{{dish.name}}</text>
+        
+        <view class="dish-meta">
+          <text class="dish-time">⏱️ {{dish.time}}分钟</text>
+          <text wx:if="{{dish.style_tags && dish.style_tags.indexOf('洋气') > -1}}" class="dish-tag trendy">洋气</text>
+        </view>
+        
+        <text class="dish-reason">{{dish.reason}}</text>
+      </view>
+    </view>
+  </view>
+</view>
+
+<!-- ========== 素菜区 ========== -->
+<view class="category-section">
+  <view class="category-header">
+    <view class="header-left">
+      <text class="category-icon">🥬</text>
+      <text class="category-title">素菜</text>
+      <text class="category-count">已选 {{selectedCount.veg || 0}} 道</text>
+    </view>
+    <button class="btn-replace-mini" bindtap="replaceCategory" data-type="veg">
+      换一批
+    </button>
+  </view>
+  
+  <view class="dish-grid">
+    <view 
+      wx:for="{{candidatePool.veg}}" 
+      wx:key="id"
+      wx:for-item="dish"
+      class="dish-card {{selectedDishes.veg.indexOf(dish.id) > -1 ? 'selected' : ''}}"
+      bindtap="toggleDishSelection"
+      data-type="veg"
+      data-dish-id="{{dish.id}}"
+    >
+      <view class="dish-checkbox {{selectedDishes.veg.indexOf(dish.id) > -1 ? 'checked' : ''}}">
+        <text wx:if="{{selectedDishes.veg.indexOf(dish.id) > -1}}" class="check-icon">●</text>
+      </view>
+      
+      <view class="dish-info">
+        <text class="dish-name">{{dish.name}}</text>
+        <view class="dish-meta">
+          <text class="dish-time">⏱️ {{dish.time}}分钟</text>
+          <text wx:if="{{dish.style_tags && dish.style_tags.indexOf('洋气') > -1}}" class="dish-tag trendy">洋气</text>
+        </view>
+        <text class="dish-reason">{{dish.reason}}</text>
+      </view>
+    </view>
+  </view>
+</view>
+
+<!-- ========== 汤品区 ========== -->
+<view class="category-section">
+  <view class="category-header">
+    <view class="header-left">
+      <text class="category-icon">🍲</text>
+      <text class="category-title">汤品</text>
+      <text class="category-count">已选 {{selectedCount.soup || 0}} 道</text>
+    </view>
+    <button class="btn-replace-mini" bindtap="replaceCategory" data-type="soup">
+      换一批
+    </button>
+  </view>
+  
+  <view class="dish-grid">
+    <view 
+      wx:for="{{candidatePool.soup}}" 
+      wx:key="id"
+      wx:for-item="dish"
+      class="dish-card {{selectedDishes.soup.indexOf(dish.id) > -1 ? 'selected' : ''}}"
+      bindtap="toggleDishSelection"
+      data-type="soup"
+      data-dish-id="{{dish.id}}"
+    >
+      <view class="dish-checkbox {{selectedDishes.soup.indexOf(dish.id) > -1 ? 'checked' : ''}}">
+        <text wx:if="{{selectedDishes.soup.indexOf(dish.id) > -1}}" class="check-icon">●</text>
+      </view>
+      
+      <view class="dish-info">
+        <text class="dish-name">{{dish.name}}</text>
+        <view class="dish-meta">
+          <text class="dish-time">⏱️ {{dish.time}}分钟</text>
+          <text wx:if="{{dish.style_tags && dish.style_tags.indexOf('洋气') > -1}}" class="dish-tag trendy">洋气</text>
+        </view>
+        <text class="dish-reason">{{dish.reason}}</text>
+      </view>
+    </view>
+  </view>
+</view>
+
+<!-- ========== 主食区 ========== -->
+<view class="category-section">
+  <view class="category-header">
+    <view class="header-left">
+      <text class="category-icon">🍚</text>
+      <text class="category-title">主食</text>
+      <text class="category-count">已选 {{selectedCount.staple || 0}} 道</text>
+    </view>
+    <button class="btn-replace-mini" bindtap="replaceCategory" data-type="staple">
+      换一批
+    </button>
+  </view>
+  
+  <view class="dish-grid">
+    <view 
+      wx:for="{{candidatePool.staple}}" 
+      wx:key="id"
+      wx:for-item="dish"
+      class="dish-card {{selectedDishes.staple.indexOf(dish.id) > -1 ? 'selected' : ''}}"
+      bindtap="toggleDishSelection"
+      data-type="staple"
+      data-dish-id="{{dish.id}}"
+    >
+      <view class="dish-checkbox {{selectedDishes.staple.indexOf(dish.id) > -1 ? 'checked' : ''}}">
+        <text wx:if="{{selectedDishes.staple.indexOf(dish.id) > -1}}" class="check-icon">●</text>
+      </view>
+      
+      <view class="dish-info">
+        <text class="dish-name">{{dish.name}}</text>
+        <view class="dish-meta">
+          <text class="dish-time">⏱️ {{dish.time}}分钟</text>
+          <text wx:if="{{dish.style_tags && dish.style_tags.indexOf('洋气') > -1}}" class="dish-tag trendy">洋气</text>
+        </view>
+        <text class="dish-reason">{{dish.reason}}</text>
+      </view>
+    </view>
+  </view>
+</view>
+
+    <!-- 底部确认按钮 -->
+    <view class="pool-footer">
+      <button class="btn-confirm-large" bindtap="confirmSelection">
+        ✓ 完成选择（已选{{selectedCount.total || 0}}道）
+      </button>
+    </view>
+
+  </view>
+  <!-- 候选池界面结束 -->
+
+  <!-- ========== 最终菜单显示 ========== -->
+  <view wx:if="{{!candidateMode && todayMenu.length > 0}}" class="final-menu-container">
+    
+    <view class="final-menu-header">
+      <text class="menu-title">✓ 今日菜单</text>
+      <text class="menu-count">共 {{todayMenu.length}} 道菜</text>
+    </view>
+    
+    <view class="final-menu-list">
+      <view wx:for="{{todayMenu}}" wx:key="id" class="final-dish-card">
+        <view class="dish-main-info">
+          <text class="dish-name">{{item.name}}</text>
+          <text class="dish-course-tag">{{item.course}}</text>
+        </view>
+        
+        <view class="dish-meta-info">
+          <text class="meta-item">⏱ {{item.time}}分钟</text>
+          <text wx:if="{{item.tags && item.tags.length > 0}}" class="meta-tag">
+            {{item.tags[0]}}
+          </text>
+        </view>
+        
+        <view wx:if="{{item.reason}}" class="dish-reason">
+          <text>{{item.reason}}</text>
+        </view>
+      </view>
+    </view>
+    
+    <view wx:if="{{nutritionComment}}" class="nutrition-comment-card">
+      <view class="comment-icon">✨</view>
+      <view class="comment-content">
+        <text class="comment-title">营养点评</text>
+        <text class="comment-text">{{nutritionComment}}</text>
+      </view>
+    </view>
+    
+    <view class="final-menu-actions">
+      <button class="btn-back-to-pool" bindtap="backToCandidates">
+        ← 返回候选池
+      </button>
+      <button class="btn-view-shopping" bindtap="showShoppingList">
+        📝 查看购物清单 ({{shoppingList.length}})
+      </button>
+    </view>
+    
+  </view>
+
+  <!-- V4.0主要按钮区 -->
+  <view class="primary-actions" wx:if="{{!candidateMode}}">
+    <button class="action-btn role-primary" bindtap="handleRoleAction">
+      {{roleConfig[userRole].actionText}}
+    </button>
+    
+    <button class="action-btn secondary" bindtap="regenerateMenu">
+      换一换
+    </button>
+    
+    <button class="action-btn shopping" bindtap="showShoppingList">
+      📝 购物清单 ({{shoppingList.length}})
+    </button>
+    
+    <button class="action-btn success" bindtap="markMenuComplete">
+      ✓ 今天做完了
+    </button>
+  </view>
+
+  <!-- 智能任务区 -->
+  <view class="task-section" wx:if="{{showTaskLayer && !candidateMode}}">
+    <view class="task-card" 
+          wx:for="{{smartTasks}}" 
+          wx:key="title"
+          bindtap="handleTaskAction" 
+          data-action="{{item.tap}}">
+      <view class="task-icon">{{item.icon}}</view>
+      <view class="task-content">
+        <text class="task-title">{{item.title}}</text>
+        <text class="task-desc">{{item.desc}}</text>
+      </view>
+      <view class="task-action">
+        <text class="action-text">{{item.action}}</text>
+        <text class="arrow">▸</text>
+      </view>
+    </view>
+  </view>
+
+<!-- 购物清单弹层 -->
+<view class="shopping-sheet-overlay" wx:if="{{showShoppingSheet}}" bindtap="closeShoppingSheet">
+  <view class="shopping-sheet" catchtap="">
+    <view class="sheet-header">
+      <text class="sheet-title">🛒 购物清单</text>
+      <button class="sheet-close" bindtap="closeShoppingSheet">完成</button>
+    </view>
+    
+    <scroll-view class="sheet-content" scroll-y="true">
+      <view class="shopping-list" wx:if="{{shoppingList.length > 0}}">
+        <view 
+          class="shopping-item" 
+          wx:for="{{shoppingList}}" 
+          wx:key="name"
+          catchtap="toggleShoppingItem"
+          data-index="{{index}}"
+        >
+          <view class="item-checkbox {{item.checked ? 'checked' : ''}}">
+            <text class="check-mark" wx:if="{{item.checked}}">✓</text>
+          </view>
+          <view class="item-info">
+            <text class="item-name {{item.checked ? 'completed' : ''}}">{{item.name}}</text>
+            <text class="item-amount">{{item.qty}}</text>
+          </view>
+          <text class="item-category">{{item.category}}</text>
+        </view>
+      </view>
+      
+      <view class="shopping-empty" wx:else>
+        <text class="empty-icon">🛒</text>
+        <text class="empty-text">暂无购物清单</text>
+      </view>
+      
+      <view class="sheet-actions" wx:if="{{shoppingList.length > 0}}">
+        <button class="sheet-btn primary" bindtap="goBuyGroceries">
+          去美团买菜
+        </button>
+      </view>
+    </scroll-view>
+  </view>
+</view>
+
+  <!-- 菜单详情弹层 -->
+  <view class="menu-sheet-overlay" wx:if="{{showMenuSheet}}" bindtap="onSheetMaskTap">
+    <view class="menu-sheet" bindtap="onSheetContentTap">
+      <view class="sheet-header">
+        <view class="sheet-handle"></view>
+        <text class="sheet-title">今日完整菜单</text>
+        <view class="sheet-close" bindtap="closeMenuSheet">完成</view>
+      </view>
+      
+      <scroll-view class="sheet-content" scroll-y="true">
+        <view class="sheet-meal-section" wx:for="{{allMenuData}}" wx:key="name">
+          <view class="sheet-meal-header">
+            <text class="sheet-meal-title">{{item.name}}</text>
+            <text class="sheet-meal-subtitle" wx:if="{{item.people}}">({{item.people}}位成人)</text>
+          </view>
+          
+          <view class="sheet-dish-list">
+            <view class="sheet-dish-item" wx:for="{{item.dishes}}" wx:key="id" wx:for-item="dish">
+              <view class="sheet-dish-main">
+                <text class="sheet-dish-emoji">{{dish.emoji}}</text>
+                <view class="sheet-dish-info">
+                  <text class="sheet-dish-name">{{dish.name}}</text>
+                  <view class="sheet-dish-tags">
+                    <text class="sheet-tag time">{{dish.time}}分</text>
+                    <text class="sheet-tag cost">{{dish.costLabel}}</text>
+                  </view>
+                </view>
+              </view>
+              <button class="sheet-dish-replace" 
+                      bindtap="replaceSingleDish" 
+                      data-dish-id="{{dish.id}}" 
+                      data-section="{{item.name}}">
+                换一道
+              </button>
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+</view>

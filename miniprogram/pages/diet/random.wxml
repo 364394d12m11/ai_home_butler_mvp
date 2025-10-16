@@ -1,0 +1,30 @@
+<view class="page">
+  <!-- 过滤条 -->
+  <view class="bar">
+    <picker range="{{['不限'].concat(tagsAll)}}" value="{{tagIdx+1}}" bindchange="onPickTag">
+      <view class="pill">标签：{{ tagIdx<0 ? '不限' : tagsAll[tagIdx] }}</view>
+    </picker>
+    <picker range="{{timeOpts}}" range-key="label" value="{{timeIdx}}" bindchange="onPickTime">
+      <view class="pill">时长：{{ timeOpts[timeIdx].label }}</view>
+    </picker>
+    <picker range="{{diffOpts}}" value="{{diffIdx}}" bindchange="onPickDiff">
+      <view class="pill">难度：{{ diffOpts[diffIdx] }}</view>
+    </picker>
+    <view class="btn" bindtap="shuffle">再来一个</view>
+  </view>
+
+  <!-- 推荐卡片 -->
+  <block wx:if="{{pick}}">
+    <view class="card" bindtap="goDetail">
+      <image class="cover" src="{{pick.cover}}" mode="aspectFill"/>
+      <view class="meta">
+        <view class="title">{{pick.title}}</view>
+        <view class="sub">{{pick.minutes}} 分钟 · {{pick.tags && pick.tags.join(' / ')}}</view>
+        <view class="desc">{{pick.desc}}</view>
+      </view>
+    </view>
+  </block>
+
+  <view class="empty" wx:if="{{!pick && !loading}}">没有匹配到菜谱，换个条件试试</view>
+  <view class="loading" wx:if="{{loading}}">加载中…</view>
+</view>

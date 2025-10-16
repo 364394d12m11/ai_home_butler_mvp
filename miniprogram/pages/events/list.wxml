@@ -1,0 +1,40 @@
+<view class="toolbar">
+  <button size="mini" bindtap="goAdd">+ 添加</button>
+</view>
+
+<view wx:for="{{list}}" wx:key="_id" class="item">
+  <view class="main">
+    <text class="t">{{item.time}} · {{item.title}}</text>
+    <text class="s">{{item.type}}｜{{item.remind}}</text>
+  </view>
+  <view class="ops">
+    <button size="mini" data-id="{{item._id}}" bindtap="goEdit">编辑</button>
+    <button size="mini" type="warn" data-id="{{item._id}}" bindtap="delOne">删除</button>
+  </view>
+</view>
+<view wx:for="{{list}}" wx:key="_id"
+      class="row"
+      bindtap="edit" data-id="{{item._id}}"
+      bindlongpress="del" data-id="{{item._id}}">
+  <view>{{item.time}} · {{item.title}}</view>
+  <text wx:if="{{item.remind !== '关闭'}}" class="tag">{{item.remind}}</text>
+</view>
+<!-- 列表 -->
+<block wx:for="{{list}}" wx:key="_id">
+  <view class="ev">
+    <view class="left" bindtap="onEdit" data-id="{{item._id}}">
+      <view class="t">
+        <text wx:if="{{item.pin}}" class="pin">置顶</text>{{item.title}}
+      </view>
+      <view class="sub">{{item.time}} · {{item.type || '提醒'}}</view>
+    </view>
+
+    <view class="ops">
+      <button size="mini" data-id="{{item._id}}" bindtap="onEdit">编辑</button>
+      <button size="mini" data-id="{{item._id}}" data-pin="{{item.pin}}" bindtap="onPin">
+        {{ item.pin ? '取消置顶' : '置顶' }}
+      </button>
+      <button size="mini" type="warn" data-id="{{item._id}}" bindtap="onDel">删除</button>
+    </view>
+  </view>
+</block>

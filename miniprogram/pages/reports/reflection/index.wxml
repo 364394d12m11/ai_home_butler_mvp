@@ -1,0 +1,256 @@
+<!-- pages/reports/reflection/index.wxml - V4.2 每日复盘页面 -->
+<view class="reflection-page">
+  
+  <!-- 顶部导航 -->
+  <view class="page-header">
+    <view class="header-title">每日复盘</view>
+    <view class="header-subtitle">了解使用习惯，持续改进提升</view>
+  </view>
+
+  <!-- 标签页切换 -->
+  <view class="tabs-container">
+    <view class="tab-item {{currentTab === 'today' ? 'active' : ''}}" 
+          bindtap="switchTab" data-tab="today">
+      <text class="tab-text">今日复盘</text>
+    </view>
+    <view class="tab-item {{currentTab === 'week' ? 'active' : ''}}" 
+          bindtap="switchTab" data-tab="week">
+      <text class="tab-text">本周总结</text>
+    </view>
+    <view class="tab-item {{currentTab === 'history' ? 'active' : ''}}" 
+          bindtap="switchTab" data-tab="history">
+      <text class="tab-text">历史记录</text>
+    </view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="loading-container">
+    <view class="loading-icon"></view>
+    <text class="loading-text">生成复盘中...</text>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:elif="{{empty}}" class="empty-container">
+    <view class="empty-icon">📝</view>
+    <text class="empty-title">暂无复盘数据</text>
+    <text class="empty-desc">
+      {{currentTab === 'today' ? '今天还没有足够的使用数据' : 
+        currentTab === 'week' ? '本周使用数据不足' : '暂无历史记录'}}
+    </text>
+    <button class="btn-refresh" bindtap="regenerateReflection">重新生成</button>
+  </view>
+
+  <!-- 今日复盘内容 -->
+  <view wx:elif="{{currentTab === 'today' && todayReflection}}" class="content-container">
+    
+    <!-- 活跃度卡片 -->
+    <view class="activity-card">
+      <view class="activity-header">
+        <view class="activity-left">
+          <text class="activity-date">{{todayReflection.date}}</text>
+          <text class="activity-label">今日活跃度</text>
+        </view>
+        <view class="activity-right">
+          <text class="activity-score">{{todayReflection.activityScore}}</text>
+          <text class="activity-unit">分</text>
+        </view>
+      </view>
+      <view class="activity-bar">
+        <view class="activity-progress" style="width: {{todayReflection.activityScore + '%'}}"></view>
+      </view>
+    </view>
+
+    <!-- AI 总结 -->
+    <view class="summary-card">
+      <view class="card-header">
+        <text class="card-title">AI 复盘总结</text>
+        <view class="ai-badge">{{userProfile.ai_tone || '温柔'}}语气</view>
+      </view>
+      <view class="summary-content">
+        <text class="summary-text">{{todayReflection.summary}}</text>
+      </view>
+    </view>
+
+    <!-- 洞察分析 -->
+    <view class="insights-card" wx:if="{{todayReflection.insights.length > 0}}">
+      <view class="card-header">
+        <text class="card-title">今日洞察</text>
+      </view>
+      <view class="insights-list">
+        <view class="insight-item" wx:for="{{todayReflection.insights}}" wx:key="*this">
+          <view class="insight-icon">💡</view>
+          <text class="insight-text">{{item}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 改进建议 -->
+    <view class="suggestions-card" wx:if="{{todayReflection.suggestions.length > 0}}">
+      <view class="card-header">
+        <text class="card-title">改进建议</text>
+      </view>
+      <view class="suggestions-list">
+        <view class="suggestion-item" wx:for="{{todayReflection.suggestions}}" wx:key="*this">
+          <view class="suggestion-icon">🎯</view>
+          <text class="suggestion-text">{{item}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 操作按钮 -->
+    <view class="action-buttons">
+      <button class="btn-secondary" bindtap="shareReflection">分享复盘</button>
+      <button class="btn-primary" bindtap="regenerateReflection">重新生成</button>
+    </view>
+  </view>
+
+  <!-- 本周复盘内容 -->
+  <view wx:elif="{{currentTab === 'week' && weeklyReflection}}" class="content-container">
+    
+    <!-- 周概览 -->
+    <view class="week-overview-card">
+      <view class="week-header">
+        <text class="week-title">本周概览</text>
+        <text class="week-period">{{weeklyReflection.weekStart}} ~ {{weeklyReflection.weekEnd}}</text>
+      </view>
+      <view class="week-stats">
+        <view class="stat-item">
+          <text class="stat-number">{{weeklyReflection.stats.activeDays}}</text>
+          <text class="stat-label">活跃天数</text>
+        </view>
+        <view class="stat-item">
+          <text class="stat-number">{{weeklyReflection.stats.avgActivityScore}}</text>
+          <text class="stat-label">平均活跃度</text>
+        </view>
+        <view class="stat-item">
+          <text class="stat-number">{{weeklyReflection.stats.totalInteractions}}</text>
+          <text class="stat-label">总互动次数</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 周总结 -->
+    <view class="summary-card">
+      <view class="card-header">
+        <text class="card-title">本周总结</text>
+        <view class="ai-badge">{{userProfile.ai_tone || '温柔'}}语气</view>
+      </view>
+      <view class="summary-content">
+        <text class="summary-text">{{weeklyReflection.summary}}</text>
+      </view>
+    </view>
+
+    <!-- 周洞察 -->
+    <view class="insights-card" wx:if="{{weeklyReflection.insights.length > 0}}">
+      <view class="card-header">
+        <text class="card-title">本周洞察</text>
+      </view>
+      <view class="insights-list">
+        <view class="insight-item" wx:for="{{weeklyReflection.insights}}" wx:key="*this">
+          <view class="insight-icon">📊</view>
+          <text class="insight-text">{{item}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 周建议 -->
+    <view class="suggestions-card" wx:if="{{weeklyReflection.suggestions.length > 0}}">
+      <view class="card-header">
+        <text class="card-title">下周建议</text>
+      </view>
+      <view class="suggestions-list">
+        <view class="suggestion-item" wx:for="{{weeklyReflection.suggestions}}" wx:key="*this">
+          <view class="suggestion-icon">🚀</view>
+          <text class="suggestion-text">{{item}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 每日明细 -->
+    <view class="daily-details" wx:if="{{weeklyReflection.dailyData.length > 0}}">
+      <view class="card-header">
+        <text class="card-title">每日明细</text>
+      </view>
+      <view class="daily-list">
+        <view class="daily-item" wx:for="{{weeklyReflection.dailyData}}" wx:key="date">
+          <view class="daily-left">
+            <text class="daily-name">{{item.dayName}}</text>
+            <text class="daily-date">{{item.date}}</text>
+          </view>
+          <view class="daily-right">
+            <text class="daily-interactions">{{item.interactions}}次互动</text>
+            <view class="daily-score">{{item.activityScore || 0}}分</view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 操作按钮 -->
+    <view class="action-buttons">
+      <button class="btn-secondary" bindtap="shareReflection">分享总结</button>
+      <button class="btn-primary" bindtap="regenerateReflection">重新生成</button>
+    </view>
+  </view>
+
+  <!-- 历史记录内容 -->
+  <view wx:elif="{{currentTab === 'history' && historyData.length > 0}}" class="content-container">
+    
+    <!-- 历史趋势 -->
+    <view class="history-card">
+      <view class="card-header">
+        <text class="card-title">最近活跃度趋势</text>
+        <text class="card-subtitle">近14天记录</text>
+      </view>
+      <view class="history-list">
+        <view class="history-item" wx:for="{{historyData}}" wx:key="date" 
+              bindtap="viewDayReflection" data-date="{{item.date}}">
+          <view class="history-left">
+            <text class="history-date">{{item.dateDisplay}}</text>
+            <text class="history-meta">{{item.interactions}}次互动</text>
+          </view>
+          <view class="history-right">
+            <view class="history-score-container">
+              <text class="history-score" style="color: {{item.scoreColor}}">{{item.score}}</text>
+              <text class="history-level" style="color: {{item.scoreColor}}">{{item.scoreLevel}}</text>
+            </view>
+            <view class="history-arrow">></view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 统计概览 -->
+    <view class="stats-overview">
+      <view class="card-header">
+        <text class="card-title">使用统计</text>
+      </view>
+      <view class="overview-stats">
+        <view class="overview-item">
+          <text class="overview-number">{{historyData.length}}</text>
+          <text class="overview-label">活跃天数</text>
+        </view>
+        <view class="overview-item">
+          <text class="overview-number">{{averageScore}}</text>
+          <text class="overview-label">平均活跃度</text>
+        </view>
+        <view class="overview-item">
+          <text class="overview-number">{{totalInteractions}}</text>
+          <text class="overview-label">总互动次数</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部工具栏 -->
+  <view class="bottom-toolbar" wx:if="{{!loading && !empty}}">
+    <button class="tool-btn" bindtap="showGuide">
+      <text class="tool-icon">❓</text>
+      <text class="tool-text">使用指南</text>
+    </button>
+    <button class="tool-btn" bindtap="shareReflection">
+      <text class="tool-icon">📤</text>
+      <text class="tool-text">分享</text>
+    </button>
+  </view>
+
+</view>

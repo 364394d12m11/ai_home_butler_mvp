@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "每日复盘",
+  "navigationBarBackgroundColor": "#f6a44b",
+  "navigationBarTextStyle": "white",
+  "backgroundColor": "#f8f9fa",
+  "enablePullDownRefresh": true,
+  "backgroundTextStyle": "light"
+}

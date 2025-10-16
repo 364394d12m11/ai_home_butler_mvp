@@ -1,0 +1,6 @@
+{
+  "name": "getRecipes",
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  }
+}

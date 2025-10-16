@@ -1,0 +1,658 @@
+/* pages/onboarding/index.wxss - 添加菜系偏好样式 */
+
+.page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #fefbf8 0%, #faf9f6 100%);
+  padding: 32rpx 32rpx 200rpx 32rpx;
+  font-family: -apple-system, "PingFang SC", sans-serif;
+}
+
+/* ========== 头部 ========== */
+.header {
+  text-align: center;
+  margin-bottom: 48rpx;
+}
+
+.main-title {
+  font-size: 48rpx;
+  font-weight: 700;
+  color: #1B1B1F;
+  margin-bottom: 16rpx;
+}
+
+.subtitle {
+  font-size: 28rpx;
+  color: rgba(0,0,0,0.6);
+  margin-bottom: 32rpx;
+}
+
+.progress-dots {
+  display: flex;
+  justify-content: center;
+  gap: 16rpx;
+}
+
+.dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  background: rgba(246,164,76,0.3);
+  transition: all 300ms ease;
+}
+
+.dot.active {
+  background: #F6A44C;
+  transform: scale(1.2);
+}
+
+/* ========== 步骤内容 ========== */
+.step-content {
+  opacity: 1;
+  transition: all 400ms ease;
+  padding-bottom: 120rpx;
+}
+
+.step-content.hidden {
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  top: -9999rpx;
+}
+
+.step-content.active {
+  opacity: 1;
+  pointer-events: auto;
+  position: relative;
+  top: 0;
+}
+
+/* ========== 卡片容器 ========== */
+.card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(40rpx) saturate(180%);
+  border: 1rpx solid rgba(255, 255, 255, 0.2);
+  border-radius: 24rpx;
+  padding: 32rpx;
+  margin-bottom: 32rpx;
+  box-shadow: 0 8rpx 32rpx rgba(31, 38, 135, 0.1);
+}
+
+.card.compact {
+  padding: 20rpx 24rpx;
+  margin-bottom: 24rpx;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1B1B1F;
+  margin-bottom: 24rpx;
+}
+
+.section-title-small {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #1B1B1F;
+  margin-bottom: 16rpx;
+}
+
+/* ========== 位置选择 ========== */
+.location-status {
+  display: flex;
+  align-items: center;
+  padding: 12rpx 16rpx;
+  border-radius: 12rpx;
+  margin-bottom: 12rpx;
+  font-size: 24rpx;
+}
+
+.location-status.pending {
+  background: rgba(246,164,76,0.08);
+}
+
+.location-status.success {
+  background: rgba(76,175,80,0.08);
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6rpx;
+}
+
+.location-status.failed {
+  background: rgba(244,67,54,0.08);
+}
+
+.location-info {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.location-name {
+  font-size: 26rpx;
+  font-weight: 500;
+  color: #2E7D32;
+}
+
+.location-tip {
+  font-size: 20rpx;
+  color: rgba(0,0,0,0.45);
+}
+
+.region-picker-compact {
+  width: 100%;
+}
+
+.picker-btn-compact {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12rpx 16rpx;
+  background: rgba(255,255,255,0.4);
+  border-radius: 12rpx;
+  border: 1rpx solid rgba(255,255,255,0.6);
+}
+
+.picker-label {
+  font-size: 24rpx;
+  color: #666;
+}
+
+.picker-arrow {
+  font-size: 28rpx;
+  color: rgba(0,0,0,0.3);
+}
+
+/* ========== 家庭成员 ========== */
+.family-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16rpx;
+}
+
+.family-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32rpx 16rpx;
+  background: rgba(255,255,255,0.3);
+  border: 2rpx solid transparent;
+  border-radius: 20rpx;
+  transition: all 300ms ease;
+}
+
+.family-card.active {
+  background: rgba(246,164,76,0.15) !important;
+  border-color: #F6A44C !important;
+  box-shadow: 0 8rpx 24rpx rgba(246,164,76,0.2) !important;
+}
+
+.family-emoji {
+  font-size: 48rpx;
+  margin-bottom: 8rpx;
+}
+
+.family-text {
+  font-size: 26rpx;
+  font-weight: 500;
+  color: #333;
+}
+
+/* ========== 子选项 ========== */
+.sub-options {
+  margin-top: 24rpx;
+  padding-top: 24rpx;
+  border-top: 1rpx solid rgba(0,0,0,0.1);
+}
+
+.sub-title {
+  font-size: 26rpx;
+  color: #666;
+  margin-bottom: 16rpx;
+}
+
+/* ========== 通用按钮 ========== */
+.option-btn {
+  padding: 16rpx 24rpx;
+  background: rgba(255,255,255,0.4);
+  border: 1rpx solid rgba(255,255,255,0.6);
+  border-radius: 12rpx;
+  font-size: 24rpx;
+  color: #666;
+  transition: all 200ms ease;
+  text-align: center;
+  min-width: 80rpx;
+  display: inline-block;
+}
+
+.option-btn.active {
+  background: #F6A44C !important;
+  color: white !important;
+  border-color: #F6A44C !important;
+  box-shadow: 0 4rpx 12rpx rgba(246,164,76,0.4) !important;
+  font-weight: 600 !important;
+}
+
+.gender-options,
+.count-options {
+  display: flex;
+  gap: 12rpx;
+  flex-wrap: wrap;
+}
+
+/* ========== 孩子详情 ========== */
+.children-details {
+  margin-top: 16rpx;
+}
+
+.child-item {
+  padding: 20rpx;
+  background: rgba(255,255,255,0.2);
+  border-radius: 16rpx;
+  margin-bottom: 16rpx;
+}
+
+.child-header {
+  font-size: 24rpx;
+  color: #F6A44C;
+  font-weight: 600;
+  margin-bottom: 12rpx;
+}
+
+.age-picker-container {
+  margin-top: 12rpx;
+  background: rgba(255,255,255,0.2);
+  border-radius: 12rpx;
+  padding: 16rpx;
+}
+
+.age-display {
+  font-size: 24rpx;
+  color: #666;
+  margin-bottom: 12rpx;
+  text-align: center;
+}
+
+.picker-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 50px;
+  font-size: 24rpx;
+  color: #333;
+}
+
+.child-gender {
+  display: flex;
+  align-items: center;
+  margin-top: 16rpx;
+  gap: 12rpx;
+}
+
+.gender-label {
+  font-size: 22rpx;
+  color: #666;
+  min-width: 80rpx;
+}
+
+.gender-btn {
+  padding: 8rpx 16rpx;
+  background: rgba(255,255,255,0.3);
+  border: 1rpx solid rgba(255,255,255,0.5);
+  border-radius: 8rpx;
+  font-size: 20rpx;
+  color: #666;
+  transition: all 200ms ease;
+  text-align: center;
+  min-width: 60rpx;
+}
+
+.gender-btn.active {
+  background: #F6A44C !important;
+  color: white !important;
+  border-color: #F6A44C !important;
+}
+
+/* ========== 家庭帮手 ========== */
+.helper-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.helper-item {
+  background: rgba(255,255,255,0.2);
+  border-radius: 16rpx;
+  padding: 24rpx;
+}
+
+.helper-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.helper-info {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.helper-emoji {
+  font-size: 32rpx;
+}
+
+.helper-name {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #333;
+}
+
+.helper-hint {
+  font-size: 22rpx;
+  color: rgba(0,0,0,0.4);
+}
+
+.helper-details {
+  margin-top: 24rpx;
+  padding-top: 24rpx;
+  border-top: 1rpx solid rgba(0,0,0,0.1);
+}
+
+.detail-row {
+  margin-bottom: 20rpx;
+}
+
+.detail-label {
+  font-size: 24rpx;
+  color: #666;
+  margin-bottom: 12rpx;
+  display: block;
+}
+
+.detail-label.required::after {
+  content: '*';
+  color: #FF4757;
+  margin-left: 4rpx;
+}
+
+.freq-options {
+  display: flex;
+  gap: 8rpx;
+  flex-wrap: wrap;
+}
+
+/* ========== 宠物 ========== */
+.pet-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pet-question {
+  font-size: 26rpx;
+  color: #666;
+}
+
+/* ========== 🔥 新增：菜系偏好 ========== */
+.cuisine-hint {
+  font-size: 22rpx;
+  color: rgba(0,0,0,0.5);
+  margin-bottom: 16rpx;
+  text-align: right;
+}
+
+.cuisine-grid {
+  display: flex;
+  gap: 12rpx;
+  flex-wrap: wrap;
+}
+
+.cuisine-tag {
+  padding: 14rpx 20rpx;
+  background: rgba(255,255,255,0.5);
+  border: 2rpx solid rgba(246,164,76,0.2);
+  border-radius: 24rpx;
+  font-size: 24rpx;
+  color: #666;
+  transition: all 250ms ease;
+  cursor: pointer;
+}
+
+.cuisine-tag.active {
+  background: linear-gradient(135deg, #F6A44C 0%, #FF8A3D 100%) !important;
+  color: white !important;
+  border-color: #F6A44C !important;
+  box-shadow: 0 4rpx 12rpx rgba(246,164,76,0.3) !important;
+  transform: scale(1.05);
+  font-weight: 600 !important;
+}
+
+/* ========== 第2页：饮食偏好 ========== */
+.diet-goals-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16rpx;
+}
+
+.goal-card {
+  background: rgba(255, 255, 255, 0.6);
+  border: 2rpx solid rgba(246,164,76,0.2);
+  border-radius: 16rpx;
+  padding: 24rpx;
+  text-align: center;
+  transition: all 300ms ease;
+}
+
+.goal-card.active {
+  background: rgba(246,164,76,0.25) !important;
+  border-color: #F6A44C !important;
+  box-shadow: 0 4rpx 12rpx rgba(246,164,76,0.3) !important;
+  transform: scale(1.05) !important;
+}
+
+.goal-title {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.goal-desc {
+  font-size: 22rpx;
+  color: rgba(0,0,0,0.6);
+}
+
+.taste-section {
+  margin-bottom: 24rpx;
+}
+
+.taste-label {
+  font-size: 24rpx;
+  color: #666;
+  margin-bottom: 12rpx;
+}
+
+.taste-options,
+.taboo-options {
+  display: flex;
+  gap: 12rpx;
+  flex-wrap: wrap;
+  margin-bottom: 16rpx;
+}
+
+.taboo-input {
+  width: 100%;
+  padding: 16rpx;
+  background: rgba(255,255,255,0.4);
+  border: 1rpx solid rgba(255,255,255,0.6);
+  border-radius: 12rpx;
+  font-size: 24rpx;
+  color: #333;
+}
+
+.rhythm-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.rhythm-label {
+  font-size: 24rpx;
+  color: #666;
+  min-width: 160rpx;
+}
+
+.rhythm-options {
+  display: flex;
+  gap: 8rpx;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.budget-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16rpx;
+}
+
+.budget-card {
+  padding: 32rpx 16rpx;
+  background: rgba(255,255,255,0.3);
+  border: 2rpx solid transparent;
+  border-radius: 16rpx;
+  text-align: center;
+  transition: all 300ms ease;
+}
+
+.budget-card.active {
+  background: rgba(246,164,76,0.15) !important;
+  border-color: #F6A44C !important;
+  box-shadow: 0 8rpx 24rpx rgba(246,164,76,0.2) !important;
+}
+
+.budget-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.budget-desc {
+  font-size: 22rpx;
+  color: rgba(0,0,0,0.6);
+}
+
+/* ========== 第3页：审美语气 ========== */
+.style-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16rpx;
+}
+
+.style-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32rpx 16rpx;
+  background: rgba(255,255,255,0.3);
+  border: 2rpx solid transparent;
+  border-radius: 20rpx;
+  transition: all 300ms ease;
+  text-align: center;
+}
+
+.style-card.active {
+  background: rgba(246,164,76,0.15) !important;
+  border-color: #F6A44C !important;
+  box-shadow: 0 8rpx 24rpx rgba(246,164,76,0.2) !important;
+}
+
+.style-icon {
+  font-size: 40rpx;
+  margin-bottom: 8rpx;
+}
+
+.style-title {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.style-desc {
+  font-size: 20rpx;
+  color: rgba(0,0,0,0.6);
+}
+
+.tone-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.tone-card {
+  padding: 24rpx;
+  background: rgba(255,255,255,0.3);
+  border: 2rpx solid transparent;
+  border-radius: 16rpx;
+  transition: all 300ms ease;
+}
+
+.tone-card.active {
+  background: rgba(246,164,76,0.15) !important;
+  border-color: #F6A44C !important;
+  box-shadow: 0 8rpx 24rpx rgba(246,164,76,0.2) !important;
+}
+
+.tone-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.tone-sample {
+  font-size: 24rpx;
+  color: rgba(0,0,0,0.6);
+  font-style: italic;
+}
+
+/* ========== 底部按钮 ========== */
+.bottom-actions {
+  position: relative;
+  display: flex;
+  gap: 24rpx;
+  padding: 32rpx 0;
+  margin-top: 48rpx;
+}
+
+.btn-primary,
+.btn-secondary {
+  flex: 1;
+  height: 96rpx;
+  border-radius: 48rpx;
+  font-size: 32rpx;
+  font-weight: 600;
+  border: none;
+  transition: all 300ms ease;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #F6A44C 0%, #FF8A3D 100%);
+  color: #fff;
+  box-shadow: 0 8rpx 24rpx rgba(246,164,76,0.3);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+.btn-secondary {
+  background: rgba(255,255,255,0.8);
+  color: #666;
+  border: 2rpx solid rgba(0,0,0,0.1);
+}
+
+.btn-secondary:active {
+  transform: scale(0.98);
+}

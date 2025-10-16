@@ -1,0 +1,213 @@
+<!-- pages/home/index.wxml - V3.1 气质升级版 -->
+<view class="page {{weatherTheme.baseClass}} {{weatherTheme.type}}" style="background: {{weatherTheme.bg}};">
+
+<!-- 天气动画层 - 极简版 -->
+<view class="weather-animations">
+  
+<!-- 雨滴/雪花/冰雹 -->
+<view class="raindrops" wx:if="{{raindrops.length > 0 && enableAnimations}}">
+  <view
+    wx:for="{{raindrops}}"
+    wx:key="*this"
+    class="{{ item.isSnow ? 'snowflake-light' : 'raindrop-light' }}"
+    style="left: {{item.left + '%'}}; animation-delay: {{item.delay + 'ms'}}; animation-duration: {{item.duration + 'ms'}}; width: {{(item.size || item.w || 2) + 'rpx'}}; height: {{(item.size || item.h || 22) + 'rpx'}}; opacity: {{item.opacity || 0.6}};">
+  </view>
+</view>
+
+  <!-- 夜空层（包含月亮+云+星星） -->
+  <view
+    class="celestial-layer"
+    wx:if="{{enableAnimations && (weatherTheme.showMoon || nightClouds.length > 0)}}"
+  >
+    <view class="moon-wrapper" wx:if="{{weatherTheme.showMoon}}">
+      <view class="moon-glow"></view>
+      <view class="moon-core"></view>
+    </view>
+
+    <view class="night-cloud-layer" wx:if="{{nightClouds.length > 0}}">
+      <view
+        class="night-cloud"
+        wx:for="{{nightClouds}}"
+        wx:key="index"
+        style="left: {{item.left + '%'}}; top: {{item.top + '%'}}; width: {{item.width + 'rpx'}}; height: {{item.height + 'rpx'}}; opacity: {{item.opacity}}; animation-duration: {{item.duration + 'ms'}}; animation-delay: {{item.delay + 'ms'}};"
+      ></view>
+    </view>
+  </view>
+
+  <!-- 星星（仅夜晚） -->
+  <view class="stars" wx:if="{{stars.length > 0 && enableAnimations}}">
+    <view class="star-light" 
+      wx:for="{{stars}}" 
+      wx:key="*this"
+      style="left: {{item.left + '%'}}; top: {{item.top + '%'}}; animation-delay: {{item.delay + 'ms'}}; opacity: {{item.opacity}};">
+    </view>
+  </view>
+</view>
+  
+  <!-- AI问候语 - 顶部轻盈样式 -->
+  <view class="ai-greeting-top" wx:if="{{aiGreeting}}">
+    <text class="greeting-text">"{{aiGreeting}}"</text>
+  </view>
+
+<!-- 天气核心信息 - 中心焦点 -->
+<view class="weather-hero">
+  <view class="hero-main">
+    <view class="temp-line">
+      <image class="weather-icon" src="{{weatherIconUrl}}" mode="aspectFit" />
+      <text class="hero-temp">{{weather.now.temp || '--'}}°</text>
+    </view>
+
+    <text class="hero-desc">{{weather.now.text || '获取中'}}</text>
+    <text class="hero-temp-range">最高 {{weather.daily.max}}° 最低 {{weather.daily.min}}°</text>
+
+    <!-- ✅ 恢复位置行 -->
+    <view class="hero-location">
+      <text class="location-icon">•</text>
+      <text class="location-text">{{cityName}}</text>
+    </view>
+  </view>
+</view>
+
+  <!-- 日期与节气信息 -->
+  <view class="date-info-card">
+  <view class="date-row">
+    <text class="date-text">{{dateYmd}}</text>
+    <text class="weekday-text">{{weekday}}</text>
+    <text class="lunar-text" wx:if="{{lunar.lunarDate}}">{{lunar.lunarDate}}</text>
+  </view>
+  
+  <view class="solar-term-tag" wx:if="{{solarTerm && solarTerm.name}}">
+    <text class="term-name">{{solarTerm.name}}</text>
+  </view>
+</view>
+
+<!-- 今日餐单卡片 - 玻璃拟态 -->
+<view class="glass-card meal-card" bindtap="goDiet">
+  <view class="card-header">
+    <view class="header-left">
+      <text class="card-emoji">🍱</text>
+      <text class="card-title">今日餐单</text>
+    </view>
+    <text class="card-arrow">›</text>
+  </view>
+  
+  <view class="meal-preview" wx:if="{{todayMenu.length > 0}}">
+    <view class="meal-simple-list">
+      <text class="meal-dish-name" wx:for="{{todayMenu}}" wx:key="id">
+        {{item.name}}
+      </text>
+    </view>
+    
+    <view class="meal-explain" wx:if="{{mealExplain}}">
+      <text class="explain-icon">💭</text>
+      <text class="explain-text">{{mealExplain}}</text>
+    </view>
+  </view>
+  
+  <view class="meal-placeholder" wx:else>
+    <text class="placeholder-icon">🍽️</text>
+    <text class="placeholder-text">轻触生成今日菜单</text>
+  </view>
+</view>
+
+  <!-- 今日任务卡片 - 玻璃拟态 -->
+  <view class="glass-card tasks-card">
+    <view class="card-header">
+      <view class="header-left">
+        <text class="card-emoji">✓</text>
+        <text class="card-title">今日任务</text>
+      </view>
+    </view>
+    
+    <view class="task-list">
+      <view class="task-item" bindtap="goChores">
+        <text class="task-icon">🧹</text>
+        <view class="task-content">
+          <text class="task-title">家务管理</text>
+          <text class="task-desc" wx:if="{{helpersV3.length > 0}}">{{helpersV3[0].type}}协助日</text>
+          <text class="task-desc" wx:else>日常清理</text>
+        </view>
+        <text class="task-arrow">›</text>
+      </view>
+
+      <view class="task-item" bindtap="goStudy" wx:if="{{profile.total_members > 2 || profile.has_child}}">
+        <text class="task-icon">📚</text>
+        <view class="task-content">
+          <text class="task-title">学习安排</text>
+          <text class="task-desc">阅读 20min</text>
+        </view>
+        <text class="task-arrow">›</text>
+      </view>
+
+      <view class="task-item" wx:if="{{weather.now.temp < 15}}">
+        <text class="task-icon">💧</text>
+        <view class="task-content">
+          <text class="task-title">健康提醒</text>
+          <text class="task-desc">天冷注意保暖，多喝温水</text>
+        </view>
+      </view>
+
+      <view class="task-item highlight" bindtap="showPeopleAdjuster" wx:if="{{activeOverrides.length > 0}}">
+        <text class="task-icon">👥</text>
+        <view class="task-content">
+          <text class="task-title">{{activeOverrides[0].reason}}安排</text>
+          <text class="task-desc">当前{{currentPeople}}人用餐</text>
+        </view>
+        <text class="task-arrow">›</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- AI优化提示 -->
+  <view class="ai-badge" wx:if="{{userDataV3.isV3}}">
+    <text class="badge-icon">🍃</text>
+    <text class="badge-text">AI 已优化</text>
+  </view>
+
+  <!-- 事件提醒 -->
+  <view class="glass-card events-card" wx:if="{{events.length > 0}}">
+    <view class="card-header">
+      <view class="header-left">
+        <text class="card-emoji">📅</text>
+        <text class="card-title">近期安排</text>
+      </view>
+      <text class="event-badge">{{events.length}}</text>
+    </view>
+    
+    <view class="events-list">
+      <view class="event-item" wx:for="{{events}}" wx:key="_id" wx:if="{{index < 2}}">
+        <text class="event-date">{{item.time}}</text>
+        <text class="event-title">{{item.title}}</text>
+        <view class="event-pin" wx:if="{{item.pin}}">📌</view>
+      </view>
+      
+      <view class="more-events" wx:if="{{events.length > 2}}" bindtap="goAddEvent">
+        <text class="more-text">还有 {{events.length - 2}} 项</text>
+        <text class="more-arrow">›</text>
+      </view>
+    </view>
+  </view>
+
+<!-- 调试按钮 -->
+<view class="debug-fab" wx:if="{{__DEV__}}" bindtap="toggleDebug">
+  <text>🛠</text>
+</view>
+
+<!-- V3.3 完整调试面板 -->
+<view class="debug-panel" wx:if="{{showDebugPanel}}">
+  <view class="debug-header">
+    <text class="debug-title">🔍 天气调试面板</text>
+    <text class="debug-close" bindtap="toggleDebugPanel">×</text>
+  </view>
+
+  <!-- ……（面板内部的所有 section 保持你现在的内容，不变）…… -->
+
+  <view class="debug-info">
+    <text>当前主题: {{weatherTheme.type || 'default'}}</text>
+    <text>性能模式: {{performanceMode}}</text>
+    <text>动画启用: {{enableAnimations ? '是' : '否'}}</text>
+  </view>
+</view>
+
+<!-- ✅ 只保留这一枚，关闭最外层 .page -->
+</view>

@@ -1,0 +1,22 @@
+<view class="page">
+  <block wx:if="{{groups && groups.length}}">
+    <block wx:for="{{groups}}" wx:key="date">
+      <view class="date">{{item.date}}（{{item.items.length}}）</view>
+      <block wx:for="{{item.items}}" wx:key="_id">
+        <view class="card">
+          <view class="row">
+            <view class="title">{{item.name || item.skuId}}</view>
+            <view class="sub">×{{item.qty}}</view>
+          </view>
+          <view class="sub">
+            {{item.brand || ''}} {{item.unitPrice ? ('· ¥' + item.unitPrice) : ''}}
+            · {{item.time}}
+          </view>
+        </view>
+      </block>
+    </block>
+    <view class="more" wx:if="{{hasMore}}" bindtap="loadMore">加载更多</view>
+  </block>
+
+  <view class="empty" wx:else>暂无记录</view>
+</view>

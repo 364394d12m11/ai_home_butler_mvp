@@ -1,0 +1,16 @@
+{
+  "triggers": [
+    { "name": "notifySchedule_0730", "type": "timer", "config": "0 30 7 * * *",  "enable": true },
+    { "name": "notifySchedule_2000", "type": "timer", "config": "0 0 20 * * *",  "enable": true }
+  ],
+  "environmentVariables": {
+    "TZ": "Asia/Shanghai",
+
+    "EVENT_TMPL_ID": "X4mKWeNwTGTjbEeyDnCZmzEB1xuPnk5OGVUnDwN2_Gg",
+    "NOTIFY_PAGE": "/pages/events/list",
+
+    "FIELD_TITLE": "thing1",
+    "FIELD_DATE":  "time2",
+    "FIELD_TYPE":  "thing3"
+  }
+}

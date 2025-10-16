@@ -1,0 +1,15 @@
+<view class="cell"><text class="label">标题</text>
+  <input value="{{title}}" bindinput="onTitle" placeholder="如：足球训练 / 还款" maxlength="30"/></view>
+
+<view class="cell"><text class="label">日期</text>
+  <picker mode="date" value="{{date}}" bindchange="onDate"><view class="picker">{{date}}</view></picker></view>
+
+<view class="cell"><text class="label">类型</text>
+  <picker range="{{types}}" value="{{typeIdx}}" bindchange="onType"><view class="picker">{{types[typeIdx]}}</view></picker></view>
+
+<view class="cell"><text class="label">提醒</text>
+  <picker range="{{remindOptsTxt}}" value="{{remindIdx}}" bindchange="onRemind"><view class="picker">{{remindOptsTxt[remindIdx]}}</view></picker></view>
+
+<view class="cell row"><text class="label">置顶</text><switch checked="{{pin}}" bindchange="onPin"/></view>
+
+<button class="primary" bindtap="onSubmit">保存</button>

@@ -1,0 +1,70 @@
+{
+  "pages": [
+    "pages/home/index",
+    "pages/onboarding/index",
+    "pages/events/list",
+    "pages/events/edit",
+    "pages/events/new/index",
+    "pages/diet/index",
+    "pages/diet/detail",
+    "pages/diet/random",
+    "pages/diet/customize/index",
+    "pages/diet/taste-setup/index",
+    "pages/diet/inventory/index",
+    "pages/diet/after-meal/index",
+    "pages/study/index",
+    "pages/chores/index",
+    "pages/parcel/index",
+    "pages/health/index",
+    "pages/reports/index",
+    "pages/reports/detail/index",
+    "pages/replenish/index",
+    "pages/replenish/history/index",
+    "pages/replenish/new/index",
+    "pages/profile/index",
+    "pages/profile/tone/index",
+    "pages/reports/reflection/index"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTitleText": "小橙子",
+    "navigationBarTextStyle": "black"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#ff9933",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/home/index",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/diet/index",
+        "text": "饮食"
+      },
+      {
+        "pagePath": "pages/events/list",
+        "text": "日程"
+      },
+      {
+        "pagePath": "pages/reports/index",
+        "text": "报告"
+      },
+      {
+        "pagePath": "pages/profile/index",
+        "text": "我的"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "cloud": true,
+  "lazyCodeLoading": "requiredComponents",
+  "permission": {
+    "scope.userLocation": { "desc": "用于获取您所在城市的天气与建议" }
+  },
+  "requiredPrivateInfos": ["getLocation"]
+}

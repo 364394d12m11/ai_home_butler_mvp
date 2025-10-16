@@ -1,0 +1,8 @@
+{
+  "triggers": [
+    { "name": "cronWeeklyReport_0740", "type": "timer", "config": "0 40 7 * * 1", "enable": true }
+  ],
+  "environmentVariables": {
+    "TZ": "Asia/Shanghai"
+  }
+}

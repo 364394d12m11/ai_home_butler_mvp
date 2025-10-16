@@ -1,0 +1,291 @@
+<view class="page">
+  <!-- 进度指示器 -->
+  <view class="progress-bar">
+    <view class="progress-step {{currentStep>=1?'active':''}}" data-step="1" bindtap="jumpToStep">
+      <text class="step-number">1</text>
+      <text class="step-name">就餐参数</text>
+    </view>
+    <view class="progress-step {{currentStep>=2?'active':''}}" data-step="2" bindtap="jumpToStep">
+      <text class="step-number">2</text>
+      <text class="step-name">菜品选择</text>
+    </view>
+    <view class="progress-step {{currentStep>=3?'active':''}}" data-step="3" bindtap="jumpToStep">
+      <text class="step-number">3</text>
+      <text class="step-name">采购清单</text>
+    </view>
+    <view class="progress-step {{currentStep>=4?'active':''}}" data-step="4" bindtap="jumpToStep">
+      <text class="step-number">4</text>
+      <text class="step-name">分派执行</text>
+    </view>
+  </view>
+
+  <!-- 步骤1：就餐参数 -->
+  <view class="step-content" wx:if="{{currentStep==1}}">
+    <view class="step-header">
+      <text class="step-title">🍽️ 明日就餐安排</text>
+      <text class="step-desc">设置用餐人数和餐次</text>
+    </view>
+    
+    <view class="param-section">
+      <view class="param-item">
+        <text class="param-label">用餐人数</text>
+        <view class="counter-group">
+          <view class="counter">
+            <text class="counter-label">成人</text>
+            <view class="counter-control">
+              <button class="counter-btn" bindtap="changeCount" data-type="adults" data-delta="-1">-</button>
+              <text class="counter-value">{{mealParams.adults}}</text>
+              <button class="counter-btn" bindtap="changeCount" data-type="adults" data-delta="1">+</button>
+            </view>
+          </view>
+          <view class="counter">
+            <text class="counter-label">儿童</text>
+            <view class="counter-control">
+              <button class="counter-btn" bindtap="changeCount" data-type="kids" data-delta="-1">-</button>
+              <text class="counter-value">{{mealParams.kids}}</text>
+              <button class="counter-btn" bindtap="changeCount" data-type="kids" data-delta="1">+</button>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="param-item">
+        <text class="param-label">餐次安排</text>
+        <view class="meal-options">
+          <view class="meal-option {{mealParams.breakfast?'selected':''}}" bindtap="toggleMeal" data-meal="breakfast">
+            <text class="meal-icon">🌅</text>
+            <text class="meal-name">早餐</text>
+          </view>
+          <view class="meal-option {{mealParams.lunch?'selected':''}}" bindtap="toggleMeal" data-meal="lunch">
+            <text class="meal-icon">☀️</text>
+            <text class="meal-name">午餐</text>
+          </view>
+          <view class="meal-option {{mealParams.dinner?'selected':''}}" bindtap="toggleMeal" data-meal="dinner">
+            <text class="meal-icon">🌆</text>
+            <text class="meal-name">晚餐</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="param-item" wx:if="{{mealParams.lunch || mealParams.dinner}}">
+        <text class="param-label">每餐菜数</text>
+        <view class="dish-count-options">
+          <view class="count-option {{mealParams.dishCount==2?'selected':''}}" bindtap="setDishCount" data-count="2">
+            2菜 · 简单
+          </view>
+          <view class="count-option {{mealParams.dishCount==3?'selected':''}}" bindtap="setDishCount" data-count="3">
+            3菜 · 标准
+          </view>
+          <view class="count-option {{mealParams.dishCount==4?'selected':''}}" bindtap="setDishCount" data-count="4">
+            4菜 · 丰富
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <button class="next-btn" bindtap="nextStep" disabled="{{!canGoNext}}">
+      下一步：开始选菜
+    </button>
+  </view>
+
+  <!-- 步骤2：菜品选择 -->
+  <view class="step-content" wx:if="{{currentStep==2}}">
+    <view class="step-header">
+      <text class="step-title">🍳 智能推荐菜品</text>
+      <text class="step-desc">为您精选符合调性的菜品</text>
+    </view>
+
+    <view class="meal-selector">
+      <view class="meal-tabs">
+        <view class="meal-tab {{activeMeal=='breakfast'?'active':''}}" 
+              wx:if="{{mealParams.breakfast}}" 
+              bindtap="switchMeal" data-meal="breakfast">早餐</view>
+        <view class="meal-tab {{activeMeal=='lunch'?'active':''}}" 
+              wx:if="{{mealParams.lunch}}" 
+              bindtap="switchMeal" data-meal="lunch">午餐</view>
+        <view class="meal-tab {{activeMeal=='dinner'?'active':''}}" 
+              wx:if="{{mealParams.dinner}}" 
+              bindtap="switchMeal" data-meal="dinner">晚餐</view>
+      </view>
+
+      <view class="dish-selection">
+        <view class="selection-header">
+          <text class="selection-title">{{activeMealName}} ({{selectedDishes[activeMeal].length}}/{{mealParams.dishCount}})</text>
+          <button class="regenerate-btn" bindtap="regenerateDishes">🎲 换一批</button>
+        </view>
+
+        <view class="dish-grid">
+          <view class="dish-candidate {{item.locked?'locked':''}}" 
+                wx:for="{{candidateDishes[activeMeal]}}" wx:key="id"
+                bindtap="toggleDish" data-dish="{{item}}">
+            <view class="dish-header">
+              <text class="dish-emoji">{{item.emoji}}</text>
+              <view class="dish-status">
+                <text class="lock-icon" wx:if="{{item.locked}}">🔒</text>
+                <text class="select-icon" wx:elif="{{item.selected}}">✅</text>
+              </view>
+            </view>
+            <text class="dish-name">{{item.name}}</text>
+            <view class="dish-meta">
+              <text class="dish-time">{{item.time}}分</text>
+              <text class="dish-cost cost-{{item.cost}}">{{item.costLabel}}</text>
+            </view>
+            <view class="dish-tags">
+              <text class="dish-tag" wx:for="{{item.tags}}" wx:key="*this">{{item}}</text>
+            </view>
+          </view>
+        </view>
+
+        <view class="selection-tips">
+          <text class="tip-text">💡 点击菜品选择，再次点击可锁定避免被替换</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="step-actions">
+      <button class="prev-btn" bindtap="prevStep">上一步</button>
+      <button class="next-btn" bindtap="nextStep" disabled="{{!allMealsSelected}}">
+        下一步：生成采购清单
+      </button>
+    </view>
+  </view>
+
+  <!-- 步骤3：采购清单 -->
+  <view class="step-content" wx:if="{{currentStep==3}}">
+    <view class="step-header">
+      <text class="step-title">🛒 智能采购清单</text>
+      <text class="step-desc">已自动合并食材并扣除库存</text>
+    </view>
+
+    <view class="shopping-summary">
+      <view class="summary-item">
+        <text class="summary-label">总计食材</text>
+        <text class="summary-value">{{shoppingList.length}}项</text>
+      </view>
+      <view class="summary-item">
+        <text class="summary-label">预计金额</text>
+        <text class="summary-value">{{estimatedCost}}元</text>
+      </view>
+    </view>
+
+    <view class="shopping-categories">
+      <view class="category-section" wx:for="{{shoppingCategories}}" wx:key="name">
+        <view class="category-header">
+          <text class="category-name">{{item.name}}</text>
+          <text class="category-count">{{item.items.length}}项</text>
+        </view>
+        <view class="category-items">
+          <view class="shopping-item" wx:for="{{item.items}}" wx:key="name" wx:for-item="product">
+            <text class="item-name">{{product.name}}</text>
+            <text class="item-spec">{{product.spec}}</text>
+            <text class="item-price">¥{{product.price}}</text>
+            <button class="remove-item" bindtap="removeShoppingItem" data-item="{{product}}">移除</button>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="inventory-excluded" wx:if="{{excludedItems.length}}">
+      <view class="excluded-header">
+        <text class="excluded-title">✅ 已有库存 (无需购买)</text>
+      </view>
+      <view class="excluded-list">
+        <text class="excluded-item" wx:for="{{excludedItems}}" wx:key="*this">{{item}}</text>
+      </view>
+    </view>
+
+    <view class="step-actions">
+      <button class="prev-btn" bindtap="prevStep">上一步</button>
+      <button class="next-btn" bindtap="nextStep">下一步：分派执行</button>
+    </view>
+  </view>
+
+  <!-- 步骤4：分派执行 -->
+  <view class="step-content" wx:if="{{currentStep==4}}">
+    <view class="step-header">
+      <text class="step-title">👥 分派采购任务</text>
+      <text class="step-desc">选择执行方式和负责人</text>
+    </view>
+
+    <view class="assignment-options">
+      <view class="option-group">
+        <text class="group-title">采购方式</text>
+        <view class="purchase-methods">
+          <view class="method-option {{purchaseMethod=='self'?'selected':''}}" 
+                bindtap="setPurchaseMethod" data-method="self">
+            <text class="method-icon">🚶</text>
+            <text class="method-name">我自己买</text>
+          </view>
+          <view class="method-option {{purchaseMethod=='staff'?'selected':''}}" 
+                bindtap="setPurchaseMethod" data-method="staff">
+            <text class="method-icon">👨‍🍳</text>
+            <text class="method-name">委托代买</text>
+          </view>
+          <view class="method-option {{purchaseMethod=='online'?'selected':''}}" 
+                bindtap="setPurchaseMethod" data-method="online">
+            <text class="method-icon">📱</text>
+            <text class="method-name">线上下单</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="option-group" wx:if="{{purchaseMethod=='staff'}}">
+        <text class="group-title">指派给</text>
+        <view class="staff-options">
+          <view class="staff-option {{assignee=='nanny'?'selected':''}}" 
+                bindtap="setAssignee" data-assignee="nanny">
+            <text class="staff-name">阿姨</text>
+          </view>
+          <view class="staff-option {{assignee=='driver'?'selected':''}}" 
+                bindtap="setAssignee" data-assignee="driver">
+            <text class="staff-name">司机</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="option-group" wx:if="{{purchaseMethod=='online'}}">
+        <text class="group-title">平台选择</text>
+        <view class="platform-options">
+          <view class="platform-option {{platform=='meituan'?'selected':''}}" 
+                bindtap="setPlatform" data-platform="meituan">
+            <text class="platform-name">美团买菜</text>
+            <text class="platform-desc">快速配送</text>
+          </view>
+          <view class="platform-option {{platform=='jd'?'selected':''}}" 
+                bindtap="setPlatform" data-platform="jd">
+            <text class="platform-name">京东到家</text>
+            <text class="platform-desc">品质保证</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="export-options">
+      <text class="export-title">导出清单</text>
+      <view class="export-methods">
+        <button class="export-btn" bindtap="exportAsImage">📸 保存图片</button>
+        <button class="export-btn" bindtap="copyShoppingList">📋 复制文本</button>
+        <button class="export-btn" wx:if="{{purchaseMethod=='online'}}" bindtap="jumpToPlatform">
+          🔗 跳转{{platformName}}
+        </button>
+      </view>
+    </view>
+
+    <view class="final-summary">
+      <view class="summary-card">
+        <text class="summary-title">明日菜单已定制完成</text>
+        <view class="summary-details">
+          <text class="detail-item">📅 {{tomorrowDate}}</text>
+          <text class="detail-item">🍽️ {{totalMeals}}餐 {{totalDishes}}道菜</text>
+          <text class="detail-item">🛒 {{shoppingList.length}}项采购</text>
+          <text class="detail-item">👤 执行人：{{assigneeName}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="step-actions">
+      <button class="prev-btn" bindtap="prevStep">上一步</button>
+      <button class="finish-btn" bindtap="finishCustomization">✅ 完成定制</button>
+    </view>
+  </view>
+</view>

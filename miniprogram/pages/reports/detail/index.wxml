@@ -1,0 +1,73 @@
+<view class="page" wx:if="{{!loading}}">
+
+<view class="header">
+  <view class="title">{{report.title}}</view>
+  <view class="sub">{{report.displayRange}}</view>
+</view>
+
+<view class="meta">
+  <text>总条数 {{report.total || 0}}</text>
+  <text wx:if="{{report.pinned}}"> · 置顶 {{report.pinned}}</text>
+</view>
+
+<!-- 整体建议（如果你的文档里有） -->
+<view class="section" wx:if="{{report.suggestions && report.suggestions.length}}">
+  <view class="sec-title">建议</view>
+  <block wx:for="{{report.suggestions}}" wx:key="*this">
+    <view class="line">· {{item}}</view>
+  </block>
+</view>
+
+<!-- 事件汇总（如果你的文档里有） -->
+<view class="section" wx:if="{{report.events && report.events.length}}">
+  <view class="sec-title">事件</view>
+  <block wx:for="{{report.events}}" wx:key="title">
+    <view class="row">
+      <text class="left">{{item.title}}</text>
+      <text class="right sub">{{item.time || ''}} {{item.type || ''}}</text>
+    </view>
+  </block>
+</view>
+
+<!-- 逐日块（日报/周报里通常会有 days 数组） -->
+<view class="section" wx:if="{{report.days && report.days.length}}">
+  <view class="sec-title">逐日</view>
+  <block wx:for="{{report.days}}" wx:key="ymd">
+    <view class="card">
+      <view class="row head">
+        <view>
+          <view class="date">{{item.ymd}}</view>
+          <view class="sub" wx:if="{{item.week || item.lunar}}">{{item.week || ''}} {{item.lunar || ''}}</view>
+        </view>
+        <view class="weather" wx:if="{{item.weather}}">
+          <text>{{item.weather.text || ''}}</text>
+          <text wx:if="{{item.weather.temp}}"> · {{item.weather.temp}}°C</text>
+        </view>
+      </view>
+
+      <view class="block-title" wx:if="{{item.suggestions && item.suggestions.length}}">建议</view>
+      <view class="sugs" wx:if="{{item.suggestions && item.suggestions.length}}">
+        <block wx:for="{{item.suggestions}}" wx:key="*this">
+          <view class="sug">· {{item}}</view>
+        </block>
+      </view>
+
+      <view class="block-title" wx:if="{{item.events && item.events.length}}">重要事件</view>
+      <block wx:if="{{item.events && item.events.length}}">
+        <block wx:for="{{item.events}}" wx:key="title">
+          <view class="row event">
+            <text class="evt-title">{{item.title}}</text>
+            <text class="evt-sub">{{item.time || ''}} {{item.type || ''}}</text>
+          </view>
+        </block>
+      </block>
+    </view>
+  </block>
+</view>
+
+<view class="empty" wx:if="{{!report || (!report.days && !report.events && !report.suggestions)}}">暂无更多内容</view>
+</view>
+
+<view class="page" wx:if="{{loading}}">
+<view class="empty">加载中…</view>
+</view>

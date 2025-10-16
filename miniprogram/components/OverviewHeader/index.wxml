@@ -1,0 +1,7 @@
+<view class="row">
+  <view>
+    <view class="title">{{weekday}} · {{dateYmd}}</view>
+    <view class="sub">农历 {{lunar.lunarDate}} {{lunar.lunarFestival ? '· ' + lunar.lunarFestival : ''}}</view>
+  </view>
+  <view class="tag" wx:if="{{holiday.name}}">{{holiday.name}}{{holiday.off?'·放假':''}}</view>
+</view>

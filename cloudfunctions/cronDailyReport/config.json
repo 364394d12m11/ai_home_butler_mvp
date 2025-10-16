@@ -1,0 +1,11 @@
+{
+  "triggers": [
+    { "name": "cronDailyReport_0730", "type": "timer", "config": "0 30 7 * * *", "enable": true },
+    { "name": "cronDailyReport_2000", "type": "timer", "config": "0 0 20 * * *", "enable": true }
+  ],
+  "environmentVariables": {
+    "TZ": "Asia/Shanghai",
+    "CITY_LAT": "31.2304",
+    "CITY_LNG": "121.4737"
+  }
+}

@@ -1,0 +1,195 @@
+<view class="page">
+  <!-- 头部说明 -->
+  <view class="header">
+    <text class="title">📸 饭后随手拍</text>
+    <text class="desc">AI将分析菜品受欢迎程度，优化明日推荐</text>
+  </view>
+
+  <!-- 拍照区域 -->
+  <view class="photo-section" wx:if="{{!photoTaken}}">
+    <view class="photo-tips">
+      <view class="tip-item">
+        <text class="tip-icon">💡</text>
+        <text class="tip-text">请拍摄用餐后的桌面全景</text>
+      </view>
+      <view class="tip-item">
+        <text class="tip-icon">📐</text>
+        <text class="tip-text">尽量包含所有菜品的剩余情况</text>
+      </view>
+      <view class="tip-item">
+        <text class="tip-icon">💡</text>
+        <text class="tip-text">光线充足效果更佳</text>
+      </view>
+    </view>
+
+    <view class="camera-area">
+      <camera class="camera" device-position="back" flash="off" binderror="cameraError">
+        <view class="camera-overlay">
+          <view class="guide-frame">
+            <text class="guide-text">将餐桌置于框内</text>
+          </view>
+        </view>
+      </camera>
+      
+      <view class="camera-controls">
+        <button class="gallery-btn" bindtap="chooseFromGallery">相册</button>
+        <button class="capture-btn" bindtap="takePhoto">拍照</button>
+        <button class="example-btn" bindtap="showExample">示例</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 照片分析区域 -->
+  <view class="analysis-section" wx:if="{{photoTaken}}">
+    <view class="photo-preview">
+      <image class="preview-image" src="{{photoPath}}" mode="aspectFit"/>
+      <button class="retake-btn" bindtap="retakePhoto">重新拍摄</button>
+    </view>
+
+    <!-- 分析状态 -->
+    <view class="analysis-status">
+      <view class="status-item {{analysisStep>=1?'completed':'current'}}" wx:if="{{analysisStep>=1||analysisStep==1}}">
+        <text class="status-icon">{{analysisStep>1?'✅':'🔄'}}</text>
+        <text class="status-text">识别菜品种类</text>
+        <text class="status-detail" wx:if="{{identifiedDishes.length}}">找到{{identifiedDishes.length}}道菜</text>
+      </view>
+      
+      <view class="status-item {{analysisStep>=2?'completed':'current'}}" wx:if="{{analysisStep>=2||analysisStep==2}}">
+        <text class="status-icon">{{analysisStep>2?'✅':'🔄'}}</text>
+        <text class="status-text">分析剩余比例</text>
+        <text class="status-detail" wx:if="{{analysisStep>=2}}">计算受欢迎度</text>
+      </view>
+      
+      <view class="status-item {{analysisStep>=3?'completed':'current'}}" wx:if="{{analysisStep>=3||analysisStep==3}}">
+        <text class="status-icon">{{analysisStep>3?'✅':'🔄'}}</text>
+        <text class="status-text">学习偏好权重</text>
+        <text class="status-detail" wx:if="{{analysisStep>=3}}">更新推荐算法</text>
+      </view>
+    </view>
+
+    <!-- 分析结果 -->
+    <view class="analysis-results" wx:if="{{analysisStep>=3}}">
+      <view class="results-header">
+        <text class="results-title">🎯 分析结果</text>
+        <text class="confidence-score">可信度: {{overallConfidence}}%</text>
+      </view>
+
+      <view class="dish-analysis">
+        <view class="dish-result" wx:for="{{analysisResults}}" wx:key="name">
+          <view class="dish-header">
+            <text class="dish-name">{{item.name}}</text>
+            <view class="popularity-score {{item.popularityLevel}}">
+              <text class="popularity-text">{{item.popularityText}}</text>
+              <text class="popularity-percent">{{item.remainingPercent}}%剩余</text>
+            </view>
+          </view>
+          
+          <view class="dish-details">
+            <view class="remaining-bar">
+              <view class="bar-bg">
+                <view class="bar-fill" style="width: {{(100-item.remainingPercent) + '%'}}"></view>
+              </view>
+              <text class="bar-label">食用了{{100-item.remainingPercent}}%</text>
+            </view>
+            
+            <view class="impact-preview">
+              <text class="impact-text">
+                明日推荐概率: {{item.futureWeight > 0 ? '↑' : item.futureWeight < 0 ? '↓' : '→'}} 
+                {{Math.abs(item.futureWeight)}}%
+              </text>
+            </view>
+          </view>
+
+          <!-- 手动校正 -->
+          <view class="manual-correction" wx:if="{{item.showCorrection}}">
+            <text class="correction-title">手动校正剩余比例:</text>
+            <view class="correction-slider">
+              <slider class="slider" min="0" max="100" value="{{item.remainingPercent}}" 
+                      block-size="24" activeColor="#1890ff" backgroundColor="#f0f0f0"
+                      bindchange="correctRemaining" data-index="{{index}}"/>
+              <text class="slider-value">{{item.remainingPercent}}%</text>
+            </view>
+          </view>
+          
+          <button class="correct-btn" bindtap="toggleCorrection" data-index="{{index}}">
+            {{item.showCorrection ? '确认' : '校正'}}
+          </button>
+        </view>
+      </view>
+
+      <!-- 置信度不足提示 -->
+      <view class="low-confidence-tip" wx:if="{{overallConfidence < 70}}">
+        <text class="tip-icon">⚠️</text>
+        <text class="tip-text">识别置信度较低，建议手动校正或重新拍摄</text>
+      </view>
+    </view>
+
+    <!-- 学习效果预览 -->
+    <view class="learning-preview" wx:if="{{analysisStep>=3}}">
+      <view class="preview-header">
+        <text class="preview-title">📈 学习效果预览</text>
+      </view>
+      
+      <view class="learning-insights">
+        <view class="insight-item" wx:for="{{learningInsights}}" wx:key="*this">
+          <text class="insight-text">{{item}}</text>
+        </view>
+      </view>
+
+      <view class="recommendation-changes">
+        <text class="changes-title">明日菜单调整建议:</text>
+        <view class="change-list">
+          <view class="change-item increase" wx:for="{{recommendationChanges.increase}}" wx:key="*this">
+            <text class="change-icon">↗️</text>
+            <text class="change-text">增加 {{item}} 类菜品</text>
+          </view>
+          <view class="change-item decrease" wx:for="{{recommendationChanges.decrease}}" wx:key="*this">
+            <text class="change-icon">↘️</text>
+            <text class="change-text">减少 {{item}} 类菜品</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 底部操作 -->
+    <view class="bottom-actions" wx:if="{{analysisStep>=3}}">
+      <button class="action-btn secondary" bindtap="skipLearning">
+        跳过学习
+      </button>
+      <button class="action-btn primary" bindtap="confirmLearning">
+        确认并学习
+      </button>
+    </view>
+  </view>
+
+  <!-- 历史记录入口 -->
+  <view class="history-section" wx:if="{{!photoTaken}}">
+    <button class="history-btn" bindtap="viewHistory">
+      📊 查看学习历史
+    </button>
+  </view>
+
+  <!-- 示例弹窗 -->
+  <view class="modal {{showExample?'show':''}}" bindtap="closeExample">
+    <view class="modal-content" catchtap="">
+      <view class="modal-header">
+        <text class="modal-title">拍摄示例</text>
+        <text class="close-btn" bindtap="closeExample">✕</text>
+      </view>
+      <view class="modal-body">
+        <view class="example-images">
+          <view class="example-item">
+            <image class="example-image" src="/images/example-good.jpg" mode="aspectFit"/>
+            <text class="example-label good">✅ 推荐</text>
+            <text class="example-desc">角度合适，菜品清晰可见</text>
+          </view>
+          <view class="example-item">
+            <image class="example-image" src="/images/example-bad.jpg" mode="aspectFit"/>
+            <text class="example-label bad">❌ 不推荐</text>
+            <text class="example-desc">角度过高，菜品遮挡</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

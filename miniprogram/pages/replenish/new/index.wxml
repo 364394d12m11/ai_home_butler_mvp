@@ -1,0 +1,16 @@
+<!--pages/replenish/new/index.wxml-->
+<view style="padding:16px">
+  <view style="margin-bottom:12px">
+    <text>名称</text>
+    <input placeholder="如：抽纸" bindinput="onName"/>
+  </view>
+  <view style="margin-bottom:12px">
+    <text>数量</text>
+    <input type="number" placeholder="如：2" bindinput="onQty"/>
+  </view>
+  <view style="margin-bottom:12px">
+    <text>备注</text>
+    <input placeholder="可选" bindinput="onNote"/>
+  </view>
+  <button bindtap="save">保存</button>
+</view>

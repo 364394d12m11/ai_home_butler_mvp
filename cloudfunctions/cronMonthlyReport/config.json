@@ -1,0 +1,6 @@
+{
+  "triggers": [
+    { "name": "cronMonthlyReport_0810", "type": "timer", "config": "0 10 8 1 * *", "enable": true }
+  ],
+  "environmentVariables": { "TZ": "Asia/Shanghai" }
+}

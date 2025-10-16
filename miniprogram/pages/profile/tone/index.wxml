@@ -1,0 +1,69 @@
+<!-- pages/profile/tone/index.wxml - V4.1语气设置界面 -->
+<view class="tone-page">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <text class="page-title">AI语气风格</text>
+    <text class="page-subtitle">选择适合您家庭的AI表达方式</text>
+    <view class="help-btn" bindtap="showToneDescription">
+      <text class="help-text">说明</text>
+    </view>
+  </view>
+
+  <!-- 当前预览 -->
+  <view class="preview-section">
+    <view class="preview-header">
+      <text class="preview-title">当前效果预览</text>
+      <view class="refresh-btn" bindtap="regeneratePreview">
+        <text class="refresh-icon">🔄</text>
+        <text class="refresh-text">换一句</text>
+      </view>
+    </view>
+    <view class="preview-card">
+      <text class="preview-quote">"{{previewGreeting}}"</text>
+    </view>
+  </view>
+
+  <!-- 语气选项 -->
+  <view class="tone-options">
+    <view 
+      class="tone-option {{currentTone === item.key ? 'selected' : ''}}"
+      wx:for="{{toneOptions}}" 
+      wx:key="key"
+      bindtap="selectTone" 
+      data-tone="{{item.key}}"
+      style="--tone-color: {{item.color}}; --tone-bg: {{item.bgColor}};"
+    >
+      <view class="option-header">
+        <view class="option-emoji">{{item.emoji}}</view>
+        <view class="option-info">
+          <text class="option-name">{{item.name}}</text>
+          <text class="option-desc">{{item.desc}}</text>
+        </view>
+        <view class="option-check" wx:if="{{currentTone === item.key}}">
+          <text class="check-icon">✓</text>
+        </view>
+      </view>
+      
+      <view class="option-example">
+        <text class="example-label">示例：</text>
+        <text class="example-text">{{item.example}}</text>
+      </view>
+      
+      <view class="option-test" bindtap="testToneEffect" data-tone="{{item.key}}" catchtap="">
+        <text class="test-text">体验效果</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部说明 -->
+  <view class="bottom-tips">
+    <view class="tip-item">
+      <text class="tip-icon">💡</text>
+      <text class="tip-text">语气设置会立即应用到所有AI对话中</text>
+    </view>
+    <view class="tip-item">
+      <text class="tip-icon">🔄</text>
+      <text class="tip-text">您可以随时回来调整语气风格</text>
+    </view>
+  </view>
+</view>

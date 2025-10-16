@@ -1,0 +1,126 @@
+<view class="page" wx:if="{{!loading}}">
+  <!-- 菜品头图区域 -->
+  <view class="dish-header">
+    <view class="dish-emoji">{{dish.emoji || '🍽️'}}</view>
+    <view class="dish-info">
+      <text class="dish-name">{{dish.name}}</text>
+      <view class="dish-meta">
+        <text class="meta-item">⏱️ {{estimatedTime}}分钟</text>
+        <text class="meta-item">💰 {{dish.costLabel}}</text>
+        <text class="meta-item" wx:if="{{dish.spicy > 0}}">🌶️ {{dish.spicyLabel}}</text>
+      </view>
+      <view class="dish-tags">
+        <text class="tag" wx:for="{{tags}}" wx:key="*this">{{item}}</text>
+      </view>
+    </view>
+    
+    <!-- 操作按钮 -->
+    <view class="action-buttons">
+      <button class="action-btn favorite-btn {{favorited ? 'favorited' : ''}}" 
+              bindtap="toggleFavorite">
+        {{favorited ? '❤️' : '🤍'}}
+      </button>
+      <button class="action-btn share-btn" bindtap="shareDish">📤</button>
+    </view>
+  </view>
+
+  <!-- 快捷操作 -->
+  <view class="quick-actions">
+    <button class="quick-btn video-btn" bindtap="watchVideo">
+      <text class="btn-icon">📺</text>
+      <text class="btn-text">观看视频</text>
+    </button>
+    <button class="quick-btn menu-btn" bindtap="addToTodayMenu">
+      <text class="btn-icon">➕</text>
+      <text class="btn-text">加入菜单</text>
+    </button>
+    <button class="quick-btn shopping-btn" bindtap="generateShoppingList">
+      <text class="btn-icon">🛒</text>
+      <text class="btn-text">生成清单</text>
+    </button>
+  </view>
+
+  <!-- 营养信息 -->
+  <view class="section nutrition-section" wx:if="{{dish.nutritionInfo}}">
+    <view class="section-title">营养信息</view>
+    <view class="nutrition-grid">
+      <view class="nutrition-item">
+        <text class="nutrition-label">热量</text>
+        <text class="nutrition-value">{{dish.nutritionInfo.calories}}</text>
+      </view>
+      <view class="nutrition-item">
+        <text class="nutrition-label">蛋白质</text>
+        <text class="nutrition-value">{{dish.nutritionInfo.protein}}</text>
+      </view>
+      <view class="nutrition-item">
+        <text class="nutrition-label">纤维</text>
+        <text class="nutrition-value">{{dish.nutritionInfo.fiber}}</text>
+      </view>
+      <view class="nutrition-item">
+        <text class="nutrition-label">脂肪</text>
+        <text class="nutrition-value">{{dish.nutritionInfo.fat}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 用料清单 -->
+  <view class="section ingredients-section">
+    <view class="section-title">
+      <text>🥘 用料</text>
+      <text class="ingredient-count">{{ingredients.length}}种</text>
+    </view>
+    <view class="ingredients-list">
+      <view class="ingredient-item" wx:for="{{ingredients}}" wx:key="*this">
+        <text class="ingredient-name">{{item}}</text>
+        <text class="ingredient-spec">适量</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 制作步骤 -->
+  <view class="section steps-section">
+    <view class="section-title">
+      <text>📝 制作步骤</text>
+      <text class="steps-count">{{steps.length}}步</text>
+    </view>
+    <view class="steps-list">
+      <view class="step-item" wx:for="{{steps}}" wx:key="*this" wx:for-index="index">
+        <view class="step-number">{{index + 1}}</view>
+        <text class="step-content">{{item}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 制作提示 -->
+  <view class="section tips-section" wx:if="{{tips.length > 0}}">
+    <view class="section-title tips-header" bindtap="toggleTips">
+      <text>💡 制作提示</text>
+      <text class="expand-icon {{showTips ? 'expanded' : ''}}">▼</text>
+    </view>
+    <view class="tips-list {{showTips ? 'show' : ''}}">
+      <view class="tip-item" wx:for="{{tips}}" wx:key="*this">
+        <text class="tip-content">{{item}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 相关推荐 -->
+  <view class="section related-section" wx:if="{{relatedDishes.length > 0}}">
+    <view class="section-title">🔗 相关推荐</view>
+    <view class="related-dishes">
+      <view class="related-dish" 
+            wx:for="{{relatedDishes}}" wx:key="id"
+            bindtap="viewRelatedDish" data-id="{{item.id}}">
+        <text class="related-emoji">{{item.emoji}}</text>
+        <text class="related-name">{{item.name}}</text>
+        <text class="related-time">{{item.time}}分钟</text>
+      </view>
+    </view>
+  </view>
+</view>
+
+<!-- 加载状态 -->
+<view class="loading-container" wx:if="{{loading}}">
+  <view class="loading-spinner"></view>
+  <text class="loading-text">加载中...</text>
+</view>

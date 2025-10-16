@@ -1,0 +1,9 @@
+{
+  "navigationBarTitleText": "今日菜单",
+  "navigationBarBackgroundColor": "#fefbf8",
+  "navigationBarTextStyle": "black",
+  "backgroundColor": "#faf9f6",
+  "enablePullDownRefresh": true,
+  "onReachBottomDistance": 50,
+  "usingComponents": {}
+}
