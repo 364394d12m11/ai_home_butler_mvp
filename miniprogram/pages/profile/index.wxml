@@ -57,15 +57,16 @@
     <!-- 饮食与预算 -->
     <view class="setting-group">
       <view class="group-title">🍳 饮食与预算</view>
-      <view class="setting-item" bindtap="goToDietSettings">
-        <view class="item-left">
-          <text class="item-title">口味偏好</text>
-          <text class="item-desc">设置饮食习惯和禁忌</text>
-        </view>
-        <view class="item-right">
-          <text class="item-arrow">›</text>
-        </view>
-      </view>
+<!-- 把 "口味偏好" 改为 "饮食偏好设置" -->
+<view class="setting-item" bindtap="goToDietSettings">
+  <view class="item-left">
+    <text class="item-title">饮食偏好设置</text>  <!-- ✅ 改这里 -->
+    <text class="item-desc">目标、口味、禁忌、预算</text>  <!-- ✅ 改这里 -->
+  </view>
+  <view class="item-right">
+    <text class="item-arrow">›</text>
+  </view>
+</view>
       <view class="setting-item" bindtap="selectBudgetLevel">
         <view class="item-left">
           <text class="item-title">预算等级</text>

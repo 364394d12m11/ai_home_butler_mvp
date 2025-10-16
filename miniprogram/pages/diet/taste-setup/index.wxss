@@ -1,289 +1,264 @@
-/* 页面基础样式 */
+/* pages/diet/taste-setup/index.wxss - V5.3 */
+
 .page {
-  padding: 24rpx;
-  background: #f8f9fa;
+  padding: 32rpx;
+  padding-bottom: 200rpx;
+  background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%);
   min-height: 100vh;
 }
 
-/* 头部样式 */
+/* 头部 */
 .header {
+  margin-bottom: 48rpx;
   text-align: center;
-  margin-bottom: 40rpx;
 }
 
 .title {
   display: block;
-  font-size: 36rpx;
-  font-weight: 700;
+  font-size: 48rpx;
+  font-weight: 600;
   color: #1a1a1a;
-  margin-bottom: 12rpx;
+  margin-bottom: 16rpx;
 }
 
 .subtitle {
+  display: block;
+  font-size: 28rpx;
   color: #666;
-  font-size: 26rpx;
-  line-height: 1.5;
+  margin-bottom: 16rpx;
 }
 
-/* 区块样式 */
+.first-tip {
+  display: block;
+  font-size: 26rpx;
+  color: #ff6b6b;
+  margin-top: 16rpx;
+  padding: 16rpx 24rpx;
+  background: #fff5f5;
+  border-radius: 12rpx;
+  border: 2rpx solid #ffe3e3;
+}
+
+/* 区块 */
 .section {
+  margin-bottom: 48rpx;
   background: white;
-  border-radius: 20rpx;
+  border-radius: 24rpx;
   padding: 32rpx;
-  margin-bottom: 24rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.04);
 }
 
 .section-header {
-  margin-bottom: 24rpx;
+  margin-bottom: 32rpx;
 }
 
 .section-title {
   display: block;
-  font-size: 30rpx;
+  font-size: 32rpx;
   font-weight: 600;
-  color: #333;
+  color: #1a1a1a;
   margin-bottom: 8rpx;
 }
 
 .section-desc {
-  color: #999;
-  font-size: 24rpx;
-}
-
-/* 消费层级样式 */
-.level-options {
-  display: flex;
-  flex-direction: column;
-  gap: 12rpx;
-}
-
-.level-option {
-  background: #f8f9fa;
-  border-radius: 16rpx;
-  padding: 24rpx;
-  border: 3rpx solid transparent;
-  transition: all 0.3s;
-}
-
-.level-option.selected {
-  background: linear-gradient(135deg, #e6f7ff 0%, #f0f9ff 100%);
-  border-color: #1890ff;
-}
-
-.level-name {
   display: block;
+  font-size: 24rpx;
+  color: #999;
+}
+
+/* 子标题 */
+.subsection-title {
   font-size: 28rpx;
   font-weight: 600;
-  margin-bottom: 8rpx;
   color: #333;
+  margin: 24rpx 0 16rpx 0;
 }
 
-.level-desc {
-  color: #666;
-  font-size: 24rpx;
-  line-height: 1.4;
+.kids-section {
+  margin-top: 32rpx;
+  padding-top: 32rpx;
+  border-top: 2rpx solid #f0f0f0;
 }
 
-/* 风格偏好样式 */
-.aesthetic-options {
+/* 饮食目标卡片 */
+.goal-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, 1fr);
   gap: 16rpx;
 }
 
-.aesthetic-option {
+.goal-card {
   background: #f8f9fa;
+  border: 3rpx solid #e9ecef;
   border-radius: 16rpx;
   padding: 24rpx;
-  text-align: center;
-  border: 3rpx solid transparent;
-  transition: all 0.3s;
+  transition: all 0.3s ease;
+  position: relative;
 }
 
-.aesthetic-option.selected {
-  background: linear-gradient(135deg, #e6f7ff 0%, #f0f9ff 100%);
-  border-color: #1890ff;
+.goal-card.selected {
+  background: #fff4e6;
+  border-color: #ff9933;
+  box-shadow: 0 4rpx 12rpx rgba(255, 153, 51, 0.15);
 }
 
-.option-emoji {
-  display: block;
-  font-size: 40rpx;
-  margin-bottom: 12rpx;
+.goal-card.selected::after {
+  content: '✓';
+  position: absolute;
+  top: 8rpx;
+  right: 8rpx;
+  width: 40rpx;
+  height: 40rpx;
+  background: #ff9933;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  font-weight: bold;
 }
 
-.option-name {
-  display: block;
-  font-size: 26rpx;
+.goal-title {
+  font-size: 28rpx;
   font-weight: 600;
-  color: #333;
+  color: #1a1a1a;
+  margin-bottom: 8rpx;
 }
 
-/* 菜系偏好样式 */
+.goal-desc {
+  font-size: 22rpx;
+  color: #666;
+  line-height: 1.5;
+}
+
+/* 过敏/禁忌标签 */
+.allergy-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.allergy-tag {
+  padding: 16rpx 24rpx;
+  background: #f8f9fa;
+  border: 3rpx solid #e9ecef;
+  border-radius: 40rpx;
+  font-size: 26rpx;
+  color: #333;
+  transition: all 0.3s ease;
+}
+
+.allergy-tag.selected {
+  background: #fff4e6;
+  border-color: #ff9933;
+  color: #ff9933;
+  font-weight: 600;
+}
+
+/* 菜系标签 */
 .cuisine-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 12rpx;
+  gap: 16rpx;
 }
 
 .cuisine-tag {
-  background: #f0f0f0;
-  color: #666;
-  padding: 12rpx 20rpx;
-  border-radius: 24rpx;
-  font-size: 24rpx;
-  border: 2rpx solid transparent;
-  transition: all 0.3s;
+  padding: 16rpx 24rpx;
+  background: #f8f9fa;
+  border: 3rpx solid #e9ecef;
+  border-radius: 40rpx;
+  font-size: 26rpx;
+  color: #333;
+  transition: all 0.3s ease;
 }
 
 .cuisine-tag.selected {
-  background: #667eea;
-  color: white;
-  border-color: #667eea;
-}
-
-/* 辣度上限样式 */
-.spicy-levels {
-  display: flex;
-  gap: 12rpx;
-}
-
-.spicy-level {
-  flex: 1;
-  background: #f5f5f5;
-  color: #666;
-  padding: 12rpx;
-  border-radius: 8rpx;
-  text-align: center;
-  font-size: 24rpx;
-  border: 2rpx solid transparent;
-  transition: all 0.3s;
-}
-
-.spicy-level.selected {
-  background: #fff1f0;
-  color: #f5222d;
-  border-color: #f5222d;
-}
-
-.spicy-text {
-  font-size: 24rpx;
-}
-
-/* 口味偏好样式 */
-.flavor-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8rpx;
-}
-
-.flavor-tag {
-  background: #f0f0f0;
-  color: #666;
-  padding: 8rpx 16rpx;
-  border-radius: 16rpx;
-  font-size: 22rpx;
-  border: 2rpx solid transparent;
-  transition: all 0.3s;
-}
-
-.flavor-tag.selected {
-  background: #52c41a;
-  color: white;
-  border-color: #52c41a;
-}
-
-/* 制作复杂度样式 */
-.complexity-slider {
-  margin-top: 20rpx;
-}
-
-.complexity-labels {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 16rpx;
-  font-size: 20rpx;
-  color: #999;
-}
-
-/* 探索度样式 */
-.exploration-options {
-  display: flex;
-  gap: 12rpx;
-}
-
-.exploration-option {
-  flex: 1;
-  background: #f8f9fa;
-  border-radius: 12rpx;
-  padding: 20rpx;
-  text-align: center;
-  border: 2rpx solid transparent;
-  transition: all 0.3s;
-}
-
-.exploration-option.selected {
-  background: #f6ffed;
-  border-color: #52c41a;
-}
-
-.exploration-name {
-  display: block;
-  font-size: 24rpx;
+  background: #e8f5e9;
+  border-color: #66bb6a;
+  color: #2e7d32;
   font-weight: 600;
-  margin-bottom: 6rpx;
-  color: #333;
 }
 
-.exploration-desc {
-  color: #666;
-  font-size: 20rpx;
-  line-height: 1.3;
+/* 预算选项 */
+.budget-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16rpx;
 }
 
-/* 预览区域样式 */
-.preview-section {
-  text-align: center;
-  margin: 40rpx 0;
-}
-
-.preview-btn {
-  background: #f0f0f0;
-  color: #666;
-  padding: 28rpx 48rpx;
+.budget-option {
+  background: #f8f9fa;
+  border: 3rpx solid #e9ecef;
   border-radius: 16rpx;
+  padding: 24rpx;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.budget-option.selected {
+  background: #fff4e6;
+  border-color: #ff9933;
+  box-shadow: 0 4rpx 12rpx rgba(255, 153, 51, 0.15);
+}
+
+.budget-name {
   font-size: 28rpx;
   font-weight: 600;
-  border: none;
+  color: #1a1a1a;
+  margin-bottom: 8rpx;
 }
 
-/* 底部操作样式 */
+.budget-desc {
+  font-size: 22rpx;
+  color: #666;
+}
+
+/* 底部按钮 */
 .bottom-actions {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24rpx 32rpx;
+  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+  background: white;
+  box-shadow: 0 -4rpx 12rpx rgba(0, 0, 0, 0.04);
   display: flex;
   gap: 16rpx;
-  position: sticky;
-  bottom: 24rpx;
-  margin-top: 40rpx;
-  z-index: 10;
+}
+
+.skip-btn {
+  flex: 1;
+  height: 88rpx;
+  line-height: 88rpx;
+  background: #f8f9fa;
+  color: #666;
+  border: none;
+  border-radius: 16rpx;
+  font-size: 30rpx;
 }
 
 .save-btn {
-  flex: 1;
-  background: #667eea;
+  flex: 2;
+  height: 88rpx;
+  line-height: 88rpx;
+  background: linear-gradient(135deg, #ff9933 0%, #ffb366 100%);
   color: white;
-  padding: 28rpx;
-  border-radius: 16rpx;
-  font-size: 28rpx;
-  font-weight: 600;
   border: none;
-}
-.cuisine-tag.selected {
-  background: #667eea !important;
-  color: white !important;
-  border-color: #667eea !important;
+  border-radius: 16rpx;
+  font-size: 30rpx;
+  font-weight: 600;
+  box-shadow: 0 4rpx 12rpx rgba(255, 153, 51, 0.3);
 }
 
-.flavor-tag.selected {
-  background: #52c41a !important;
-  color: white !important;
-  border-color: #52c41a !important;
+.save-btn::after {
+  border: none;
+}
+
+/* 响应式调整 */
+@media (max-width: 375px) {
+  .goal-grid {
+    grid-template-columns: 1fr;
+  }
 }

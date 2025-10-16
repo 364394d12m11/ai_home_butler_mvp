@@ -1,13 +1,18 @@
 <!-- pages/diet/index.wxml - V5.3 完美修复版 -->
 <view class="page">
-  <!-- 头部信息 -->
-  <view class="header">
-    <view class="date-info">
-      <text class="main-title">{{roleConfig[userRole].icon}} {{roleConfig[userRole].title}}</text>
-      <text class="date-text">{{todayDate}} {{weekday}}</text>
-    </view>
-    <text class="subtitle">今天的菜单，我已经帮你搭配好啦～</text>
+<!-- 头部信息 -->
+<view class="header">
+  <view class="date-info">
+    <text class="main-title">{{roleConfig[userRole].icon}} {{roleConfig[userRole].title}}</text>
+    <text class="date-text">{{todayDate}} {{weekday}}</text>
   </view>
+  <text class="subtitle">今天的菜单，我已经帮你搭配好啦～</text>
+  
+  <!-- ✅ V5.3新增：右上角齿轮图标 -->
+  <view class="settings-icon" bindtap="goToDietSettings">
+    <text class="icon">⚙️</text>
+  </view>
+</view>
 
   <!-- V5.3 模式选择器 -->
   <view class="mode-selector">
@@ -208,18 +213,18 @@
   </view>
   
   <view class="dish-grid">
-    <view 
-      wx:for="{{candidatePool.meat}}" 
-      wx:key="id"
-      wx:for-item="dish"
-      class="dish-card {{selectedDishes.meat.indexOf(dish.id) > -1 ? 'selected' : ''}}"
-      bindtap="toggleDishSelection"
-      data-type="meat"
-      data-dish-id="{{dish.id}}"
-    >
-      <view class="dish-checkbox {{selectedDishes.meat.indexOf(dish.id) > -1 ? 'checked' : ''}}">
-        <text wx:if="{{selectedDishes.meat.indexOf(dish.id) > -1}}" class="check-icon">●</text>
-      </view>
+  <view 
+    wx:for="{{candidatePool.meat}}" 
+    wx:key="id"
+    wx:for-item="dish"
+    class="dish-card {{selectedDishes.meat && selectedDishes.meat.indexOf(dish.id) > -1 ? 'selected' : ''}}"
+    bindtap="toggleDishSelection"
+    data-type="meat"
+    data-dish-id="{{dish.id}}"
+  >
+    <view class="dish-checkbox {{selectedDishes.meat && selectedDishes.meat.indexOf(dish.id) > -1 ? 'checked' : ''}}">
+      <text wx:if="{{selectedDishes.meat && selectedDishes.meat.indexOf(dish.id) > -1}}" class="check-icon">✓</text>
+    </view>
       
       <view class="dish-info">
         <text class="dish-name">{{dish.name}}</text>

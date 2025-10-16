@@ -317,3 +317,33 @@ function extractKidsAges(formData) {
     return parseFloat((years + months / 12).toFixed(1))
   })
 }
+export function saveDietPreferences(preferences) {
+ const {
+   goals,           // 饮食目标数组
+   allergies,       // 过敏/禁忌数组
+   budget,          // 预算档次
+   cuisine_prefs    // 菜系偏好（可选，≤3）
+ } = preferences
+ 
+ const dietPref = get(KEY.DIET_PREF_V3, {})
+ 
+ // 合并更新
+ const updated = {
+   ...dietPref,
+   goals: goals || [],
+   allergies: allergies || [],
+   budget: budget || '实惠',
+   cuisine_prefs: cuisine_prefs || [],
+   setup_completed: true,
+   updated_at: new Date().toISOString()
+ }
+ 
+ set(KEY.DIET_PREF_V3, updated)
+ 
+ // 同步更新旧格式
+ const legacyProfile = get(KEY.PROFILE, {})
+ legacyProfile.setup_completed = true
+ set(KEY.PROFILE, legacyProfile)
+ 
+ return updated
+}

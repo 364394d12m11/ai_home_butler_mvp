@@ -299,5 +299,12 @@ Page({
       showCancel: false,
       confirmText: '好的'
     })
-  }
+  },
+
+  goToDietSettings: function() {
+    wx.navigateTo({
+      url: '/pages/diet/taste-setup/index'
+    })
+  },
+
 })

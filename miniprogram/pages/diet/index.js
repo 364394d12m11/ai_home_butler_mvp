@@ -190,51 +190,33 @@ Page({
 
   tryLoadFinalMenu: function() {
     try {
-      const cached = wx.getStorageSync('DIET_FINAL_MENU');
-      const today = this.data.todayDate || this.getCurrentDate();
+      const cached = wx.getStorageSync('DIET_FINAL_MENU')
+      const today = this.data.todayDate || this.getCurrentDate()
       
       if (cached && 
           cached.date === today && 
           cached.menu && 
           cached.menu.length > 0) {
         
-        console.log('✅ 找到今日已选菜单缓存');
-        
-        // ✅ 恢复 menuId 和 listId
-        const menuId = cached.menuId;
-        const listId = cached.listId;
-        
-        // ✅ 尝试从持久化恢复购物清单状态
-        let shoppingList = cached.shoppingList || [];
-        if (listId) {
-          try {
-            const listCache = wx.getStorageSync(`SHOPPING_LIST_${listId}`);
-            if (listCache && listCache.items) {
-              shoppingList = listCache.items;
-              console.log('✅ 恢复购物清单状态');
-            }
-          } catch (e) {}
-        }
+        console.log('✅ 找到今日已选菜单缓存')
         
         this.setData({
           todayMenu: cached.menu,
           allMenuData: cached.menu,
           totalDishes: cached.menu.length,
-          shoppingList: shoppingList,
-          currentMenuId: menuId,
-          currentListId: listId,
+          shoppingList: cached.shoppingList || [],
           candidateMode: false,
           showNutritionComment: false
-        });
+        })
         
-        return true;
+        return true
       }
       
-      return false;
+      return false
       
     } catch (e) {
-      console.error('加载菜单缓存失败:', e);
-      return false;
+      console.error('加载菜单缓存失败:', e)
+      return false
     }
   },
   
@@ -387,6 +369,31 @@ Page({
       return
     }
     
+    // ✅ V5.3新增：检查用户是否已设置过饮食偏好
+    const { get, KEY } = require('../../utils/storage')
+    const dietPref = get(KEY.DIET_PREF_V3, {})
+    const hasSetupPref = dietPref.setup_completed === true && 
+                         dietPref.goals && 
+                         dietPref.goals.length > 0 &&
+                         dietPref.budget
+    
+    if (!hasSetupPref) {
+      console.log('🎯 用户尚未设置饮食偏好，跳转到设置页面')
+      wx.showModal({
+        title: '首次生成菜单',
+        content: '需要先设置您的饮食偏好（目标、禁忌、预算），这样AI才能为您推荐合适的菜品。',
+        showCancel: false,
+        confirmText: '去设置',
+        success: () => {
+          wx.navigateTo({
+            url: '/pages/diet/taste-setup/index?from=first_generate'
+          })
+        }
+      })
+      return
+    }
+    
+    // ✅ 已有偏好，继续生成菜单
     console.log('1️⃣ 设置 isGenerating = true')
     this.setData({ isGenerating: true })
     
@@ -399,6 +406,8 @@ Page({
     
     console.log('3️⃣ 开始获取位置')
     
+    const { getLocationFromWX, buildFullRegionProfile } = require('../../utils/region-detector')
+    
     getLocationFromWX().then(location => {
       console.log('4️⃣ 位置获取成功:', location)
       
@@ -410,9 +419,7 @@ Page({
         people: {
           adults: userDataV3.family?.adults || 1,
           kids: userDataV3.family?.kids || 0,
-          elders: userDataV3.family?.elders || 0,
-          // ✅ 从 profile 读取儿童年龄
-          kids_ages: userDataV3.profile?.kids_ages || []
+          elders: userDataV3.family?.elders || 0
         },
         budget: userDataV3.dietPref?.budget || '实惠',
         mode: mode,
@@ -480,8 +487,6 @@ Page({
           })
           
           console.log('✅ setData完成')
-          console.log('candidateMode =', self.data.candidateMode)
-          console.log('meat数量 =', self.data.candidatePool.meat.length)
           
           wx.showToast({
             title: '候选池已生成',
@@ -544,24 +549,25 @@ Page({
   toggleDishSelection: function(e) {
     console.log('========== 🔵 toggleDishSelection 开始 ==========')
     
+    // ⚠️ 阻止冒泡
     if (e && e.stopPropagation) {
       e.stopPropagation()
     }
     
     const { type, dishId } = e.currentTarget.dataset
     
-    console.log('1️⃣ 点击:', { type, dishId })
+    console.log('1️⃣ 点击参数:', { type, dishId })
     
     if (!type || !dishId) {
       console.warn('❌ 参数缺失')
       return
     }
     
-    // ⚠️ 关键：深拷贝整个 selectedDishes 对象
-    const selectedDishes = JSON.parse(JSON.stringify(this.data.selectedDishes))
+    // ✅ 关键：完整深拷贝整个 selectedDishes 对象
+    const selectedDishes = JSON.parse(JSON.stringify(this.data.selectedDishes || {}))
     
     // 确保该类型的数组存在
-    if (!selectedDishes[type]) {
+    if (!Array.isArray(selectedDishes[type])) {
       selectedDishes[type] = []
     }
     
@@ -569,19 +575,20 @@ Page({
     const index = currentList.indexOf(dishId)
     
     console.log('2️⃣ 当前选中列表:', currentList)
-    console.log('3️⃣ dishId 位置:', index)
+    console.log('3️⃣ dishId 在列表中的位置:', index)
     
+    // 切换选中状态
     if (index > -1) {
       // 取消选择
       currentList.splice(index, 1)
-      console.log('4️⃣ 取消选择')
+      console.log('4️⃣ 取消选择:', dishId)
     } else {
       // 添加选择
       currentList.push(dishId)
-      console.log('4️⃣ 添加选择')
+      console.log('4️⃣ 添加选择:', dishId)
     }
     
-    // 更新计数
+    // 重新计算选中数量
     const selectedCount = {
       meat: (selectedDishes.meat || []).length,
       veg: (selectedDishes.veg || []).length,
@@ -590,20 +597,23 @@ Page({
     }
     selectedCount.total = selectedCount.meat + selectedCount.veg + selectedCount.soup + selectedCount.staple
     
-    console.log('5️⃣ 更新后 selectedDishes:', selectedDishes)
-    console.log('6️⃣ 更新后 selectedCount:', selectedCount)
+    console.log('5️⃣ 更新后的 selectedDishes:', JSON.stringify(selectedDishes))
+    console.log('6️⃣ 更新后的 selectedCount:', selectedCount)
     
-    // ⚠️ 关键：一次性更新整个对象，不用路径语法
+    // ✅ 关键：一次性更新，强制刷新
     this.setData({
       selectedDishes: selectedDishes,
       selectedCount: selectedCount
     }, () => {
       console.log('7️⃣ setData 完成')
-      console.log('8️⃣ 验证数据:', this.data.selectedDishes[type])
       
-      // 强制页面更新（兜底方案）
+      // 验证数据是否正确写入
+      console.log('8️⃣ 验证 this.data.selectedDishes:', this.data.selectedDishes)
+      console.log('9️⃣ 验证 this.data.selectedCount:', this.data.selectedCount)
+      
+      // ✅ 强制页面重绘（兜底方案）
       this.setData({
-        _forceUpdate: Date.now()
+        _timestamp: Date.now()
       })
     })
     
@@ -641,29 +651,18 @@ Page({
   },
 
   showShoppingList: function() {
-    const listId = this.data.currentListId;
+    const { shoppingList } = this.data
     
-    // ✅ 从持久化读取最新状态
-    if (listId) {
-      try {
-        const cached = wx.getStorageSync(`SHOPPING_LIST_${listId}`);
-        if (cached && cached.items) {
-          console.log('✅ 从持久化恢复购物清单:', cached.items.filter(i => i.checked).length, '/', cached.items.length);
-          this.setData({ shoppingList: cached.items });
-        }
-      } catch (e) {
-        console.error('读取购物清单失败:', e);
-      }
-    }
+    this.setData({ 
+      showShoppingSheet: true
+    })
     
-    this.setData({ showShoppingSheet: true });
-    
-    if (this.data.shoppingList.length > 0) {
+    if (shoppingList.length > 0) {
       wx.showToast({
         title: '购物清单已生成',
         icon: 'none',
         duration: 2000
-      });
+      })
     }
   },
 
@@ -672,38 +671,25 @@ Page({
   },
 
   toggleShoppingItem: function(e) {
+    // ⚠️ 阻止事件冒泡
     if (e && e.stopPropagation) {
-      e.stopPropagation();
+      e.stopPropagation()
     }
     
-    const index = e.currentTarget.dataset.index;
-    const shoppingList = this.data.shoppingList;
+    const index = e.currentTarget.dataset.index
+    const shoppingList = this.data.shoppingList
     
     if (!shoppingList[index]) {
-      console.warn('购物清单项不存在:', index);
-      return;
+      console.warn('购物清单项不存在:', index)
+      return
     }
     
     // 切换选中状态
-    shoppingList[index].checked = !shoppingList[index].checked;
+    shoppingList[index].checked = !shoppingList[index].checked
     
-    this.setData({ shoppingList });
+    this.setData({ shoppingList })
     
-    console.log('✅ 购物清单项切换:', shoppingList[index].name, shoppingList[index].checked);
-    
-    // ✅ 实时回写持久化
-    const listId = this.data.currentListId;
-    if (listId) {
-      try {
-        const cached = wx.getStorageSync(`SHOPPING_LIST_${listId}`) || {};
-        cached.items = shoppingList;
-        cached.timestamp = Date.now();
-        wx.setStorageSync(`SHOPPING_LIST_${listId}`, cached);
-        console.log('✅ 购物清单已持久化');
-      } catch (e) {
-        console.error('持久化失败:', e);
-      }
-    }
+    console.log('✅ 购物清单项切换:', shoppingList[index].name, shoppingList[index].checked)
   },
 
   handleRoleAction: function() {
@@ -1309,50 +1295,38 @@ Page({
   },
 
   confirmSelection: function() {
-    const { candidatePool, selectedDishes } = this.data;
+    const { candidatePool, selectedDishes } = this.data
     
-    const selectedMeat = (candidatePool.meat || []).filter(d => (selectedDishes.meat || []).includes(d.id));
-    const selectedVeg = (candidatePool.veg || []).filter(d => (selectedDishes.veg || []).includes(d.id));
-    const selectedSoup = (candidatePool.soup || []).filter(d => (selectedDishes.soup || []).includes(d.id));
-    const selectedStaple = (candidatePool.staple || []).filter(d => (selectedDishes.staple || []).includes(d.id));
+    console.log('🔍 开始确认选择')
     
-    const finalMenu = [...selectedMeat, ...selectedVeg, ...selectedSoup, ...selectedStaple];
+    const selectedMeat = (candidatePool.meat || []).filter(d => (selectedDishes.meat || []).includes(d.id))
+    const selectedVeg = (candidatePool.veg || []).filter(d => (selectedDishes.veg || []).includes(d.id))
+    const selectedSoup = (candidatePool.soup || []).filter(d => (selectedDishes.soup || []).includes(d.id))
+    const selectedStaple = (candidatePool.staple || []).filter(d => (selectedDishes.staple || []).includes(d.id))
+    
+    const finalMenu = [...selectedMeat, ...selectedVeg, ...selectedSoup, ...selectedStaple]
     
     if (finalMenu.length === 0) {
-      wx.showToast({ title: '请至少选择一道菜', icon: 'none', duration: 2000 });
-      return;
+      wx.showToast({ 
+        title: '请至少选择一道菜', 
+        icon: 'none',
+        duration: 2000
+      })
+      return
     }
     
-    const peopleCount = this.data.userDataV3?.family?.adults || 2;
-    const shoppingList = this.generateShoppingListV2(finalMenu, peopleCount);
-    
-    // ✅ 生成持久化ID
-    const menuId = `menu_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
-    const listId = `list_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+    const peopleCount = this.data.userDataV3?.family?.adults || 2
+    const shoppingList = this.generateShoppingListV2(finalMenu, peopleCount)
     
     try {
-      // 保存主菜单
       wx.setStorageSync('DIET_FINAL_MENU', {
-        menuId: menuId,
-        listId: listId,
         date: this.data.todayDate,
         menu: finalMenu,
         shoppingList: shoppingList,
         timestamp: Date.now()
-      });
-      
-      // ✅ 单独持久化购物清单
-      wx.setStorageSync(`SHOPPING_LIST_${listId}`, {
-        items: shoppingList,
-        menuId: menuId,
-        date: this.data.todayDate,
-        status: 'active',
-        timestamp: Date.now()
-      });
-      
-      console.log('✅ 购物清单已持久化:', listId);
+      })
     } catch (e) {
-      console.error('保存失败:', e);
+      console.error('保存菜单失败:', e)
     }
     
     this.setData({
@@ -1361,15 +1335,17 @@ Page({
       totalDishes: finalMenu.length,
       shoppingList: shoppingList,
       candidateMode: false,
-      candidatePoolLocked: false,
-      showNutritionComment: true,
-      currentMenuId: menuId,
-      currentListId: listId
-    });
+      candidatePoolLocked: false,  // ← 解锁
+      showNutritionComment: true
+    })
     
-    this.saveToHistory(finalMenu);
+    this.saveToHistory(finalMenu)
     
-    wx.showToast({ title: '菜单生成完成', icon: 'success', duration: 1500 });
+    wx.showToast({
+      title: '菜单生成完成',
+      icon: 'success',
+      duration: 1500
+    })
   },
 
   backToCandidates: function() {
@@ -1406,9 +1382,7 @@ Page({
       people: {
         adults: userDataV3.family?.adults || 1,
         kids: userDataV3.family?.kids || 0,
-        elders: userDataV3.family?.elders || 0,
-        // ✅ 从 profile 读取儿童年龄
-        kids_ages: userDataV3.profile?.kids_ages || []
+        elders: userDataV3.family?.elders || 0
       },
       budget: userDataV3.dietPref?.budget || '实惠',
       mode: this.data.currentMode || '日常',
@@ -1827,5 +1801,13 @@ Page({
     if (!qtyStr) return 1
     const numMatch = String(qtyStr).match(/(\d+\.?\d*)/)
     return numMatch ? parseFloat(numMatch[1]) : 1
-  }
+  },
+
+  // 在 Page({}) 的 data 之后，其他函数之前添加
+
+goToDietSettings: function() {
+  wx.navigateTo({
+    url: '/pages/diet/taste-setup/index'
+  })
+}
 })

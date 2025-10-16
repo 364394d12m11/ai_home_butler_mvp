@@ -1,66 +1,61 @@
 <view class="page">
   <!-- 头部说明 -->
   <view class="header">
-    <text class="title">设置饮食偏好</text>
+    <text class="title">{{isFirstGenerate ? '首次生成菜单前的设置' : '饮食偏好设置'}}</text>
     <text class="subtitle">AI将根据您的偏好推荐合适的菜品</text>
+    <text wx:if="{{isFirstGenerate}}" class="first-tip">⚠️ 首次生成菜单必须完成设置</text>
   </view>
 
-  <!-- 消费层级 -->
+  <!-- 饮食目标 -->
   <view class="section">
     <view class="section-header">
-      <text class="section-title">💰 消费层级</text>
-      <text class="section-desc">选择家庭日常饮食的消费水平</text>
+      <text class="section-title">🎯 饮食目标</text>
+      <text class="section-desc">成人目标最多3个，儿童目标最多2个</text>
     </view>
-    <view class="level-options">
-      <view class="level-option {{profile.consumptionLevel === 'budget' ? 'selected' : ''}}"
-            bindtap="setConsumptionLevel" data-level="budget">
-        <text class="level-name">实惠</text>
-        <text class="level-desc">注重性价比，经济实用</text>
+    
+    <!-- 成人目标 -->
+    <view class="subsection-title">成人目标（0-3个）</view>
+    <view class="goal-grid">
+      <view wx:for="{{dietGoalOptions}}" wx:key="value"
+            wx:if="{{item.category === 'adult'}}"
+            class="goal-card {{selectedGoals[item.value] ? 'selected' : ''}}"
+            bindtap="toggleGoal" 
+            data-value="{{item.value}}"
+            data-category="{{item.category}}">
+        <view class="goal-title">{{item.label}}</view>
+        <view class="goal-desc">{{item.desc}}</view>
       </view>
-      <view class="level-option {{profile.consumptionLevel === 'value' ? 'selected' : ''}}"
-            bindtap="setConsumptionLevel" data-level="value">
-        <text class="level-name">性价比</text>
-        <text class="level-desc">平衡价格与品质</text>
-      </view>
-      <view class="level-option {{profile.consumptionLevel === 'quality' ? 'selected' : ''}}"
-            bindtap="setConsumptionLevel" data-level="quality">
-        <text class="level-name">品质</text>
-        <text class="level-desc">追求食材品质</text>
-      </view>
-      <view class="level-option {{profile.consumptionLevel === 'luxury' ? 'selected' : ''}}"
-            bindtap="setConsumptionLevel" data-level="luxury">
-        <text class="level-name">奢华</text>
-        <text class="level-desc">精品食材，高端体验</text>
+    </view>
+    
+    <!-- 儿童目标（仅有孩子时显示） -->
+    <view wx:if="{{hasKids}}" class="kids-section">
+      <view class="subsection-title">儿童目标（0-2个）</view>
+      <view class="goal-grid">
+        <view wx:for="{{dietGoalOptions}}" wx:key="value"
+              wx:if="{{item.category === 'kids'}}"
+              class="goal-card {{selectedGoals[item.value] ? 'selected' : ''}}"
+              bindtap="toggleGoal" 
+              data-value="{{item.value}}"
+              data-category="{{item.category}}">
+          <view class="goal-title">{{item.label}}</view>
+          <view class="goal-desc">{{item.desc}}</view>
+        </view>
       </view>
     </view>
   </view>
 
-  <!-- 风格偏好 -->
+  <!-- 过敏/禁忌 -->
   <view class="section">
     <view class="section-header">
-      <text class="section-title">🎨 风格偏好</text>
-      <text class="section-desc">选择您喜欢的饮食风格</text>
+      <text class="section-title">🚫 过敏/禁忌</text>
+      <text class="section-desc">选择需要避免的食材（可选）</text>
     </view>
-    <view class="aesthetic-options">
-      <view class="aesthetic-option {{profile.aesthetic === 'homestyle' ? 'selected' : ''}}"
-            bindtap="setAesthetic" data-aesthetic="homestyle">
-        <text class="option-emoji">🏠</text>
-        <text class="option-name">家常</text>
-      </view>
-      <view class="aesthetic-option {{profile.aesthetic === 'trendy' ? 'selected' : ''}}"
-            bindtap="setAesthetic" data-aesthetic="trendy">
-        <text class="option-emoji">✨</text>
-        <text class="option-name">时尚</text>
-      </view>
-      <view class="aesthetic-option {{profile.aesthetic === 'healthy' ? 'selected' : ''}}"
-            bindtap="setAesthetic" data-aesthetic="healthy">
-        <text class="option-emoji">🥗</text>
-        <text class="option-name">健康</text>
-      </view>
-      <view class="aesthetic-option {{profile.aesthetic === 'gourmet' ? 'selected' : ''}}"
-            bindtap="setAesthetic" data-aesthetic="gourmet">
-        <text class="option-emoji">👨‍🍳</text>
-        <text class="option-name">精致</text>
+    <view class="allergy-tags">
+      <view wx:for="{{allergyOptions}}" wx:key="value"
+            class="allergy-tag {{selectedAllergies[item.value] ? 'selected' : ''}}"
+            bindtap="toggleAllergy" 
+            data-value="{{item.value}}">
+        {{item.label}}
       </view>
     </view>
   </view>
@@ -68,100 +63,43 @@
   <!-- 菜系偏好 -->
   <view class="section">
     <view class="section-header">
-      <text class="section-title">🌏 菜系偏好</text>
-      <text class="section-desc">可多选，影响推荐比例</text>
+      <text class="section-title">🌏 菜系偏好（可选）</text>
+      <text class="section-desc">最多选3个，影响推荐比例</text>
     </view>
     <view class="cuisine-tags">
-      <view class="cuisine-tag {{cuisineSelected[item] ? 'selected' : ''}}"
-            wx:for="{{cuisineOptions}}" wx:key="*this"
-            bindtap="toggleCuisine" data-cuisine="{{item}}">
-        {{item}}
+      <view wx:for="{{cuisineOptions}}" wx:key="value"
+            class="cuisine-tag {{selectedCuisines[item.value] ? 'selected' : ''}}"
+            bindtap="toggleCuisine" 
+            data-value="{{item.value}}">
+        {{item.label}}
       </view>
     </view>
   </view>
 
-  <!-- 辣度上限 -->
+  <!-- 预算档次 -->
   <view class="section">
     <view class="section-header">
-      <text class="section-title">🌶️ 辣度上限</text>
-      <text class="section-desc">设置能接受的最高辣度</text>
+      <text class="section-title">💰 预算档次</text>
+      <text class="section-desc">选择家庭日常饮食的预算水平</text>
     </view>
-    <view class="spicy-levels">
-      <view class="spicy-level {{profile.maxSpicy === index ? 'selected' : ''}}"
-            wx:for="{{['不辣', '微辣', '中辣', '较辣']}}" wx:key="*this" wx:for-index="index"
-            bindtap="setMaxSpicy" data-level="{{index}}">
-        <text class="spicy-text">{{item}}</text>
+    <view class="budget-options">
+      <view wx:for="{{budgetOptions}}" wx:key="value"
+            class="budget-option {{preferences.budget === item.value ? 'selected' : ''}}"
+            bindtap="selectBudget" 
+            data-value="{{item.value}}">
+        <view class="budget-name">{{item.label}}</view>
+        <view class="budget-desc">{{item.desc}}</view>
       </view>
     </view>
   </view>
 
-  <!-- 口味偏好 -->
-  <view class="section">
-    <view class="section-header">
-      <text class="section-title">👅 口味偏好</text>
-      <text class="section-desc">可多选，描述喜欢的口味特点</text>
-    </view>
-    <view class="flavor-tags">
-      <view class="flavor-tag {{flavorSelected[item] ? 'selected' : ''}}"
-            wx:for="{{flavorOptions}}" wx:key="*this"
-            bindtap="toggleFlavor" data-flavor="{{item}}">
-        {{item}}
-      </view>
-    </view>
-  </view>
-
-  <!-- 制作复杂度 -->
-  <view class="section">
-    <view class="section-header">
-      <text class="section-title">⏱️ 制作复杂度</text>
-      <text class="section-desc">您希望菜品的复杂程度</text>
-    </view>
-    <view class="complexity-slider">
-      <slider value="{{profile.complexity}}" min="1" max="5" step="1" 
-              show-value block-size="12" 
-              bindchange="setComplexity" />
-      <view class="complexity-labels">
-        <text>极简</text>
-        <text>{{complexityLabels[profile.complexity]}}</text>
-        <text>大师级</text>
-      </view>
-    </view>
-  </view>
-
-  <!-- 探索度 -->
-  <view class="section">
-    <view class="section-header">
-      <text class="section-title">🔍 探索度</text>
-      <text class="section-desc">是否愿意尝试新菜品</text>
-    </view>
-    <view class="exploration-options">
-      <view class="exploration-option {{profile.exploration === 'conservative' ? 'selected' : ''}}"
-            bindtap="setExploration" data-level="conservative">
-        <text class="exploration-name">保守</text>
-        <text class="exploration-desc">主要推荐熟悉的菜品</text>
-      </view>
-      <view class="exploration-option {{profile.exploration === 'moderate' ? 'selected' : ''}}"
-            bindtap="setExploration" data-level="moderate">
-        <text class="exploration-name">适中</text>
-        <text class="exploration-desc">偶尔尝试新菜品</text>
-      </view>
-      <view class="exploration-option {{profile.exploration === 'adventurous' ? 'selected' : ''}}"
-            bindtap="setExploration" data-level="adventurous">
-        <text class="exploration-name">冒险</text>
-        <text class="exploration-desc">经常推荐新菜品</text>
-      </view>
-    </view>
-  </view>
-
-  <!-- 预览按钮 -->
-  <view class="preview-section">
-    <button class="preview-btn" bindtap="previewRecommendation">
-      预览推荐效果
-    </button>
-  </view>
-
-  <!-- 底部保存按钮 -->
+  <!-- 底部按钮 -->
   <view class="bottom-actions">
-    <button class="save-btn" bindtap="saveProfile">保存设置</button>
+    <button wx:if="{{!isFirstGenerate}}" class="skip-btn" bindtap="skipSetup">
+      稍后设置
+    </button>
+    <button class="save-btn" bindtap="savePreferences">
+      {{isFirstGenerate ? '完成并生成菜单' : '保存设置'}}
+    </button>
   </view>
 </view>

@@ -1,4 +1,4 @@
-// pages/onboarding/index.js - 添加菜系偏好（≤3个）
+// pages/onboarding/index.js - V5.3精简版
 import { set, get, KEY } from '../../utils/storage'
 
 Page({
@@ -20,55 +20,19 @@ Page({
         driver: { enabled: false, count: 1 }
       },
       hasPet: false,
-      cuisinePrefs: [],        // 新增：菜系偏好（≤3）
-      dietGoals: [],
-      tastePreferences: [],
-      dietTaboos: [],
-      shoppingFreq: '',
-      breakfastTime: '',
-      dinnerTime: '',
-      diningOutFreq: '',
-      budgetLevel: '',
+      // ✅ V5.3: 第二页仅保留生活风格和AI语气
       lifeStyle: '',
       aiTone: ''
     },
     
     hasAnyHelper: false,
-    selectedCuisinePrefs: {},       // 新增
-    selectedDietGoals: {},
-    selectedTastePreferences: {},
-    selectedDietTaboos: {},
-    
-    // 新增：菜系选项
-    cuisineOptions: [
-      { value: '默认（不挑）', label: '默认（不挑）' },
-      { value: '川渝湘', label: '川渝湘' },
-      { value: '粤菜', label: '粤菜' },
-      { value: '鲁菜', label: '鲁菜' },
-      { value: '豫陕', label: '豫陕' },
-      { value: '江浙', label: '江浙' },
-      { value: '闽菜', label: '闽菜' },
-      { value: '东北', label: '东北' },
-      { value: '西北', label: '西北' },
-      { value: '云贵', label: '云贵' },
-      { value: '清真', label: '清真' }
-    ],
     
     childAgeOptions: {
       years: Array.from({length: 19}, (_, i) => i),
       months: Array.from({length: 12}, (_, i) => i + 1)
     },
     
-    cleanerFrequencies: ['每周1次', '每周2-3次', '每天1次', '不固定'],
-    
-    dietGoalOptions: [
-      { value: 'antiInflammatory', label: '抗炎轻养', desc: '少油少糖，身体轻' },
-      { value: 'bloodSugar', label: '控糖轻盈', desc: '稳定血糖，少发胖' },
-      { value: 'seasonal', label: '节气养生', desc: '四时调理' },
-      { value: 'childNutrition', label: '孩子营养', desc: '免疫/专注/成长' },
-      { value: 'weightLoss', label: '减脂塑形', desc: '高蛋白+控糖' },
-      { value: 'sleep', label: '睡眠调理', desc: '温补、助眠' }
-    ]
+    cleanerFrequencies: ['每周1次', '每周2-3次', '每天1次', '不固定']
   },
 
   onLoad() {
@@ -246,135 +210,6 @@ Page({
     this.setData({ 'form.hasPet': e.detail.value })
   },
 
-  // 🔥 新增：菜系偏好选择（≤3个）
-  onCuisineToggle(e) {
-    const cuisine = e.currentTarget.dataset.value
-    const current = [...(this.data.form.cuisinePrefs || [])]
-    const selected = {...this.data.selectedCuisinePrefs}
-    
-    // 选择"默认（不挑）"清空其他
-    if (cuisine === '默认（不挑）') {
-      if (current.includes(cuisine)) {
-        current.splice(current.indexOf(cuisine), 1)
-        delete selected[cuisine]
-      } else {
-        this.setData({
-          'form.cuisinePrefs': [cuisine],
-          selectedCuisinePrefs: { '默认（不挑）': true }
-        })
-        return
-      }
-    } else {
-      // 选其他先移除"默认（不挑）"
-      const defaultIdx = current.indexOf('默认（不挑）')
-      if (defaultIdx > -1) {
-        current.splice(defaultIdx, 1)
-        delete selected['默认（不挑）']
-      }
-      
-      const index = current.indexOf(cuisine)
-      if (index > -1) {
-        current.splice(index, 1)
-        delete selected[cuisine]
-      } else {
-        // 限制≤3
-        if (current.length >= 3) {
-          wx.showToast({ title: '最多选3个菜系', icon: 'none', duration: 1500 })
-          return
-        }
-        current.push(cuisine)
-        selected[cuisine] = true
-      }
-    }
-    
-    this.setData({ 
-      'form.cuisinePrefs': current,
-      selectedCuisinePrefs: selected
-    })
-    console.log('✅ 菜系偏好:', current)
-  },
-
-  onDietGoalToggle(e) {
-    const goal = e.currentTarget.dataset.value
-    const current = [...(this.data.form.dietGoals || [])]
-    const selected = {...this.data.selectedDietGoals}
-    
-    const index = current.indexOf(goal)
-    if (index > -1) {
-      current.splice(index, 1)
-      delete selected[goal]
-    } else {
-      current.push(goal)
-      selected[goal] = true
-    }
-    
-    this.setData({ 
-      'form.dietGoals': current,
-      selectedDietGoals: selected
-    })
-    console.log('✅ 饮食目标:', current, selected)
-  },
-
-  onTastePreferenceToggle(e) {
-    const taste = e.currentTarget.dataset.value
-    const current = [...(this.data.form.tastePreferences || [])]
-    const selected = {...this.data.selectedTastePreferences}
-    
-    const index = current.indexOf(taste)
-    if (index > -1) {
-      current.splice(index, 1)
-      delete selected[taste]
-    } else {
-      current.push(taste)
-      selected[taste] = true
-    }
-    
-    this.setData({ 
-      'form.tastePreferences': current,
-      selectedTastePreferences: selected
-    })
-    console.log('✅ 口味偏好:', current, selected)
-  },
-
-  onTabooToggle(e) {
-    const taboo = e.currentTarget.dataset.value
-    const current = [...(this.data.form.dietTaboos || [])]
-    const selected = {...this.data.selectedDietTaboos}
-    
-    const index = current.indexOf(taboo)
-    if (index > -1) {
-      current.splice(index, 1)
-      delete selected[taboo]
-    } else {
-      current.push(taboo)
-      selected[taboo] = true
-    }
-    
-    this.setData({ 
-      'form.dietTaboos': current,
-      selectedDietTaboos: selected
-    })
-    console.log('✅ 饮食禁忌:', current, selected)
-  },
-
-  onTabooOtherInput(e) {
-    const value = e.detail.value
-    const current = this.data.form.dietTaboos.filter(t => !t.startsWith('其他:'))
-    if (value.trim()) {
-      current.push(`其他:${value.trim()}`)
-    }
-    this.setData({ 'form.dietTaboos': current })
-  },
-
-  onRhythmSelect(e) {
-    const { field, value } = e.currentTarget.dataset
-    this.setData({ [`form.${field}`]: value })
-  },
-
-  onBudgetSelect(e) {
-    this.setData({ 'form.budgetLevel': e.currentTarget.dataset.value })
-  },
-
   onLifeStyleSelect(e) {
     this.setData({ 'form.lifeStyle': e.currentTarget.dataset.value })
   },
@@ -385,17 +220,14 @@ Page({
 
   nextStep() {
     if (!this.validateCurrentStep()) return
-    const nextStep = Math.min(this.data.currentStep + 1, 3)
+    const nextStep = Math.min(this.data.currentStep + 1, 2)  // ✅ 改为最多2步
     this.setData({ currentStep: nextStep })
     wx.vibrateShort()
     setTimeout(() => {
       wx.pageScrollTo({ scrollTop: 0, duration: 300 })
     }, 100)
     if (nextStep === 2) {
-      wx.showToast({ title: '了解啦，这样我能更好安排你家的节奏～', icon: 'none', duration: 2000 })
-    }
-    if (nextStep === 3) {
-      wx.showToast({ title: '明白啦，等会儿我就用这些偏好为你生成今日餐桌～', icon: 'none', duration: 2000 })
+      wx.showToast({ title: '了解啦，最后设置下风格和语气～', icon: 'none', duration: 2000 })
     }
   },
 
@@ -426,25 +258,6 @@ Page({
         }
         break
       case 2:
-        // 🔥 新增：验证菜系偏好≤3
-        if (form.cuisinePrefs.length > 3) {
-          wx.showToast({ title: '菜系偏好最多选3个', icon: 'none' })
-          return false
-        }
-        if (form.dietGoals.length === 0) {
-          wx.showToast({ title: '请选择至少一个饮食目标', icon: 'none' })
-          return false
-        }
-        if (form.tastePreferences.length === 0) {
-          wx.showToast({ title: '请选择口味偏好', icon: 'none' })
-          return false
-        }
-        if (!form.budgetLevel) {
-          wx.showToast({ title: '请选择预算档次', icon: 'none' })
-          return false
-        }
-        break
-      case 3:
         if (!form.lifeStyle) {
           wx.showToast({ title: '请选择生活风格', icon: 'none' })
           return false
@@ -461,17 +274,123 @@ Page({
   onDone() {
     if (!this.validateCurrentStep()) return
     
-    const { saveUserProfileV3 } = require('../../utils/storage')
-    const result = saveUserProfileV3(this.data.form)
+    // ✅ V5.3: 精简版保存逻辑（内联实现）
+    const formData = this.data.form
     
-    console.log('V3.0建档完成:', result)
+    // 辅助函数
+    const buildFamilyProfile = (formData) => {
+      const { familyType, childCount, childrenInfo } = formData
+      if (familyType === 'single') {
+        return `1成人(${formData.gender})`
+      } else if (familyType === 'couple') {
+        return '2成人'
+      } else if (familyType === 'hasChild') {
+        const childDesc = childrenInfo.map(child => {
+          const ageDesc = child.years <= 2 ? `${child.years}岁${child.months}个月` : `${child.years}岁`
+          const genderDesc = child.gender === 'skip' ? '' : (child.gender === 'boy' ? '男孩' : '女孩')
+          return `${ageDesc}${genderDesc}`
+        }).join('、')
+        return `2成人+${childCount}儿童(${childDesc})`
+      }
+      return '未知结构'
+    }
+    
+    const calculateTotalMembers = (formData) => {
+      if (formData.familyType === 'single') return 1
+      if (formData.familyType === 'couple') return 2
+      if (formData.familyType === 'hasChild') return 2 + formData.childCount
+      return 0
+    }
+    
+    const mapHelperType = (type) => {
+      const map = { 'nanny': '保姆', 'cleaner': '钟点工', 'driver': '司机' }
+      return map[type] || type
+    }
+    
+    const mapAiTone = (tone) => {
+      const map = { '温柔陪伴': '温柔', '干练高效': '干练', '幽默轻松': '幽默' }
+      return map[tone] || '温柔'
+    }
+    
+    const getHelperDuties = (type) => {
+      const duties = {
+        'nanny': ['做饭', '保洁', '照顾孩子'],
+        'cleaner': ['保洁'],
+        'driver': ['接送', '采买']
+      }
+      return duties[type] || []
+    }
+    
+    // 主画像
+    const profileV3 = {
+      version: '5.3',
+      city: formData.city,
+      family_profile: buildFamilyProfile(formData),
+      total_members: calculateTotalMembers(formData),
+      family_type: formData.familyType,
+      has_child: formData.familyType === 'hasChild',
+      child_count: formData.childCount || 0,
+      children_info: formData.childrenInfo || [],
+      life_style: formData.lifeStyle,
+      ai_tone: mapAiTone(formData.aiTone),
+      has_pet: formData.hasPet || false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      onboarding_done: true
+    }
+    
+    // 帮手配置
+    const helpersV3 = Object.entries(formData.helpers)
+      .filter(([type, config]) => config.enabled)
+      .map(([type, config]) => ({
+        type: mapHelperType(type),
+        count: config.count,
+        frequency: config.frequency || '每日',
+        duties: getHelperDuties(type)
+      }))
+    
+    // 饮食偏好（初始化为空）
+    const dietPrefV3 = {
+      goals: [],
+      allergies: [],
+      budget: '',
+      taste: [],
+      taboos: [],
+      rhythm: {},
+      cuisine_prefs: [],
+      setup_completed: false
+    }
+    
+    // 保存
+    set(KEY.PROFILE_V3, profileV3)
+    set(KEY.HELPERS_V3, helpersV3)
+    set(KEY.DIET_PREF_V3, dietPrefV3)
+    
+    // 兼容旧格式
+    const legacyProfile = {
+      city: formData.city,
+      familyType: formData.familyType,
+      gender: formData.gender,
+      childCount: formData.childCount,
+      childrenInfo: formData.childrenInfo,
+      helpers: formData.helpers,
+      hasPet: formData.hasPet,
+      lifeStyle: formData.lifeStyle,
+      aiTone: formData.aiTone,
+      onboarding_done: true,
+      setup_completed: false,
+      version: '5.3'
+    }
+    set(KEY.PROFILE, legacyProfile)
+    
+    console.log('V5.3建档完成:', { profileV3, helpersV3, dietPrefV3 })
     
     wx.showToast({ title: '建档完成 🎉', icon: 'success', duration: 1500 })
     
     setTimeout(() => {
       wx.showModal({
         title: '建档完成',
-        content: `已为你生成六维家庭画像：\n结构维${result.sixDimensions.structure.score}分\n生活方式维${result.sixDimensions.lifestyle.score}分\n健康维${result.sixDimensions.health.score}分\n\n我会根据这些信息为你定制日常推荐～`,
+        content: `已为你生成家庭画像～\n\n饮食偏好将在首次生成菜单时设置。`,
         showCancel: false,
         confirmText: '进入',
         success: () => {
@@ -480,7 +399,7 @@ Page({
       })
     }, 1500)
     
-    this.trackOnboardingComplete(result.profileV3)
+    this.trackOnboardingComplete(profileV3)
   },
 
   calculateTotalMembers() {
@@ -492,53 +411,13 @@ Page({
     return total
   },
 
-  summarizeHelpers() {
-    const { helpers } = this.data.form
-    const summary = []
-    if (helpers.nanny.enabled) {
-      summary.push({
-        type: '保姆',
-        count: helpers.nanny.count
-      })
-    }
-    if (helpers.cleaner.enabled) {
-      summary.push({
-        type: '钟点工',
-        count: helpers.cleaner.count,
-        frequency: helpers.cleaner.frequency
-      })
-    }
-    if (helpers.driver.enabled) {
-      summary.push({
-        type: '司机',
-        count: helpers.driver.count
-      })
-    }
-    return summary
-  },
-
-  buildDietProfile() {
-    const { dietGoals, tastePreferences, dietTaboos, budgetLevel } = this.data.form
-    return {
-      goals: dietGoals,
-      tastes: tastePreferences,
-      taboos: dietTaboos,
-      budget: budgetLevel,
-      consumptionLevel: budgetLevel === '实惠' ? 'budget' : budgetLevel === '精致' ? 'luxury' : 'value',
-      aesthetic: dietGoals.includes('seasonal') ? 'seasonal' : 
-                 dietGoals.includes('antiInflammatory') ? 'healthy' : 'homestyle'
-    }
-  },
-
   trackOnboardingComplete(profile) {
     try {
-      console.log('V3.0 Onboarding completed:', {
+      console.log('V5.3 Onboarding completed:', {
         familyType: profile.familyType,
         totalMembers: profile.totalMembers,
-        helperCount: profile.helperSummary.length,
-        cuisinePrefs: profile.cuisinePrefs,
-        dietGoals: profile.dietGoals,
-        lifeStyle: profile.lifeStyle
+        lifeStyle: profile.lifeStyle,
+        aiTone: profile.aiTone
       })
     } catch (e) {
       console.log('Track error:', e)

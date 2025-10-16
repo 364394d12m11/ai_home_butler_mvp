@@ -1,29 +1,26 @@
 <view class="page">
   <!-- 头部 -->
   <view class="header">
-    <view class="main-title">AI家庭管家 V3.0</view>
-    <view class="subtitle">{{currentStep === 1 ? '让我了解你的家庭' : currentStep === 2 ? '饮食偏好设置' : '审美与语气'}}</view>
+    <view class="main-title">AI家庭管家 V5.3</view>
+    <view class="subtitle">{{currentStep === 1 ? '让我了解你的家庭' : '风格与语气偏好'}}</view>
     <view class="progress-dots">
       <view class="dot {{currentStep >= 1 ? 'active' : ''}}"></view>
       <view class="dot {{currentStep >= 2 ? 'active' : ''}}"></view>
-      <view class="dot {{currentStep >= 3 ? 'active' : ''}}"></view>
     </view>
   </view>
 
   <!-- 第1页：家庭基础 -->
   <view class="step-content {{currentStep === 1 ? 'active' : 'hidden'}}" wx:if="{{currentStep === 1}}">
     
-    <!-- 城市位置 - 精简版 -->
+    <!-- 城市位置 -->
     <view class="card compact">
       <view class="section-title-small">📍 城市位置</view>
       
-      <!-- 自动定位状态 -->
       <view wx:if="{{locationStatus === 'pending'}}" class="location-status pending">
         <text class="status-icon">🔄</text>
         <text class="status-text">定位中...</text>
       </view>
       
-      <!-- 定位成功 -->
       <view wx:elif="{{locationStatus === 'success'}}" class="location-status success">
         <view class="location-info">
           <text class="location-icon">📍</text>
@@ -34,13 +31,11 @@
         <text wx:if="{{form.autoLocation}}" class="location-tip">自动定位，如不对请点击下方更改</text>
       </view>
       
-      <!-- 定位失败 -->
       <view wx:elif="{{locationStatus === 'failed'}}" class="location-status failed">
         <text class="status-icon">⚠️</text>
         <text class="status-text">定位失败，请手动选择</text>
       </view>
       
-      <!-- 手动选择按钮 -->
       <picker mode="region" bindchange="onRegion" class="region-picker-compact">
         <view class="picker-btn-compact">
           <text class="picker-label">{{locationStatus === 'success' ? '重新选择' : '选择城市'}}</text>
@@ -273,159 +268,8 @@
     </view>
   </view>
 
-  <!-- 第2页：饮食偏好 -->
+  <!-- 第2页：风格与语气 (原第3页) -->
   <view class="step-content {{currentStep === 2 ? 'active' : 'hidden'}}" wx:if="{{currentStep === 2}}">
-    
-    <!-- 🔥 新增：菜系偏好 -->
-    <view class="card">
-      <view class="section-title">🍜 菜系偏好（最多3个）</view>
-      <view class="cuisine-hint">已选 {{form.cuisinePrefs.length}}/3</view>
-      <view class="cuisine-grid">
-        <view wx:for="{{cuisineOptions}}" wx:key="value"
-              class="cuisine-tag {{selectedCuisinePrefs[item.value] ? 'active' : ''}}"
-              bindtap="onCuisineToggle" 
-              data-value="{{item.value}}">
-          {{item.label}}
-        </view>
-      </view>
-    </view>
-
-    <!-- 饮食目标 -->
-    <view class="card">
-      <view class="section-title">🎯 饮食目标（可多选）</view>
-      <view class="diet-goals-grid">
-        <view wx:for="{{dietGoalOptions}}" wx:key="value"
-              class="goal-card {{selectedDietGoals[item.value] ? 'active' : ''}}"
-              bindtap="onDietGoalToggle" 
-              data-value="{{item.value}}">
-          <view class="goal-title">{{item.label}}</view>
-          <view class="goal-desc">{{item.desc}}</view>
-        </view>
-      </view>
-    </view>
-
-    <!-- 口味偏好 -->
-    <view class="card">
-      <view class="section-title">🌶️ 口味偏好</view>
-      
-      <view class="taste-section">
-        <view class="taste-label">偏好（可多选）：</view>
-        <view class="taste-options">
-          <text class="option-btn {{selectedTastePreferences['清淡'] ? 'active' : ''}}"
-                bindtap="onTastePreferenceToggle" 
-                data-value="清淡">清淡</text>
-          <text class="option-btn {{selectedTastePreferences['微辣'] ? 'active' : ''}}"
-                bindtap="onTastePreferenceToggle" 
-                data-value="微辣">微辣</text>
-          <text class="option-btn {{selectedTastePreferences['重口'] ? 'active' : ''}}"
-                bindtap="onTastePreferenceToggle" 
-                data-value="重口">重口</text>
-        </view>
-      </view>
-      
-      <view class="taste-section">
-        <view class="taste-label">禁忌（可多选）：</view>
-        <view class="taboo-options">
-          <text class="option-btn {{selectedDietTaboos['不吃葱蒜'] ? 'active' : ''}}"
-                bindtap="onTabooToggle" 
-                data-value="不吃葱蒜">不吃葱蒜</text>
-          <text class="option-btn {{selectedDietTaboos['不吃香菜'] ? 'active' : ''}}"
-                bindtap="onTabooToggle" 
-                data-value="不吃香菜">不吃香菜</text>
-          <text class="option-btn {{selectedDietTaboos['不食海鲜'] ? 'active' : ''}}"
-                bindtap="onTabooToggle" 
-                data-value="不食海鲜">不食海鲜</text>
-          <text class="option-btn {{selectedDietTaboos['乳制品不耐受'] ? 'active' : ''}}"
-                bindtap="onTabooToggle" 
-                data-value="乳制品不耐受">乳制品不耐受</text>
-        </view>
-        <input class="taboo-input" 
-               placeholder="其他禁忌（≤20字）" 
-               maxlength="20"
-               bindinput="onTabooOtherInput"/>
-      </view>
-    </view>
-
-    <!-- 饮食节奏 -->
-    <view class="card">
-      <view class="section-title">⏰ 饮食节奏</view>
-      
-      <view class="rhythm-row">
-        <text class="rhythm-label">买菜频率：</text>
-        <view class="rhythm-options">
-          <text class="option-btn {{form.shoppingFreq === '每天' ? 'active' : ''}}"
-                bindtap="onRhythmSelect" data-field="shoppingFreq" data-value="每天">每天</text>
-          <text class="option-btn {{form.shoppingFreq === '隔天' ? 'active' : ''}}"
-                bindtap="onRhythmSelect" data-field="shoppingFreq" data-value="隔天">隔天</text>
-          <text class="option-btn {{form.shoppingFreq === '每周' ? 'active' : ''}}"
-                bindtap="onRhythmSelect" data-field="shoppingFreq" data-value="每周">每周</text>
-          <text class="option-btn {{form.shoppingFreq === '不固定' ? 'active' : ''}}"
-                bindtap="onRhythmSelect" data-field="shoppingFreq" data-value="不固定">不固定</text>
-        </view>
-      </view>
-      
-      <view class="rhythm-row">
-        <text class="rhythm-label">早餐时间：</text>
-        <view class="rhythm-options">
-          <text class="option-btn {{form.breakfastTime === '7:00-8:00' ? 'active' : ''}}"
-                bindtap="onRhythmSelect" data-field="breakfastTime" data-value="7:00-8:00">7:00-8:00</text>
-          <text class="option-btn {{form.breakfastTime === '8:00-9:00' ? 'active' : ''}}"
-                bindtap="onRhythmSelect" data-field="breakfastTime" data-value="8:00-9:00">8:00-9:00</text>
-          <text class="option-btn {{form.breakfastTime === '跳过' ? 'active' : ''}}"
-                bindtap="onRhythmSelect" data-field="breakfastTime" data-value="跳过">跳过</text>
-        </view>
-      </view>
-      
-      <view class="rhythm-row">
-        <text class="rhythm-label">晚餐时间：</text>
-        <view class="rhythm-options">
-          <text class="option-btn {{form.dinnerTime === '18:00-19:00' ? 'active' : ''}}"
-                bindtap="onRhythmSelect" data-field="dinnerTime" data-value="18:00-19:00">18:00-19:00</text>
-          <text class="option-btn {{form.dinnerTime === '19:00-20:00' ? 'active' : ''}}"
-                bindtap="onRhythmSelect" data-field="dinnerTime" data-value="19:00-20:00">19:00-20:00</text>
-          <text class="option-btn {{form.dinnerTime === '20:00+' ? 'active' : ''}}"
-                bindtap="onRhythmSelect" data-field="dinnerTime" data-value="20:00+">20:00+</text>
-        </view>
-      </view>
-      
-      <view class="rhythm-row">
-        <text class="rhythm-label">外食频率：</text>
-        <view class="rhythm-options">
-          <text class="option-btn {{form.diningOutFreq === '很少' ? 'active' : ''}}"
-                bindtap="onRhythmSelect" data-field="diningOutFreq" data-value="很少">很少</text>
-          <text class="option-btn {{form.diningOutFreq === '偶尔' ? 'active' : ''}}"
-                bindtap="onRhythmSelect" data-field="diningOutFreq" data-value="偶尔">偶尔</text>
-          <text class="option-btn {{form.diningOutFreq === '经常' ? 'active' : ''}}"
-                bindtap="onRhythmSelect" data-field="diningOutFreq" data-value="经常">经常</text>
-        </view>
-      </view>
-    </view>
-
-    <!-- 预算档 -->
-    <view class="card">
-      <view class="section-title">💰 预算档次</view>
-      <view class="budget-grid">
-        <view class="budget-card {{form.budgetLevel === '实惠' ? 'active' : ''}}"
-              bindtap="onBudgetSelect" data-value="实惠">
-          <view class="budget-title">实惠</view>
-          <view class="budget-desc">≤30/人</view>
-        </view>
-        <view class="budget-card {{form.budgetLevel === '小资' ? 'active' : ''}}"
-              bindtap="onBudgetSelect" data-value="小资">
-          <view class="budget-title">小资</view>
-          <view class="budget-desc">40-80/人</view>
-        </view>
-        <view class="budget-card {{form.budgetLevel === '精致' ? 'active' : ''}}"
-              bindtap="onBudgetSelect" data-value="精致">
-          <view class="budget-title">精致</view>
-          <view class="budget-desc">100+/人</view>
-        </view>
-      </view>
-    </view>
-  </view>
-
-  <!-- 第3页：审美语气 -->
-  <view class="step-content {{currentStep === 3 ? 'active' : 'hidden'}}" wx:if="{{currentStep === 3}}">
     
     <!-- 生活风格 -->
     <view class="card">
@@ -473,14 +317,20 @@
         </view>
       </view>
     </view>
+
+    <!-- 提示信息 -->
+    <view class="tip-box">
+      <text class="tip-icon">💡</text>
+      <text class="tip-text">饮食偏好（目标、口味、预算）将在首次生成菜单时设置</text>
+    </view>
   </view>
 
   <!-- 底部按钮 -->
   <view class="bottom-actions">
     <button wx:if="{{currentStep > 1}}" class="btn-secondary" bindtap="prevStep">上一步</button>
-    <button wx:if="{{currentStep < 3}}" class="btn-primary" bindtap="nextStep">
-      {{currentStep === 1 ? '下一步 · 饮食偏好' : '下一步 · 审美与语气'}}
+    <button wx:if="{{currentStep < 2}}" class="btn-primary" bindtap="nextStep">
+      下一步 · 风格与语气
     </button>
-    <button wx:if="{{currentStep === 3}}" class="btn-primary" bindtap="onDone">🎉 进入</button>
+    <button wx:if="{{currentStep === 2}}" class="btn-primary" bindtap="onDone">🎉 进入</button>
   </view>
 </view>

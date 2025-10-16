@@ -1130,24 +1130,24 @@
 /* 菜品卡片 */
 .dish-card {
   position: relative;
-  background: var(--surface-elevated);
-  border-radius: 16rpx;  /* ← 增大圆角 */
-  padding: 24rpx;  /* ← 增大内边距 */
-  border: 3rpx solid var(--border-subtle);  /* ← 加粗边框 */
+  background: white;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.06);
   transition: all 0.3s ease;
-  min-height: 200rpx;  /* ← 增加最小高度 */
+  border: 3rpx solid transparent;
 }
 
 /* 选中状态 - 加强视觉效果 */
 .dish-card.selected {
-  border-color: #F6A44C;  /* 橙色边框 */
-  background: linear-gradient(135deg, rgba(246,164,76,0.15) 0%, rgba(188,169,245,0.15) 100%);
-  box-shadow: 0 8rpx 24rpx rgba(246,164,76,0.3);  /* 加强阴影 */
-  transform: scale(1.02);  /* 轻微放大 */
+  background: #fff8f0;
+  border-color: #ff9933;
+  box-shadow: 0 8rpx 24rpx rgba(255, 153, 51, 0.25);
+  transform: scale(1.02);
 }
 
+
 /* 复选框 - 右上角圆圈 */
-/* 复选框 */
 .dish-checkbox {
   position: absolute;
   top: 16rpx;
@@ -1155,21 +1155,19 @@
   width: 48rpx;
   height: 48rpx;
   border-radius: 50%;
-  border: 3rpx solid #D8D8D8;
+  border: 3rpx solid #e0e0e0;
   background: white;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
-  z-index: 10;
-  overflow: visible;  /* ← 关键：不裁剪内容 */
 }
 
 /* 选中状态 */
 .dish-checkbox.checked {
-  border-color: #F6A44C;
-  background: #F6A44C;
-  transform: scale(1.1);
+  background: #ff9933;
+  border-color: #ff9933;
+  box-shadow: 0 4rpx 12rpx rgba(255, 153, 51, 0.4);
 }
 
 .dish-card.selected .dish-checkbox {
@@ -1180,9 +1178,22 @@
 
 /* 勾选图标 - 终极强制显示版本 */
 .check-icon {
-  font-size: 36rpx;
-  color: #FFFFFF;
-  font-weight: 700;
+  color: white;
+  font-size: 32rpx;
+  font-weight: bold;
+  line-height: 1;
+}
+
+/* 未选中时的圆圈 */
+.dish-card:not(.selected) .dish-checkbox {
+  background: #f5f5f5;
+  border-color: #ddd;
+}
+
+/* 点击反馈 */
+.dish-card:active {
+  transform: scale(0.98);
+  opacity: 0.9;
 }
 
 /* 菜品信息区域 */
@@ -1506,4 +1517,34 @@
   padding: 4rpx 12rpx;
   background: var(--surface-elevated);
   border-radius: var(--radius-sm);
+}
+/* 右上角设置图标 */
+.header {
+  position: relative; /* 确保设置图标能绝对定位 */
+}
+
+.settings-icon {
+  position: absolute;
+  top: 32rpx;
+  right: 32rpx;
+  width: 72rpx;
+  height: 72rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 50%;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+  z-index: 100;
+  transition: all 0.3s ease;
+}
+
+.settings-icon:active {
+  transform: scale(0.95);
+  background: rgba(255, 255, 255, 1);
+}
+
+.settings-icon .icon {
+  font-size: 40rpx;
+  line-height: 1;
 }
