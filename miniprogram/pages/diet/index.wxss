@@ -383,9 +383,6 @@
   margin-right: 16rpx;
 }
 
-.dish-info {
-  flex: 1;
-}
 
 .dish-name {
   font-size: 28rpx;
@@ -1039,12 +1036,6 @@
   box-shadow: 0 4rpx 12rpx rgba(102, 126, 234, 0.3);
 }
 
-/* ========== 候选池容器 ========== */
-.candidate-pool-container {
-  min-height: 100vh;
-  background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
-  padding-bottom: 140rpx; /* 为底部按钮留空间 */
-}
 
 .pool-header {
   padding: 40rpx 30rpx 30rpx;
@@ -1068,11 +1059,6 @@
 }
 
 /* ========== 分类区块 ========== */
-/* 分类区域 */
-.category-section {
-  margin-bottom: 40rpx;
-}
-
 .category-header {
   display: flex;
   justify-content: space-between;
@@ -1119,56 +1105,6 @@
 }
 
 /* ========== 菜品网格 ========== */
-/* 候选池菜品网格 - 改为2列布局 */
-.dish-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);  /* ← 改为2列 */
-  gap: 24rpx;  /* ← 增大间距 */
-  margin-top: 24rpx;
-}
-
-/* 菜品卡片 */
-.dish-card {
-  position: relative;
-  background: white;
-  border-radius: 16rpx;
-  padding: 24rpx;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.06);
-  transition: all 0.3s ease;
-  border: 3rpx solid transparent;
-}
-
-/* 选中状态 - 加强视觉效果 */
-.dish-card.selected {
-  background: #fff8f0;
-  border-color: #ff9933;
-  box-shadow: 0 8rpx 24rpx rgba(255, 153, 51, 0.25);
-  transform: scale(1.02);
-}
-
-
-/* 复选框 - 右上角圆圈 */
-.dish-checkbox {
-  position: absolute;
-  top: 16rpx;
-  right: 16rpx;
-  width: 48rpx;
-  height: 48rpx;
-  border-radius: 50%;
-  border: 3rpx solid #e0e0e0;
-  background: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-}
-
-/* 选中状态 */
-.dish-checkbox.checked {
-  background: #ff9933;
-  border-color: #ff9933;
-  box-shadow: 0 4rpx 12rpx rgba(255, 153, 51, 0.4);
-}
 
 .dish-card.selected .dish-checkbox {
   border-color: #F6A44C;
@@ -1194,14 +1130,6 @@
 .dish-card:active {
   transform: scale(0.98);
   opacity: 0.9;
-}
-
-/* 菜品信息区域 */
-.dish-info {
-  display: flex;
-  flex-direction: column;
-  gap: 8rpx;
-  padding-right: 56rpx;  /* 为复选框留出空间 */
 }
 
 /* 菜品名称 */
@@ -1250,18 +1178,6 @@
   -webkit-line-clamp: 2;  /* 最多显示2行 */
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-/* ========== 底部确认按钮 ========== */
-.pool-footer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 20rpx 30rpx;
-  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
-  background: #fff;
-  box-shadow: 0 -4rpx 12rpx rgba(0,0,0,0.08);
 }
 
 .btn-confirm-large {
@@ -1350,12 +1266,6 @@
   padding: 30rpx;
   border-radius: 16rpx;
   box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.08);
-}
-
-.dish-info {
-  display: flex;
-  flex-direction: column;
-  gap: 12rpx;
 }
 
 .menu-item .dish-name {
@@ -1548,100 +1458,6 @@
   font-size: 40rpx;
   line-height: 1;
 }
-/* ========== 勾选功能修复补丁（添加到 index.wxss 末尾） ========== */
-
-/* ✅ 修复1：确保卡片不遮挡复选框 */
-.dish-card {
-  position: relative;
-  background: var(--surface-elevated);
-  border-radius: 16rpx;
-  padding: 24rpx;
-  border: 3rpx solid var(--border-subtle);
-  transition: all 0.3s ease;
-  min-height: 200rpx;
-  overflow: visible; /* ← 关键：不裁剪溢出内容 */
-}
-
-/* ✅ 修复2：加强选中状态的边框 */
-.dish-card.selected {
-  border-color: #F6A44C !important;  /* ← 强制橙色边框 */
-  border-width: 4rpx !important;      /* ← 加粗边框 */
-  background: rgba(246,164,76,0.12) !important;  /* ← 浅橙背景 */
-  box-shadow: 0 0 0 3rpx rgba(246,164,76,0.3) !important;  /* ← 外发光 */
-  transform: scale(1.02);
-}
-
-/* ✅ 修复3：复选框样式 - 确保可见 */
-.dish-checkbox {
-  position: absolute;
-  top: 12rpx;
-  right: 12rpx;
-  width: 52rpx !important;
-  height: 52rpx !important;
-  border-radius: 50%;
-  border: 4rpx solid #D8D8D8;
-  background: white;
-  display: flex !important;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  z-index: 100 !important;  /* ← 确保在最上层 */
-  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.1);  /* ← 加阴影让复选框凸显 */
-}
-
-/* ✅ 修复4：选中状态的复选框 - 橙色实心圆 */
-.dish-checkbox.checked {
-  border-color: #F6A44C !important;
-  background: #F6A44C !important;
-  transform: scale(1.15) !important;
-  box-shadow: 0 4rpx 12rpx rgba(246,164,76,0.4) !important;
-}
-
-/* ✅ 修复5：白色对勾图标 - 超强制显示 */
-.dish-checkbox .check-icon,
-.dish-checkbox.checked .check-icon,
-.dish-card.selected .dish-checkbox .check-icon {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  font-size: 42rpx !important;
-  color: #FFFFFF !important;
-  font-weight: 900 !important;
-  line-height: 1 !important;
-  position: relative;
-  z-index: 101 !important;
-}
-
-/* ✅ 修复6：确保菜品信息不遮挡复选框 */
-.dish-info {
-  display: flex;
-  flex-direction: column;
-  gap: 8rpx;
-  padding-right: 68rpx;  /* ← 为复选框留足空间 */
-  position: relative;
-  z-index: 1;  /* ← 低于复选框 */
-}
-
-/* ✅ 修复7：点击热区扩大 - 整个卡片都可点 */
-.dish-card::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 50;  /* ← 在内容之上，复选框之下 */
-  cursor: pointer;
-}
-
-/* ✅ 修复8：网格布局调整 */
-.dish-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 28rpx;  /* ← 增大间距，避免点击误触 */
-  padding: 0 24rpx;
-  margin-top: 24rpx;
-}
 
 /* ✅ 修复9：选中时的全卡片高亮动画 */
 @keyframes selected-pulse {
@@ -1653,10 +1469,6 @@
   }
 }
 
-.dish-card.selected {
-  animation: selected-pulse 1s ease-out;
-}
-
 /* ✅ 修复10：修复 wxss 中重复的 .check-icon 定义冲突 */
 .shopping-item .check-mark,
 .item-checkbox .check-mark {
@@ -1664,91 +1476,6 @@
   font-size: 24rpx;
   color: white;
   font-weight: 600;
-}
-/* 终极显示强制 */
-.dish-checkbox .check-icon {
-  display: block !important;
-  width: 100% !important;
-  height: 100% !important;
-  text-align: center !important;
-  line-height: 52rpx !important;
-  font-size: 48rpx !important;
-  color: #FFFFFF !important;
-  font-weight: 900 !important;
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-/* ========== 纯CSS勾选方案 - 添加到 index.wxss 末尾，替换之前的修复 ========== */
-
-/* 🔴 方案：用 CSS ::after 伪元素画对勾，不依赖 <text> 标签 */
-
-/* 复选框基础样式 */
-.dish-checkbox {
-  position: absolute;
-  top: 12rpx;
-  right: 12rpx;
-  width: 52rpx;
-  height: 52rpx;
-  border-radius: 50%;
-  border: 4rpx solid #D8D8D8;
-  background: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  z-index: 100;
-  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.1);
-}
-
-/* 选中状态 - 橙色实心圆 */
-.dish-checkbox.checked {
-  border-color: #F6A44C;
-  background: #F6A44C;
-  transform: scale(1.15);
-  box-shadow: 0 4rpx 12rpx rgba(246,164,76,0.4);
-}
-
-/* ✅ 核心：用CSS伪元素画白色对勾 */
-.dish-checkbox.checked::after {
-  content: '✓';
-  display: block;
-  width: 100%;
-  height: 100%;
-  text-align: center;
-  line-height: 52rpx;
-  font-size: 48rpx;
-  color: #FFFFFF;
-  font-weight: 900;
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-
-/* 🔴 隐藏所有 .check-icon，完全用CSS绘制 */
-.dish-checkbox .check-icon {
-  display: none !important;
-}
-
-/* 卡片基础样式 */
-.dish-card {
-  position: relative;
-  background: #F8F9FA;
-  border-radius: 16rpx;
-  padding: 24rpx;
-  border: 3rpx solid #E0E0E0;
-  transition: all 0.3s ease;
-  min-height: 200rpx;
-  overflow: visible;
-}
-
-/* 卡片选中状态 */
-.dish-card.selected {
-  border-color: #F6A44C !important;
-  border-width: 4rpx !important;
-  background: rgba(246,164,76,0.12) !important;
-  box-shadow: 0 0 0 3rpx rgba(246,164,76,0.3) !important;
-  transform: scale(1.02);
 }
 
 /* 选中动画 */
@@ -1759,20 +1486,6 @@
   50% { 
     box-shadow: 0 0 0 6rpx rgba(246,164,76,0.2); 
   }
-}
-
-.dish-card.selected {
-  animation: selected-pulse 1s ease-out;
-}
-
-/* 菜品信息区域 */
-.dish-info {
-  display: flex;
-  flex-direction: column;
-  gap: 8rpx;
-  padding-right: 68rpx;
-  position: relative;
-  z-index: 1;
 }
 
 /* 菜品名称 */
@@ -1810,28 +1523,151 @@
   text-overflow: ellipsis;
 }
 
-/* 点击热区扩大 */
-.dish-card::after {
-  content: '';
+/* ========== 🔴 层级修复 - 添加到 index.wxss 末尾 ========== */
+
+/* 1. 降低底部按钮的层级 */
+.pool-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20rpx 30rpx;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  background: #fff;
+  box-shadow: 0 -4rpx 12rpx rgba(0,0,0,0.08);
+  z-index: 50 !important;  /* ← 降低层级，不要太高 */
+}
+
+/* 2. 提升候选池容器的层级 */
+.candidate-pool-container {
+  position: relative;
+  z-index: 10 !important;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+  padding-bottom: 140rpx;
+}
+
+/* 3. 提升菜品卡片的层级 */
+.dish-card {
+  position: relative;
+  z-index: 100 !important;  /* ← 提升，确保在底部按钮之上可点击 */
+  background: #F8F9FA;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  border: 3rpx solid #E0E0E0;
+  transition: all 0.3s ease;
+  min-height: 200rpx;
+  overflow: visible;
+}
+
+/* 4. 复选框保持最高层级 */
+.dish-checkbox {
+  position: absolute;
+  top: 12rpx;
+  right: 12rpx;
+  width: 52rpx;
+  height: 52rpx;
+  border-radius: 50%;
+  border: 4rpx solid #D8D8D8;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 200 !important;  /* ← 最高层级 */
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.1);
+  pointer-events: auto !important;  /* ← 确保可点击 */
+}
+
+/* 5. 选中状态 */
+.dish-checkbox.checked {
+  border-color: #F6A44C !important;
+  background: #F6A44C !important;
+  transform: scale(1.15);
+  box-shadow: 0 4rpx 12rpx rgba(246,164,76,0.4);
+}
+
+/* 6. 用CSS伪元素画对勾 */
+.dish-checkbox.checked::after {
+  content: '✓';
+  display: block !important;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  line-height: 52rpx;
+  font-size: 48rpx;
+  color: #FFFFFF !important;
+  font-weight: 900;
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 50;
-  cursor: pointer;
 }
 
-/* 网格布局 */
+/* 7. 隐藏原来的 text 标签，完全用CSS绘制 */
+.dish-checkbox .check-icon {
+  display: none !important;
+}
+
+/* 8. 卡片选中状态 */
+.dish-card.selected {
+  border-color: #F6A44C !important;
+  border-width: 4rpx !important;
+  background: rgba(246,164,76,0.12) !important;
+  box-shadow: 0 0 0 3rpx rgba(246,164,76,0.3) !important;
+  transform: scale(1.02);
+  z-index: 101 !important;  /* ← 选中时层级再提升一点 */
+}
+
+/* 9. 移除可能遮挡的伪元素 */
+.dish-card::after {
+  display: none !important;
+}
+
+/* 10. 确保菜品信息不遮挡复选框 */
+.dish-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+  padding-right: 68rpx;
+  position: relative;
+  z-index: 1;  /* ← 低于复选框 */
+  pointer-events: none !important;  /* ← 不拦截点击事件 */
+}
+
+/* 11. 但text内容需要可选中 */
+.dish-info text {
+  pointer-events: auto !important;
+}
+
+/* 12. 网格布局 */
 .dish-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 28rpx;
   padding: 0 24rpx;
   margin-top: 24rpx;
+  position: relative;
+  z-index: 100;
 }
 
-/* 🔴 调试辅助：强制显示边框（调试完可删除） */
-.dish-checkbox.checked {
-  border: 5rpx solid red !important; /* 先用红色测试，确认选中生效 */
+/* 13. 分类区块 */
+.category-section {
+  position: relative;
+  z-index: 100;
+  margin-bottom: 40rpx;
 }
+
+/* 🔴 调试：临时显示层级（调试完可删除） */
+/*
+.pool-footer {
+  background: rgba(255,0,0,0.3) !important;
+}
+
+.dish-card {
+  border: 2rpx dashed blue !important;
+}
+
+.dish-checkbox {
+  border: 3rpx solid red !important;
+}
+*/
