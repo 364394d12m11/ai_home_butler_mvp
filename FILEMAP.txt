@@ -1,0 +1,18 @@
+
+/workspaces/ai_home_butler_mvp
+├── .git
+├── .gitattributes
+├── .gitignore
+├── FILEMAP.txt
+├── README.md
+├── cloudfunctions
+├── miniprogram
+├── project.config.json
+├── project.private.config.json
+└── sitemap.json
+
+directory: 3 file: 7
+
+
+
+[2K[1G
