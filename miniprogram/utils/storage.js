@@ -1,5 +1,5 @@
 // utils/storage.js - V3.0 升级版
-export const KEY = {
+const KEY = {
   PROFILE: 'USER_PROFILE',
   PROFILE_V3: 'USER_PROFILE_V3',  // V3.0 新增
   HELPERS_V3: 'HELPERS_V3',       // V3.0 新增
@@ -14,7 +14,7 @@ export const KEY = {
   FEEDBACK_LOGS: 'FEEDBACK_LOGS_V3'
 }
 
-export function get(key, defaultValue = null) {
+function get(key, defaultValue = null) {
   try {
     return wx.getStorageSync(key) || defaultValue
   } catch (e) {
@@ -23,7 +23,7 @@ export function get(key, defaultValue = null) {
   }
 }
 
-export function set(key, value) {
+function set(key, value) {
   try {
     wx.setStorageSync(key, value)
     return true
@@ -33,7 +33,7 @@ export function set(key, value) {
   }
 }
 
-export function remove(key) {
+function remove(key) {
   try {
     wx.removeStorageSync(key)
     return true
@@ -44,7 +44,7 @@ export function remove(key) {
 }
 
 // V3.0 新增：生成六维画像数据
-export function generateSixDimensions(formData) {
+function generateSixDimensions(formData) {
   const { familyType, childCount, helpers, dietGoals, budgetLevel, lifeStyle } = formData
   
   // 1. 结构维 (家庭结构复杂度)
@@ -114,7 +114,7 @@ export function generateSixDimensions(formData) {
 }
 
 // V3.0 新增：保存用户画像
-export function saveUserProfileV3(formData) {
+function saveUserProfileV3(formData) {
   const sixDimensions = generateSixDimensions(formData)
   
   // 主画像
@@ -176,11 +176,36 @@ export function saveUserProfileV3(formData) {
 }
 
 // V3.0 新增：获取完整用户画像
-export function getUserProfileV3() {
+function getUserProfileV3() {
   const profile = get(KEY.PROFILE_V3, {})
   const helpers = get(KEY.HELPERS_V3, [])
   const dietPref = get(KEY.DIET_PREF_V3, {})
   const sixDimensions = get(KEY.SIX_DIMENSIONS, {})
+  
+  // ========== 如果数据为空，返回默认值 ==========
+  if (!profile || Object.keys(profile).length === 0) {
+    console.log('⚠️ 用户数据为空，返回默认值')
+    return {
+      isV3: false,
+      profile: {
+        ai_tone: '温柔',
+        has_child: false,
+        health_goal: ''
+      },
+      family: { 
+        adults: 2, 
+        kids: 0, 
+        elders: 0 
+      },
+      dietPref: { 
+        budget: '实惠', 
+        preferences: [] 
+      },
+      helpers: [],
+      health_goals: [],
+      allergies: []
+    }
+  }
   
   return {
     profile,
@@ -246,7 +271,7 @@ function getHelperDuties(type) {
 }
 
 // 覆盖机制工具函数 (保持原有逻辑)
-export function applyOverride(type, value, options = {}) {
+function applyOverride(type, value, options = {}) {
   const overrides = get(KEY.OVERRIDES, [])
   const today = new Date()
   const tomorrow = new Date(today)
@@ -270,7 +295,7 @@ export function applyOverride(type, value, options = {}) {
   return newOverride
 }
 
-export function getActiveOverrides(date = null) {
+function getActiveOverrides(date = null) {
   const overrides = get(KEY.OVERRIDES, [])
   const targetDate = date || formatDateYMD(new Date())
   
@@ -279,14 +304,14 @@ export function getActiveOverrides(date = null) {
   })
 }
 
-export function clearOverridesByType(type) {
+function clearOverridesByType(type) {
   const overrides = get(KEY.OVERRIDES, [])
   const filtered = overrides.filter(o => o.type !== type)
   set(KEY.OVERRIDES, filtered)
   return filtered
 }
 
-export function clearExpiredOverrides() {
+function clearExpiredOverrides() {
   const overrides = get(KEY.OVERRIDES, [])
   const today = formatDateYMD(new Date())
   const active = overrides.filter(o => o.date_to >= today)
@@ -317,7 +342,7 @@ function extractKidsAges(formData) {
     return parseFloat((years + months / 12).toFixed(1))
   })
 }
-export function saveDietPreferences(preferences) {
+function saveDietPreferences(preferences) {
  const {
    goals,           // 饮食目标数组
    allergies,       // 过敏/禁忌数组
@@ -346,4 +371,21 @@ export function saveDietPreferences(preferences) {
  set(KEY.PROFILE, legacyProfile)
  
  return updated
+}
+
+// 在文件最后添加（删除所有单独的 export）
+// ========== 统一导出 ==========
+module.exports = {
+  KEY,
+  get,
+  set,
+  remove,
+  generateSixDimensions,
+  saveUserProfileV3,
+  getUserProfileV3,
+  applyOverride,
+  getActiveOverrides,
+  clearOverridesByType,
+  clearExpiredOverrides,
+  saveDietPreferences
 }

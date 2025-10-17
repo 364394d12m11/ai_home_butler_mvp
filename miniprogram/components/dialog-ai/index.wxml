@@ -1,5 +1,5 @@
-// components/dialog-ai/index.wxml
-<view class="dialog-mask" wx:if="{{show}}" bindtap="close">
+<!-- components/dialog-ai/index.wxml -->
+<view class="dialog-mask" wx:if="{{show}}" catchtap="onMaskTap">
   <view class="dialog-container" catchtap="">
     
     <!-- 对话历史 -->
@@ -10,77 +10,114 @@
         id="msg-{{index}}"
         class="message {{item.role}}">
         <view class="message-content">
-          <image wx:if="{{item.meta.type === 'image'}}" src="{{item.meta.url}}" mode="aspectFill" />
+          <!-- 图片消息 -->
+          <image wx:if="{{item.meta.type === 'image'}}" 
+                 src="{{item.meta.url}}" 
+                 mode="aspectFill" 
+                 class="message-image" />
+          
+<!-- 语音消息 -->
+<view wx:elif="{{item.meta.type === 'voice'}}" 
+      class="voice-message {{item.meta.playing ? 'playing' : ''}}"
+      bindtap="toggleVoicePlay"
+      bindlongpress="showVoiceMenu"
+      data-index="{{index}}">
+  
+  <!-- 语音动画 -->
+  <view class="voice-animation">
+    <view class="wave {{item.meta.playing ? 'active' : ''}}"></view>
+    <view class="wave {{item.meta.playing ? 'active' : ''}}"></view>
+    <view class="wave {{item.meta.playing ? 'active' : ''}}"></view>
+  </view>
+  
+  <!-- 时长 -->
+  <text class="voice-duration">{{item.meta.duration || 1}}"</text>
+  
+  <!-- 播放进度（播放时显示） -->
+  <text wx:if="{{item.meta.playing}}" class="voice-progress">
+    {{item.meta.currentTime || 0}}"
+  </text>
+  
+  <!-- 倍速标识（>10秒且已设置倍速） -->
+  <text wx:if="{{item.meta.duration > 10 && item.meta.playbackRate > 1}}" 
+        class="voice-speed">
+    {{item.meta.playbackRate}}x
+  </text>
+  
+  <!-- 未听标识 -->
+  <view wx:if="{{!item.meta.listened}}" class="unread-dot"></view>
+</view>
+          
+          <!-- 文字消息 -->
           <text wx:else>{{item.content}}</text>
         </view>
       </view>
       
       <view wx:if="{{processing}}" class="message assistant typing">
         <view class="typing-indicator">
-          <span></span><span></span><span></span>
+          <view></view><view></view><view></view>
         </view>
       </view>
     </scroll-view>
     
-    <!-- 输入区 -->
-    <view class="input-area">
+    <!-- 输入区 - 微信风格 -->
+    <view class="input-area-wechat">
       
-      <!-- 模式切换 -->
-      <view class="mode-tabs">
-        <view 
-          class="mode-tab {{inputMode === 'text' ? 'active' : ''}}"
-          data-mode="text"
-          bindtap="switchMode">
-          文字
-        </view>
-        <view 
-          class="mode-tab {{inputMode === 'voice' ? 'active' : ''}}"
-          data-mode="voice"
-          bindtap="switchMode">
-          语音
-        </view>
-        <view 
-          class="mode-tab {{inputMode === 'image' ? 'active' : ''}}"
-          data-mode="image"
-          bindtap="switchMode">
-          图片
+      <!-- 左侧：语音按钮 -->
+      <view class="left-actions">
+        <view class="icon-btn" bindtap="toggleVoiceMode">
+          <text>{{isVoiceMode ? '⌨️' : '🎤'}}</text>
         </view>
       </view>
       
-      <!-- 文本输入 -->
-      <view wx:if="{{inputMode === 'text'}}" class="text-input-area">
+      <!-- 中间：输入框 或 语音按钮 -->
+      <view class="input-main">
+        <!-- 文本输入模式 -->
         <input 
+          wx:if="{{!isVoiceMode}}"
           class="text-input" 
           value="{{inputText}}"
           placeholder="说点什么..."
           bindinput="onInputChange"
           confirm-type="send"
           bindconfirm="sendText"
+          adjust-position="{{true}}"
         />
-        <button class="send-btn" bindtap="sendText" disabled="{{!inputText || processing}}">
-          发送
-        </button>
-      </view>
-      
-      <!-- 语音输入 -->
-      <view wx:if="{{inputMode === 'voice'}}" class="voice-input-area">
+        
+        <!-- 语音输入模式 -->
         <button 
-          class="record-btn {{recording ? 'recording' : ''}}"
+          wx:else
+          class="voice-btn {{recording ? 'recording' : ''}}"
           bindtouchstart="startRecord"
-          bindtouchend="stopRecord">
-          <text wx:if="{{!recording}}">按住说话</text>
-          <text wx:else>录音中 {{recordTime}}s</text>
+          bindtouchend="stopRecord"
+          bindtouchcancel="stopRecord">
+          {{recording ? '松开 结束' : '按住 说话'}}
         </button>
       </view>
       
-      <!-- 图片输入 -->
-      <view wx:if="{{inputMode === 'image'}}" class="image-input-area">
-        <button class="upload-btn" bindtap="chooseImage" disabled="{{processing}}">
-          📷 拍冰箱照
-        </button>
-        <text class="hint">识别食材，推荐可做菜品</text>
+      <!-- 右侧：相册/拍照/发送 -->
+      <view class="right-actions">
+        
+        <!-- 有文字时显示发送按钮 -->
+        <view wx:if="{{inputText}}" class="send-btn" bindtap="sendText">
+          发送
+        </view>
+        
+        <!-- 没文字时显示相册和拍照 -->
+        <view wx:else class="media-actions">
+          <!-- 相册 -->
+          <view class="icon-btn" bindtap="chooseFromAlbum">
+            <text>🖼️</text>
+          </view>
+          <!-- 拍照 -->
+          <view class="icon-btn" bindtap="takePhoto">
+            <text>📷</text>
+          </view>
+        </view>
+        
       </view>
       
     </view>
+    
   </view>
 </view>

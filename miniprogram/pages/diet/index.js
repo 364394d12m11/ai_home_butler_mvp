@@ -2,11 +2,10 @@
 
 // =========== V5.3 新增工具类 ===========
 const { applyUIPatch, executeUndo } = require('../../utils/ui-patch')
-const { UndoRedoManager } = require('../../utils/undo-redo')
+const { undoRedoManager, applyUndoRedo } = require('../../utils/undo-redo.js')  // ← 新增这行
 const { exportShoppingList } = require('../../utils/shopping-list-exporter') 
 
 // =========== 创建实例 ===========
-const undoManager = new UndoRedoManager()
 var datetime = require('../../utils/datetime')
 const { getUserProfileV3 } = require('../../utils/storage')
 const { track, EVENT_TYPES } = require('../../utils/shadow')
@@ -23,6 +22,7 @@ Page({
     showDialog: false,
     dialogProcessing: false,
     canUndo: false,
+    canRedo: false,   // 是否可以重做
     isGenerating: false,
     candidatePoolLocked: false,
 
@@ -152,6 +152,14 @@ Page({
     this.loadUserProfile()
     this.loadUserDataV3()
     
+    // ========== 新增：启动撤销/重做检查定时器 ==========
+    this.undoCheckTimer = setInterval(() => {
+      this.setData({
+        canUndo: undoRedoManager.canUndo(),
+        canRedo: undoRedoManager.canRedo()
+      })
+    }, 1000)
+    
     // 如果候选池已锁定，直接返回
     if (this.data.candidatePoolLocked) {
       console.log('✅ 候选池已锁定，跳过重置')
@@ -197,6 +205,14 @@ Page({
     }
     
     console.log('========== 🟡 ONSHOW结束 ==========')
+  },
+  
+  // ========== 新增：页面隐藏时清理定时器 ==========
+  onHide: function() {
+    if (this.undoCheckTimer) {
+      clearInterval(this.undoCheckTimer)
+      this.undoCheckTimer = null
+    }
   },
 
   tryLoadFinalMenu: function() {
@@ -532,74 +548,70 @@ Page({
     console.log('切换模式:', mode)
   },
 
-  toggleDishSelection: function(e) {
-    console.log('========== 🔵 toggleDishSelection 开始 ==========')
-    
-    if (e && e.stopPropagation) {
-      e.stopPropagation()
-    }
-    
+  toggleDishSelection(e) {
     const { type, dishId } = e.currentTarget.dataset
     
-    console.log('1️⃣ 点击:', { type, dishId })
-    
     if (!type || !dishId) {
-      console.warn('❌ 参数缺失')
+      console.warn('缺少必要参数')
       return
     }
     
-    // ⚠️ 关键：深拷贝整个 selectedDishes 对象
-    const selectedDishes = JSON.parse(JSON.stringify(this.data.selectedDishes))
+    // 深拷贝整个 candidatePool
+    const candidatePool = JSON.parse(JSON.stringify(this.data.candidatePool))
     
-    // 确保该类型的数组存在
-    if (!selectedDishes[type]) {
-      selectedDishes[type] = []
+    // 找到目标菜品
+    const dish = candidatePool[type].find(d => d.id === dishId)
+    
+    if (!dish) {
+      console.warn('未找到菜品:', dishId)
+      return
     }
     
-    const currentList = selectedDishes[type]
-    const index = currentList.indexOf(dishId)
+    // 切换选中状态
+    dish.selected = !dish.selected
     
-    console.log('2️⃣ 当前选中列表:', currentList)
-    console.log('3️⃣ dishId 位置:', index)
+    // 强制刷新整个 candidatePool
+    this.setData({ candidatePool })
     
-    if (index > -1) {
-      // 取消选择
-      currentList.splice(index, 1)
-      console.log('4️⃣ 取消选择')
-    } else {
-      // 添加选择
-      currentList.push(dishId)
-      console.log('4️⃣ 添加选择')
-    }
-    
-    // 更新计数
-    const selectedCount = {
-      meat: (selectedDishes.meat || []).length,
-      veg: (selectedDishes.veg || []).length,
-      soup: (selectedDishes.soup || []).length,
-      staple: (selectedDishes.staple || []).length
-    }
-    selectedCount.total = selectedCount.meat + selectedCount.veg + selectedCount.soup + selectedCount.staple
-    
-    console.log('5️⃣ 更新后 selectedDishes:', selectedDishes)
-    console.log('6️⃣ 更新后 selectedCount:', selectedCount)
-    
-    // ⚠️ 关键：一次性更新整个对象，不用路径语法
-    this.setData({
-      selectedDishes: selectedDishes,
-      selectedCount: selectedCount
-    }, () => {
-      console.log('7️⃣ setData 完成')
-      console.log('8️⃣ 验证数据:', this.data.selectedDishes[type])
-      
-      // 强制页面更新（兜底方案）
-      this.setData({
-        _forceUpdate: Date.now()
-      })
-    })
-    
-    console.log('========== 🔵 toggleDishSelection 结束 ==========')
+    // 重新计算选中数量
+    this.updateSelectedCount()
   },
+
+  // 计算选中数量
+updateSelectedCount() {
+  const { candidatePool } = this.data
+  
+  const count = {
+    meat: 0,
+    veg: 0,
+    soup: 0,
+    staple: 0,
+    total: 0
+  }
+  
+  // 遍历候选池，统计选中的菜品
+  Object.keys(candidatePool).forEach(type => {
+    const dishes = candidatePool[type] || []
+    count[type] = dishes.filter(d => d.selected).length
+  })
+  
+  count.total = count.meat + count.veg + count.soup + count.staple
+  
+  // 同步更新 selectedDishes（ID数组）
+  const selectedDishes = {
+    meat: candidatePool.meat.filter(d => d.selected).map(d => d.id),
+    veg: candidatePool.veg.filter(d => d.selected).map(d => d.id),
+    soup: candidatePool.soup.filter(d => d.selected).map(d => d.id),
+    staple: candidatePool.staple.filter(d => d.selected).map(d => d.id)
+  }
+  
+  this.setData({ 
+    selectedCount: count,
+    selectedDishes: selectedDishes
+  })
+  
+  console.log('✅ 已选菜品:', count)
+},
   
   getDishById: function(type, dishId) {
     const pool = this.data.candidatePool[type] || []
@@ -1412,6 +1424,10 @@ Page({
 
   replaceSingleDish: function(e) {
     var dishId = e.currentTarget.dataset.dishId
+      // ========== 新增：记录撤销前的状态 ==========
+  const beforeState = {
+    candidatePool: JSON.parse(JSON.stringify(this.data.candidatePool))  // 深拷贝
+  }
     var section = e.currentTarget.dataset.section
     this.recordUserAction('menu_replace_one', { dishId: dishId, section: section, from: 'sheet' })
     track(EVENT_TYPES.MENU_REPLACE_ONE, { dish_id: dishId, section: section })
@@ -1420,6 +1436,25 @@ Page({
       title: '换菜功能开发中', 
       icon: 'none' 
     })
+      // ========== 新增：记录撤销后的状态 ==========
+  const afterState = {
+    candidatePool: JSON.parse(JSON.stringify(this.data.candidatePool))
+  }
+  
+  // ========== 新增：保存到撤销栈 ==========
+  undoRedoManager.pushAction({
+    token: `replace_${dishId}_${Date.now()}`,  // 唯一标识
+    type: 'replaceDish',
+    before: beforeState,
+    after: afterState
+  })
+  
+  // ========== 新增：显示撤销提示 ==========
+  wx.showToast({ 
+    title: '已替换（10秒内可撤销）', 
+    icon: 'none',
+    duration: 2000
+  })
   },
 
   openShoppingList: function() {
@@ -1787,7 +1822,21 @@ Page({
     // =========== V5.3 新增方法 ===========
   
     handleOpenDialog() {
+      // 防抖：500ms 内只能触发一次
+      if (this._dialogOpening) {
+        console.log('⚠️ 防抖拦截重复点击')
+        return
+      }
+      
+      this._dialogOpening = true
+      
+      console.log('========== 打开Dialog ==========')
       this.setData({ showDialog: true })
+      
+      // 500ms 后解除锁定
+      setTimeout(() => {
+        this._dialogOpening = false
+      }, 500)
     },
     
     handleCloseDialog() {
@@ -1881,7 +1930,31 @@ Page({
         wx.hideLoading()
       }
     },
+     // ========== 新增：撤销功能 ==========
+  handleUndo() {
+    if (!undoRedoManager.canUndo()) {
+      wx.showToast({ title: '没有可撤销的操作', icon: 'none' })
+      return
+    }
     
+    const action = undoRedoManager.undo()
+    if (action) {
+      applyUndoRedo(this, action, 'undo')
+    }
+  },
+  
+  // ========== 新增：重做功能 ==========
+  handleRedo() {
+    if (!undoRedoManager.canRedo()) {
+      wx.showToast({ title: '没有可重做的操作', icon: 'none' })
+      return
+    }
+    
+    const action = undoRedoManager.redo()
+    if (action) {
+      applyUndoRedo(this, action, 'redo')
+    }
+  },
     getSelectedIngredients() {
       const { candidatePool, selectedDishes } = this.data
       const ingredients = []

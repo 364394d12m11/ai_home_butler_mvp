@@ -13,14 +13,99 @@ Component({
   data: {
     inputMode: 'text', // text | voice | image
     inputText: '',
+    isVoiceMode: false,  // ← 新增：是否语音模式
     recording: false,
     recordTime: 0,
     recordTimer: null,
+    voiceContext: null,  // 当前播放的语音上下文
+    currentPlayingIndex: -1,  // 当前播放的消息索引
     processing: false,
     messages: [] // 对话历史
   },
   
   methods: {
+
+// 切换语音/文字模式
+toggleVoiceMode() {
+  this.setData({ 
+    isVoiceMode: !this.data.isVoiceMode 
+  })
+},
+
+// 从相册选择
+async chooseFromAlbum() {
+  if (!this.checkRateLimit('image', 3000)) {
+    return
+  }
+  
+  try {
+    const res = await wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sourceType: ['album'],  // 只允许相册
+      sizeType: ['compressed']
+    })
+    
+    await this.handleImageUpload(res.tempFiles[0].tempFilePath)
+  } catch (e) {
+    if (!e.errMsg?.includes('cancel')) {
+      this.showError('选择图片失败')
+    }
+  }
+},
+
+// 拍照
+async takePhoto() {
+  if (!this.checkRateLimit('image', 3000)) {
+    return
+  }
+  
+  try {
+    const res = await wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sourceType: ['camera'],  // 只允许拍照
+      sizeType: ['compressed']
+    })
+    
+    await this.handleImageUpload(res.tempFiles[0].tempFilePath)
+  } catch (e) {
+    if (!e.errMsg?.includes('cancel')) {
+      this.showError('拍照失败')
+    }
+  }
+},
+
+// 处理图片上传（复用逻辑）
+async handleImageUpload(filePath) {
+  this.setData({ processing: true })
+  this.addMessage('user', '[图片]', { 
+    type: 'image', 
+    url: filePath 
+  })
+  
+  try {
+    const uploadResult = await wx.cloud.uploadFile({
+      cloudPath: `fridge/${Date.now()}.jpg`,
+      filePath: filePath
+    })
+    
+    const result = await this.callAIRouter({
+      modality: 'image',
+      payload: { imageUrl: uploadResult.fileID },
+      context: this.getContext()
+    })
+    
+    this.handleAIResponse(result)
+    this.trackEvent('image_sent', { success: true })
+    
+  } catch (e) {
+    this.showError('图片处理失败')
+  } finally {
+    this.setData({ processing: false })
+  }
+},
+
     // ==================== 模式切换 ====================
     
     switchMode(e) {
@@ -116,7 +201,11 @@ Component({
     
     async sendVoice(audioPath) {
       this.setData({ processing: true })
-      this.addMessage('user', '[语音消息]', { type: 'voice' })
+      this.addMessage('user', '[语音消息]', { 
+        type: 'voice',
+        duration: this.data.recordTime,  // ← 添加时长
+        audioPath: audioPath
+      })
       
       try {
         // 1. 上传音频到云存储
@@ -148,52 +237,235 @@ Component({
       }
     },
     
-    // ==================== 图片输入 ====================
+// ==================== 语音播放控制 ====================
+
+// 切换播放/暂停
+toggleVoicePlay(e) {
+  const index = e.currentTarget.dataset.index
+  const message = this.data.messages[index]
+  
+  if (!message || message.meta.type !== 'voice') return
+  
+  // 如果是同一条消息
+  if (this.data.currentPlayingIndex === index) {
+    if (message.meta.playing) {
+      // 暂停
+      this.pauseVoice(index)
+    } else {
+      // 继续播放
+      this.resumeVoice(index)
+    }
+  } else {
+    // 停止当前播放，播放新的
+    this.stopCurrentVoice()
+    this.playVoice(index)
+  }
+},
+
+// 播放语音
+playVoice(index) {
+  const messages = this.data.messages
+  const message = messages[index]
+  
+  if (!message.meta.audioUrl && !message.meta.audioPath) {
+    wx.showToast({ title: '语音已过期', icon: 'none' })
+    return
+  }
+  
+  const audioSrc = message.meta.audioUrl || message.meta.audioPath
+  
+  // 创建音频上下文
+  const innerAudioContext = wx.createInnerAudioContext()
+  innerAudioContext.src = audioSrc
+  innerAudioContext.playbackRate = message.meta.playbackRate || 1.0
+  
+  // 播放
+  innerAudioContext.play()
+  
+  // 更新状态
+  messages[index].meta.playing = true
+  messages[index].meta.listened = true
+  this.setData({ 
+    messages,
+    currentPlayingIndex: index,
+    voiceContext: innerAudioContext
+  })
+  
+  // 监听播放进度
+  innerAudioContext.onTimeUpdate(() => {
+    messages[index].meta.currentTime = Math.floor(innerAudioContext.currentTime)
+    this.setData({ messages })
+  })
+  
+  // 播放完成
+  innerAudioContext.onEnded(() => {
+    messages[index].meta.playing = false
+    messages[index].meta.currentTime = 0
+    this.setData({ 
+      messages,
+      currentPlayingIndex: -1,
+      voiceContext: null
+    })
+  })
+  
+  // 播放错误
+  innerAudioContext.onError((res) => {
+    console.error('播放失败:', res)
+    wx.showToast({ title: '播放失败', icon: 'none' })
+    messages[index].meta.playing = false
+    this.setData({ messages })
+  })
+},
+
+// 暂停播放
+pauseVoice(index) {
+  if (this.data.voiceContext) {
+    this.data.voiceContext.pause()
     
-    async chooseImage() {
-      // 频控：≥10s 才能再次上传图片
-      if (!this.checkRateLimit('image', 10000)) {
-        wx.showToast({ title: '上传太频繁了', icon: 'none' })
-        return
-      }
+    const messages = this.data.messages
+    messages[index].meta.playing = false
+    this.setData({ messages })
+  }
+},
+
+// 继续播放
+resumeVoice(index) {
+  if (this.data.voiceContext) {
+    this.data.voiceContext.play()
+    
+    const messages = this.data.messages
+    messages[index].meta.playing = true
+    this.setData({ messages })
+  }
+},
+
+// 停止当前播放
+stopCurrentVoice() {
+  if (this.data.currentPlayingIndex >= 0) {
+    if (this.data.voiceContext) {
+      this.data.voiceContext.stop()
+    }
+    
+    const messages = this.data.messages
+    messages[this.data.currentPlayingIndex].meta.playing = false
+    messages[this.data.currentPlayingIndex].meta.currentTime = 0
+    this.setData({ 
+      messages,
+      currentPlayingIndex: -1,
+      voiceContext: null
+    })
+  }
+},
+
+// 长按显示菜单（倍速、转文字等）
+showVoiceMenu(e) {
+  const index = e.currentTarget.dataset.index
+  const message = this.data.messages[index]
+  
+  if (!message || message.meta.type !== 'voice') return
+  
+  const duration = message.meta.duration || 0
+  const itemList = []
+  
+  // 超过10秒才能倍速
+  if (duration > 10) {
+    const currentRate = message.meta.playbackRate || 1.0
+    if (currentRate === 1.0) {
+      itemList.push('2倍速播放')
+    } else {
+      itemList.push('正常播放')
+    }
+  }
+  
+  itemList.push('转文字')
+  itemList.push('删除')
+  
+  wx.showActionSheet({
+    itemList: itemList,
+    success: (res) => {
+      const action = itemList[res.tapIndex]
       
-      try {
-        const res = await wx.chooseImage({
-          count: 1,
-          sizeType: ['compressed'],
-          sourceType: ['camera', 'album']
-        })
-        
-        this.setData({ processing: true })
-        this.addMessage('user', '[冰箱照]', { type: 'image', url: res.tempFilePaths[0] })
-        
-        // 上传到云存储
-        const uploadResult = await wx.cloud.uploadFile({
-          cloudPath: `fridge/${Date.now()}.jpg`,
-          filePath: res.tempFilePaths[0]
-        })
-        
-        // 调用AI Router
-        const result = await this.callAIRouter({
-          modality: 'image',
-          payload: { imageUrl: uploadResult.fileID },
-          context: this.getContext()
-        })
-        
-        this.handleAIResponse(result)
-        
-        // 埋点
-        this.trackEvent('image_sent', { success: true })
-        
-      } catch (e) {
-        if (e.errMsg && e.errMsg.includes('cancel')) return
-        this.showError('图片处理失败')
-        this.trackEvent('image_sent', { success: false, error: e.message })
-      } finally {
-        this.setData({ processing: false })
+      if (action === '2倍速播放') {
+        this.setVoiceSpeed(index, 2.0)
+      } else if (action === '正常播放') {
+        this.setVoiceSpeed(index, 1.0)
+      } else if (action === '转文字') {
+        this.voiceToText(index)
+      } else if (action === '删除') {
+        this.deleteMessage(index)
       }
-    },
-    
+    }
+  })
+},
+
+// 设置倍速
+setVoiceSpeed(index, rate) {
+  const messages = this.data.messages
+  messages[index].meta.playbackRate = rate
+  this.setData({ messages })
+  
+  // 如果正在播放，更新播放速度
+  if (this.data.currentPlayingIndex === index && this.data.voiceContext) {
+    this.data.voiceContext.playbackRate = rate
+  }
+  
+  wx.showToast({ 
+    title: rate === 1.0 ? '已恢复正常速度' : `已设置${rate}倍速`, 
+    icon: 'success',
+    duration: 1500
+  })
+},
+
+// 语音转文字
+async voiceToText(index) {
+  wx.showLoading({ title: '转换中...' })
+  
+  // TODO: 调用语音识别API
+  setTimeout(() => {
+    wx.hideLoading()
+    wx.showToast({ title: '功能开发中', icon: 'none' })
+  }, 1000)
+},
+
+// 删除消息
+deleteMessage(index) {
+  wx.showModal({
+    content: '确定删除这条消息？',
+    success: (res) => {
+      if (res.confirm) {
+        const messages = this.data.messages
+        messages.splice(index, 1)
+        this.setData({ messages })
+      }
+    }
+  })
+},
+
+// 播放语音
+playVoice(e) {
+  const index = e.currentTarget.dataset.index
+  const message = this.data.messages[index]
+  
+  if (!message || !message.meta.audioPath) {
+    wx.showToast({ title: '语音已过期', icon: 'none' })
+    return
+  }
+  
+  const innerAudioContext = wx.createInnerAudioContext()
+  innerAudioContext.src = message.meta.audioPath
+  innerAudioContext.play()
+  
+  innerAudioContext.onPlay(() => {
+    console.log('开始播放语音')
+    wx.showToast({ title: '播放中...', icon: 'none', duration: 500 })
+  })
+  
+  innerAudioContext.onError((res) => {
+    console.error('播放失败:', res)
+    wx.showToast({ title: '播放失败', icon: 'none' })
+  })
+},
+
     // ==================== AI 交互 ====================
     
     async callAIRouter(params) {
@@ -279,8 +551,19 @@ Component({
     },
     
     // 关闭对话框
-    close() {
-      this.triggerEvent('close')
-    }
+// 关闭对话框（统一方法）
+close() {
+  console.log('========== 关闭Dialog ==========')
+  this.triggerEvent('close')
+},
+
+// 点击遮罩关闭（阻止在内容区冒泡）
+onMaskTap(e) {
+  // 只有点击遮罩本身才关闭，点击内容区不关闭
+  if (e.target === e.currentTarget) {
+    console.log('========== 点击遮罩，关闭Dialog ==========')
+    this.close()
+  }
+}
   }
 })

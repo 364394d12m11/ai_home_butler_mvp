@@ -1,7 +1,4 @@
 // utils/undo-redo.js
-// V5.3-Plus 撤销/重做系统
-// 规则：10s撤销 / 15min重做一次 / 同token幂等
-
 const UNDO_TIMEOUT = 10000      // 10秒
 const REDO_TIMEOUT = 900000     // 15分钟
 const MAX_HISTORY_SIZE = 20     // 最多保留20条历史
