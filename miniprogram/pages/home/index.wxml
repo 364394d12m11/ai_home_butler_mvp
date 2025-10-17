@@ -14,34 +14,15 @@
   </view>
 </view>
 
-  <!-- 夜空层（包含月亮+云+星星） -->
-  <view
-    class="celestial-layer"
-    wx:if="{{enableAnimations && (weatherTheme.showMoon || nightClouds.length > 0)}}"
-  >
-    <view class="moon-wrapper" wx:if="{{weatherTheme.showMoon}}">
-      <view class="moon-glow"></view>
-      <view class="moon-core"></view>
-    </view>
-
-    <view class="night-cloud-layer" wx:if="{{nightClouds.length > 0}}">
-      <view
-        class="night-cloud"
-        wx:for="{{nightClouds}}"
-        wx:key="index"
-        style="left: {{item.left + '%'}}; top: {{item.top + '%'}}; width: {{item.width + 'rpx'}}; height: {{item.height + 'rpx'}}; opacity: {{item.opacity}}; animation-duration: {{item.duration + 'ms'}}; animation-delay: {{item.delay + 'ms'}};"
-      ></view>
-    </view>
-  </view>
-
   <!-- 星星（仅夜晚） -->
-  <view class="stars" wx:if="{{stars.length > 0 && enableAnimations}}">
-    <view class="star-light" 
-      wx:for="{{stars}}" 
-      wx:key="*this"
-      style="left: {{item.left + '%'}}; top: {{item.top + '%'}}; animation-delay: {{item.delay + 'ms'}}; opacity: {{item.opacity}};">
-    </view>
+<!-- 星星（仅晴朗夜晚）- 修复后 ✅ -->
+<view class="stars" wx:if="{{stars.length > 0 && enableAnimations && weatherTheme.showStars}}">
+  <view class="star-light" 
+    wx:for="{{stars}}" 
+    wx:key="*this"
+    style="left: {{item.left + '%'}}; top: {{item.top + '%'}}; animation-delay: {{item.delay + 'ms'}}; opacity: {{item.opacity}};">
   </view>
+</view>
 </view>
   
   <!-- AI问候语 - 顶部轻盈样式 -->

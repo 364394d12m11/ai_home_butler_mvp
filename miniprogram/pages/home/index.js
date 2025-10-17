@@ -177,7 +177,6 @@ const WEATHER_THEMES = {
     iconCode: '150',
     tone: '安静',
     type: 'night',
-    showMoon: true,
     starOpacity: 0.8,
     textColor: '#E6EEF8',
     titleShadow: '0 1px 2px rgba(0,0,0,.45)',
@@ -686,7 +685,7 @@ function detectWeatherTheme(weather, loc) {
   const themePrecip = weather?.theme?.precip || 'none'
   const baseClass = themeBase === 'night' ? 'night' : 'day'
 
-  // 夜间强制使用夜间主题，但保留天气动画类型
+// 夜间强制使用夜间主题，但保留天气动画类型
 if (isNight) {
   const nightTheme = {
     ...WEATHER_THEMES.night,
@@ -705,12 +704,24 @@ if (isNight) {
     if (hasRain) {
       // 雾+雨/雪/冰雹 → 显示降水，无星星无月亮
       nightTheme.showMoon = false;
+      nightTheme.showStars = false;  // ← 新增
       nightTheme.type = themePrecip;
     } else {
       // 纯雾 → 无动画，无星星无月亮
       nightTheme.showMoon = false;
+      nightTheme.showStars = false;  // ← 新增
       nightTheme.type = 'fog';
     }
+  }
+  
+  // ========== 新增：星星显示逻辑 ==========
+  // 只有晴朗、少云、晴间多云的夜晚才显示星星
+  const clearWeathers = ['晴', '少云', '晴间多云']
+  nightTheme.showStars = clearWeathers.includes(weatherText) && themePrecip === 'none'
+  
+  // 如果是阴天、多云，也不显示星星
+  if (weatherText.includes('阴') || weatherText.includes('多云')) {
+    nightTheme.showStars = false
   }
 
   // 如果有降水，调整夜间背景色调但更深更暗
@@ -832,8 +843,6 @@ Page({
     poiDistance: null,
     raindrops: [],
     stars: [],
-    clouds: [],
-    nightClouds: [],
     debugMode: false,
     showDebugPanel: false,
     weatherTheme: WEATHER_THEMES.default,
@@ -1326,13 +1335,14 @@ Page({
   createWeatherAnimations() {
     const { weatherTheme, enableAnimations } = this.data
     if (!enableAnimations) {
-      this.setData({ raindrops: [], stars: [], clouds: [], nightClouds: [] })
+      this.setData({ raindrops: [], stars: [], nightClouds: [] })
       return
     }
   
     const type = weatherTheme.type;
   
-    if (type === 'rain' || type === 'thunderstorm') {
+    // 只保留基础动画
+    if (type === 'rain' || type === 'thunderstorm' || type === 'typhoon') {
       this.createRaindrops()
     } else if (type === 'snow' || type === 'blizzard') {
       this.createSnowflakes()
@@ -1340,15 +1350,10 @@ Page({
       this.createSleetEffect()
     } else if (type === 'hail') {
       this.createHailEffect()
-    } else if (type === 'typhoon') {
-      this.createRaindrops()
     } else if (type === 'night') {
-      this.createStars()  // 只有纯夜晚才有星星
-    } else if (type === 'fog') {
-      // ✅ 纯雾夜：无动画
-      this.setData({ raindrops: [], stars: [], clouds: [], nightClouds: [] })
+      this.createStars()
     } else {
-      this.setData({ raindrops: [], stars: [], clouds: [], nightClouds: [] })
+      this.setData({ raindrops: [], stars: [], nightClouds: [] })
     }
   },
 
@@ -1399,6 +1404,12 @@ Page({
   },
 
   createStars() {
+    // ========== 新增：检查是否应该显示星星 ==========
+    if (!this.data.weatherTheme.showStars) {
+      this.setData({ stars: [], nightClouds: [] })
+      return
+    }
+    
     const perfLow = this.data.performanceMode === 'low'
     const density = perfLow ? 20 : 40
     const stars = []
@@ -1425,52 +1436,6 @@ Page({
       }))
     }
     this.setData({ stars, nightClouds, raindrops: [], clouds: [] })
-  },
-
-  createClouds() {
-    this.setData({ clouds: [], raindrops: [], stars: [], nightClouds: [] })
-  },
-
-  createSandstormEffect() {
-    const density = this.data.performanceMode === 'low' ? 20 : 40
-    const dustParticles = []
-    for (let i = 0; i < density; i++) {
-      dustParticles.push({
-        left: Math.random() * 120 - 10,
-        top: Math.random() * 100,
-        delay: Math.random() * 2000,
-        duration: Math.random() * 3000 + 2000,
-        size: Math.random() * 15 + 5,
-        opacity: Math.random() * 0.6 + 0.3
-      })
-    }
-    this.setData({ clouds: dustParticles, raindrops: [], stars: [], nightClouds: [] })
-  },
-
-  createTyphoonEffect() {
-    const density = this.data.performanceMode === 'low' ? 25 : 50
-    const typhoonElements = []
-    for (let i = 0; i < density; i++) {
-      typhoonElements.push({
-        left: Math.random() * 100,
-        delay: Math.random() * 500,
-        duration: Math.random() * 300 + 200,
-        angle: Math.random() * 30 - 15
-      })
-    }
-
-    const fastClouds = []
-    for (let i = 0; i < 8; i++) {
-      fastClouds.push({
-        left: Math.random() * 120 - 20,
-        top: Math.random() * 40 + 10,
-        delay: Math.random() * 1000,
-        duration: Math.random() * 3000 + 2000,
-        size: Math.random() * 80 + 60,
-        opacity: Math.random() * 0.7 + 0.3
-      })
-    }
-    this.setData({ raindrops: typhoonElements, clouds: fastClouds, stars: [], nightClouds: [] })
   },
 
   createHailEffect() {
@@ -1516,35 +1481,6 @@ Page({
       })
     }
     this.setData({ raindrops: mixed, clouds: [], stars: [], nightClouds: [] })
-  },
-
-  createTornadoEffect() {
-    const density = this.data.performanceMode === 'low' ? 30 : 50
-    const spiralElements = []
-    for (let i = 0; i < density; i++) {
-      const angle = (i / density) * Math.PI * 4
-      const radius = 25 + (i / density) * 15
-      spiralElements.push({
-        left: 50 + Math.cos(angle) * radius,
-        top: 30 + Math.sin(angle) * radius * 0.8,
-        delay: i * 30,
-        duration: 2000,
-        size: Math.random() * 5 + 3
-      })
-    }
-
-    const debris = []
-    for (let i = 0; i < 10; i++) {
-      debris.push({
-        left: Math.random() * 100,
-        top: Math.random() * 100,
-        delay: Math.random() * 1000,
-        duration: Math.random() * 1000 + 500,
-        size: Math.random() * 10 + 5,
-        opacity: Math.random() * 0.6 + 0.3
-      })
-    }
-    this.setData({ raindrops: spiralElements, clouds: debris, stars: [], nightClouds: [] })
   },
 
   updateAIGreeting() {
