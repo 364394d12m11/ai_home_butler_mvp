@@ -6,6 +6,12 @@ const cloud = require('wx-server-sdk')
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const db = cloud.database()
 
+// ========== 新增：引入腾讯云SDK ==========
+const tencentcloud = require('tencentcloud-sdk-nodejs')
+const HunyuanClient = tencentcloud.hunyuan.v20230901.Client
+// 配置（从环境变量读取）
+const TENCENT_SECRET_ID = process.env.TENCENT_SECRET_ID || ''
+const TENCENT_SECRET_KEY = process.env.TENCENT_SECRET_KEY || ''
 // ==================== 白名单意图 ====================
 
 const INTENT_WHITELIST = {
@@ -31,34 +37,53 @@ const CONFIDENCE_THRESHOLD = {
 }
 
 // ==================== 主函数 ====================
-
 exports.main = async (event) => {
   const { modality, payload, context } = event || {}
   
   console.log('========== aiRouter 请求 ==========')
   console.log('modality:', modality)
   console.log('payload:', JSON.stringify(payload).slice(0, 200))
-  console.log('context:', context)
   
   try {
     // 1. 输入预处理
     const processedInput = await preprocessInput(modality, payload)
+    console.log('预处理结果:', processedInput)
     
-    // 2. 调用混元NLU（模拟）
+    // 2. 调用混元NLU
     const nluResult = await callHunyuanNLU(processedInput, context)
+    console.log('NLU结果:', JSON.stringify(nluResult))
     
     // 3. 意图过滤和阈值判断
     const decision = decideAction(nluResult)
+    console.log('决策结果:', JSON.stringify(decision))
     
-    // 4. 执行意图或返回澄清
+    // 4. 执行意图
     const result = await executeIntent(decision, context)
+    console.log('执行结果:', JSON.stringify(result))
     
-    console.log('========== aiRouter 完成 ==========')
-    return result
+    // ========== 统一返回格式 ==========
+    const finalResult = {
+      ok: result.ok !== false,  // 默认为true
+      intent: result.intent || decision.intent,
+      confidence: decision.confidence,
+      reply: result.reply || nluResult.reply || '处理完成',  // ← 关键：优先使用result.reply，然后nluResult.reply
+      ui_patch: result.ui_patch || {}
+    }
+    
+    console.log('========== 最终返回 ==========')
+    console.log('finalResult:', JSON.stringify(finalResult))
+    
+    return finalResult
     
   } catch (e) {
     console.error('❌ aiRouter 错误:', e)
-    return generateSafeResponse('处理失败，请重试')
+    return {
+      ok: false,
+      reply: '抱歉，处理失败了，请重试',
+      ui_patch: {
+        toast: '处理失败'
+      }
+    }
   }
 }
 
@@ -103,86 +128,168 @@ async function mockFridgeOCR(imageUrl) {
   }
 }
 
-// ==================== 混元NLU ====================
+async function callHunyuanNLU(text) {
+  console.log('========== 调用混元AI ==========')
+  console.log('用户输入:', text)
+  
+  try {
+    const client = new HunyuanClient({
+      credential: {
+        secretId: TENCENT_SECRET_ID,
+        secretKey: TENCENT_SECRET_KEY,
+      },
+      region: "ap-guangzhou",
+      profile: {
+        httpProfile: {
+          endpoint: "hunyuan.tencentcloudapi.com",
+        },
+      },
+    })
 
-async function callHunyuanNLU(input, context) {
-  // TODO: 调用腾讯混元大模型API
-  // 暂时使用规则匹配模拟
-  
-  if (typeof input === 'object' && input.ingredients) {
-    // 冰箱照
+    // ========== 改进的Prompt ==========
+    const prompt = `你是一个智能饮食助手的意图识别系统。
+
+用户说："${text}"
+
+请仔细分析用户意图，返回JSON格式（必须是纯JSON，不要有其他文字）：
+{
+  "intent": "意图名称",
+  "confidence": 0.85,
+  "reply": "你的自然回复"
+}
+
+### 意图列表（优先匹配饮食相关）：
+
+**高频意图：**
+1. **inspireMe** (需要灵感/推荐)
+   - 触发词：不知道吃什么、给点建议、推荐、来点、随便
+   - 例句："不知道吃什么"、"给点建议"、"推荐几道菜"
+   - 置信度：0.8-0.95
+
+2. **replaceSingleDish** (换一道菜)
+   - 触发词：换、不想吃、不要、别的、其他
+   - 例句："换个菜"、"不想吃这个"、"换别的"
+   - 置信度：0.75-0.9
+
+3. **replaceBatch** (批量替换)
+   - 触发词：全换、都换、重新、全部
+   - 例句："全换成川菜"、"都换清淡的"
+   - 置信度：0.8-0.95
+
+4. **askCooking** (询问做法)
+   - 触发词：怎么做、做法、步骤、教程
+   - 例句："怎么做"、"具体步骤"
+   - 置信度：0.85-0.95
+
+5. **askNutrition** (询问营养)
+   - 触发词：热量、卡路里、健康、营养
+   - 例句："热量多少"、"健康吗"
+   - 置信度：0.85-0.95
+
+6. **askShopping** (购物清单)
+   - 触发词：买、购物、清单、食材
+   - 例句："要买什么"、"购物清单"
+   - 置信度：0.85-0.95
+
+**其他意图：**
+- adjustPortion: 加菜、减菜、多少
+- askPrice: 多少钱、价格
+- confirmMenu: 就这样、确定、可以
+
+**域外闲聊：**
+- OutOfScope: 打招呼、天气、其他话题
+- 置信度：0.3-0.6（较低）
+
+### 判断规则：
+1. 如果明确是饮食相关，置信度应 ≥0.75
+2. 如果关键词模糊但可能相关，置信度 0.5-0.7
+3. 如果完全不相关，用OutOfScope且置信度 0.3-0.5
+4. **禁止返回置信度0！最低也要0.3**
+
+### 回复要求：
+- 饮食意图：给出具体建议或操作提示
+- 域外闲聊：友好回应但引导到饮食话题
+
+现在分析用户输入并返回JSON。`;
+
+    const params = {
+      Model: "hunyuan-lite",
+      Messages: [
+        {
+          Role: "user",
+          Content: prompt
+        }
+      ],
+      Temperature: 0.3,  // ← 降低温度，更确定
+      TopP: 0.8
+    }
+
+    const response = await client.ChatCompletions(params)
+    let content = response.Choices[0].Message.Content
+    
+    console.log('混元原始返回:', content)
+    
+    // 清理返回内容
+    content = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+    
+    // 解析JSON
+    let result
+    try {
+      result = JSON.parse(content)
+    } catch (parseError) {
+      console.error('JSON解析失败，原始内容:', content)
+      throw new Error('JSON解析失败')
+    }
+    
+    console.log('解析后的结果:', result)
+    
+    // ========== 修正置信度（防止返回0） ==========
+    if (!result.confidence || result.confidence === 0) {
+      result.confidence = 0.5  // 默认给0.5
+      console.log('⚠️ 置信度为0，修正为0.5')
+    }
+    
     return {
-      intent: INTENT_WHITELIST.MakeFromFridge,
-      slots: { ingredients: input.ingredients },
-      confidence: input.confidence,
-      reply: '我看到冰箱里有这些食材，让我帮你看看能做什么菜'
+      intent: result.intent,
+      confidence: result.confidence,
+      reply: result.reply
     }
+
+  } catch (error) {
+    console.error('混元调用失败:', error)
+    console.log('使用降级方案')
+    return fallbackIntentRecognition(text)
   }
-  
-  const text = String(input).toLowerCase()
-  
-  // 规则匹配（生产环境应使用混元NLU）
+}
+
+function fallbackIntentRecognition(text) {
   const rules = [
-    {
-      pattern: /(想吃|想做|来个|做个|加个)(.+)/,
-      intent: INTENT_WHITELIST.ExplicitDishRequest,
-      confidence: 0.85,
-      extract: (match) => ({ dish_name: match[2].trim() })
-    },
-    {
-      pattern: /(换|替换)(.+)/,
-      intent: INTENT_WHITELIST.ReplaceDishes,
-      confidence: 0.75,
-      extract: (match) => ({ course: inferCourse(match[2]) })
-    },
-    {
-      pattern: /(去辣|不要辣|清淡|少油)/,
-      intent: INTENT_WHITELIST.AddConstraint,
-      confidence: 0.80,
-      extract: () => ({ constraint: '清淡' })
-    },
-    {
-      pattern: /(点评|营养|怎么样)/,
-      intent: INTENT_WHITELIST.EvaluateMenu,
-      confidence: 0.70,
-      extract: () => ({})
-    },
-    {
-      pattern: /(购物|买菜|清单)/,
-      intent: INTENT_WHITELIST.GenerateShoppingList,
-      confidence: 0.75,
-      extract: () => ({})
-    }
+    { keywords: ['确定', '就这样', '可以', '好的', 'ok'], intent: 'confirmMenu', confidence: 0.8 },
+    { keywords: ['换', '不想吃', '不要', '别的'], intent: 'replaceSingleDish', confidence: 0.7 },
+    { keywords: ['全换', '都换', '重新'], intent: 'replaceBatch', confidence: 0.75 },
+    { keywords: ['加', '多', '少', '减'], intent: 'adjustPortion', confidence: 0.7 },
+    { keywords: ['热量', '卡路里', '健康', '营养'], intent: 'askNutrition', confidence: 0.8 },
+    { keywords: ['怎么做', '做法', '步骤', '准备'], intent: 'askCooking', confidence: 0.85 },
+    { keywords: ['买', '购物', '清单', '超市'], intent: 'askShopping', confidence: 0.8 },
+    { keywords: ['多少钱', '价格', '费用'], intent: 'askPrice', confidence: 0.8 },
+    { keywords: ['不知道', '建议', '推荐', '灵感'], intent: 'inspireMe', confidence: 0.7 }
   ]
-  
+
   for (const rule of rules) {
-    const match = text.match(rule.pattern)
-    if (match) {
-      return {
-        intent: rule.intent,
-        slots: rule.extract(match),
+    if (rule.keywords.some(kw => text.includes(kw))) {
+      return { 
+        intent: rule.intent, 
         confidence: rule.confidence,
-        reply: generateReply(rule.intent, rule.extract(match))
+        reply: `好的，我来帮你${rule.intent}` 
       }
     }
   }
-  
-  // 脏词检测
-  if (containsProfanity(text)) {
-    return {
-      intent: INTENT_WHITELIST.OutOfScope,
-      slots: { reason: 'profanity' },
-      confidence: 1.0,
-      reply: '让我们专注在美食上吧～'
-    }
-  }
-  
-  // 默认域外
-  return {
-    intent: INTENT_WHITELIST.OutOfScope,
-    slots: { reason: 'unknown' },
-    confidence: 0.2,
-    reply: '没太明白你的意思，可以试试这些'
+
+  // ========== 域外/闲聊，返回0.4确保走out_of_scope分支 ==========
+  return { 
+    intent: 'OutOfScope', 
+    confidence: 0.4,
+    reply: '你好！我是你的饮食助手，有什么可以帮你的吗？'
   }
 }
 
@@ -193,6 +300,8 @@ function inferCourse(text) {
   if (/饭|面|主食/.test(text)) return '主食'
   return '荤菜'
 }
+
+// ... 后续代码保持不变
 
 function generateReply(intent, slots) {
   const replies = {
@@ -236,10 +345,11 @@ function decideAction(nluResult) {
   }
 }
 
-// ==================== 意图执行 ====================
-
 async function executeIntent(decision, context) {
   const { action, intent, slots, reply } = decision
+  
+  console.log('========== executeIntent ==========')
+  console.log('decision:', JSON.stringify(decision))
   
   // 1. 域外处理
   if (action === 'out_of_scope') {
@@ -247,62 +357,41 @@ async function executeIntent(decision, context) {
       ok: true,
       intent: INTENT_WHITELIST.OutOfScope,
       confidence: decision.confidence,
-      reply: reply,
+      reply: reply || '晚上好！',  // ← 使用decision.reply
       ui_patch: {
-        toast: reply,
-        quickActions: [
-          { label: '来点重口味', action: 'addConstraint', args: { constraint: '重口' } },
-          { label: '川湘下饭', action: 'addConstraint', args: { constraint: '川湘' } },
-          { label: '今日最香荤菜', action: 'replaceDishes', args: { course: '荤菜', count: 3 } },
-          { label: '随便来三道', action: 'generateRandom', args: { count: 3 } }
-        ]
+        toast: '你好'
       }
     }
   }
   
   // 2. 需要澄清
   if (action === 'clarify') {
+    if (intent === 'OutOfScope') {
+      return {
+        ok: true,
+        intent: INTENT_WHITELIST.OutOfScope,
+        confidence: decision.confidence,
+        reply: reply || '你好',
+        ui_patch: {}
+      }
+    }
+    
     return {
       ok: true,
       intent: intent,
       confidence: decision.confidence,
-      reply: reply + '，是这个意思吗？',
-      ui_patch: {
-        ask: reply + '，是这个意思吗？',
-        quickActions: [
-          { label: '是的', action: 'confirm', args: { intent, slots } },
-          { label: '不是', action: 'cancel', args: {} }
-        ]
-      }
+      reply: reply || '你是想做这个吗？',
+      ui_patch: {}
     }
   }
   
-  // 3. 执行白名单意图
-  return await dispatchIntent(intent, slots, context)
-}
-
-async function dispatchIntent(intent, slots, context) {
-  switch (intent) {
-    case INTENT_WHITELIST.ExplicitDishRequest:
-      return await handleExplicitDishRequest(slots, context)
-    
-    case INTENT_WHITELIST.ReplaceDishes:
-      return await handleReplaceDishes(slots, context)
-    
-    case INTENT_WHITELIST.AddConstraint:
-      return await handleAddConstraint(slots, context)
-    
-    case INTENT_WHITELIST.EvaluateMenu:
-      return await handleEvaluateMenu(context)
-    
-    case INTENT_WHITELIST.MakeFromFridge:
-      return await handleMakeFromFridge(slots, context)
-    
-    case INTENT_WHITELIST.GenerateShoppingList:
-      return await handleGenerateShoppingList(context)
-    
-    default:
-      return generateSafeResponse('暂不支持此操作')
+  // 3. 执行意图
+  return {
+    ok: true,
+    intent: intent,
+    confidence: decision.confidence,
+    reply: reply || '好的，我来帮你',
+    ui_patch: {}
   }
 }
 

@@ -123,10 +123,14 @@ async handleImageUpload(filePath) {
     },
     
     async sendText() {
+      console.log('========== 📤 发送文本消息 ==========')
+      
       const text = this.data.inputText.trim()
+      console.log('输入内容:', text)
+      
       if (!text) return
       
-      // 防抖检查（1秒内不能重复发送）
+      // 防抖检查
       if (!this.checkRateLimit('text', 1000)) {
         wx.showToast({ title: '发送太快了', icon: 'none' })
         return
@@ -136,15 +140,23 @@ async handleImageUpload(filePath) {
       this.setData({ inputText: '', processing: true })
       
       try {
+        console.log('🔄 开始调用 callAIRouter')
+        
         const result = await this.callAIRouter({
           modality: 'text',
           payload: { text },
           context: this.getContext()
         })
         
+        console.log('✅ 收到AI响应:', result)
+        
+        // ========== 确保调用 handleAIResponse ==========
         this.handleAIResponse(result)
+        
       } catch (e) {
-        this.showError('处理失败，请重试')
+        console.error('❌ 发送失败:', e)
+        // ========== 改这里：不要直接显示错误 ==========
+        this.addMessage('assistant', '抱歉，处理失败了，请重试')
       } finally {
         this.setData({ processing: false })
       }
@@ -441,85 +453,99 @@ deleteMessage(index) {
   })
 },
 
-// 播放语音
-playVoice(e) {
-  const index = e.currentTarget.dataset.index
-  const message = this.data.messages[index]
-  
-  if (!message || !message.meta.audioPath) {
-    wx.showToast({ title: '语音已过期', icon: 'none' })
-    return
-  }
-  
-  const innerAudioContext = wx.createInnerAudioContext()
-  innerAudioContext.src = message.meta.audioPath
-  innerAudioContext.play()
-  
-  innerAudioContext.onPlay(() => {
-    console.log('开始播放语音')
-    wx.showToast({ title: '播放中...', icon: 'none', duration: 500 })
-  })
-  
-  innerAudioContext.onError((res) => {
-    console.error('播放失败:', res)
-    wx.showToast({ title: '播放失败', icon: 'none' })
-  })
-},
-
     // ==================== AI 交互 ====================
-    
     async callAIRouter(params) {
-      const result = await wx.cloud.callFunction({
-        name: 'aiRouter',
-        data: params
-      })
+      console.log('========== 📡 调用云函数 aiRouter ==========')
+      console.log('请求参数:', JSON.stringify(params))
       
-      return result.result
+      try {
+        const result = await wx.cloud.callFunction({
+          name: 'aiRouter',
+          data: params
+        })
+        
+        console.log('✅ 云函数返回:', result)
+        
+        if (!result || !result.result) {
+          throw new Error('云函数返回数据为空')
+        }
+        
+        return result.result
+        
+      } catch (error) {
+        console.error('❌ 云函数调用失败:', error)
+        throw error
+      }
     },
     
     handleAIResponse(response) {
-      if (!response.ok) {
-        this.showError(response.reply || '处理失败')
+      console.log('========== 📥 handleAIResponse ==========')
+      console.log('response:', JSON.stringify(response))
+      
+      if (!response) {
+        this.addMessage('assistant', '服务器无响应')
         return
       }
       
-      // 添加AI回复到对话历史
-      this.addMessage('assistant', response.reply)
+      // ========== 显示AI回复 ==========
+      const replyText = response.reply || '处理完成'
+      console.log('准备显示回复:', replyText)
       
-      // 应用UI Patch
-      if (response.ui_patch) {
-        this.triggerEvent('ui-patch', response.ui_patch)
+      this.addMessage('assistant', replyText)
+      
+      // 应用UI补丁（如果有）
+      if (response.ui_patch && response.ui_patch.toast) {
+        wx.showToast({ 
+          title: response.ui_patch.toast, 
+          icon: 'none',
+          duration: 2000
+        })
       }
-      
-      // 埋点
-      this.trackEvent('intent_hit', {
-        intent: response.intent,
-        confidence: response.confidence
-      })
     },
     
     // ==================== 辅助方法 ====================
-    
     addMessage(role, content, meta = {}) {
-      const messages = this.data.messages
+      console.log('========== addMessage ==========')
+      console.log('role:', role)
+      console.log('content:', content)
+      console.log('meta:', meta)
+      
+      const messages = this.data.messages || []
       messages.push({
-        role,
-        content,
-        meta,
+        role: role,  // 'user' 或 'assistant'
+        content: content,
+        meta: meta,
         timestamp: Date.now()
       })
-      this.setData({ messages })
+      
+      this.setData({ 
+        messages: messages,
+        lastMessageId: `msg-${messages.length - 1}`
+      })
+      
+      console.log('✅ 消息已添加，总数:', messages.length)
     },
     
     getContext() {
       // 获取当前页面上下文（用户画像、当前菜单等）
-      const pages = getCurrentPages()
-      const currentPage = pages[pages.length - 1]
-      
-      return {
-        userProfile: getApp().globalData.userProfile || {},
-        currentMenu: currentPage.data.selectedDishes || [],
-        candidatePool: currentPage.data.candidatePool || {}
+      try {
+        const pages = getCurrentPages()
+        const currentPage = pages[pages.length - 1]
+        
+        return {
+          page: 'diet',
+          userProfile: {}, // 暂时返回空对象
+          currentMenu: currentPage?.data?.selectedDishes || {},
+          candidatePool: currentPage?.data?.candidatePool || {}
+        }
+      } catch (e) {
+        console.error('获取上下文失败:', e)
+        return {
+          page: 'diet',
+          userProfile: {},
+          currentMenu: {},
+          candidatePool: {}
+        }
       }
     },
     
