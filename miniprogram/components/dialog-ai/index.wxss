@@ -1,4 +1,5 @@
 
+/* 对话框容器 */
 .dialog-mask {
   position: fixed;
   top: 0;
@@ -6,16 +7,16 @@
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
-  z-index: 1000;
+  z-index: 9999;
   display: flex;
-  align-items: flex-end;
+  align-items: flex-end;  /* 底部对齐 */
 }
 
 .dialog-container {
   width: 100%;
-  height: 80vh;
-  background: #fff;
-  border-radius: 32rpx 32rpx 0 0;
+  height: 70vh;  /* ← 改成70%高度，不占满 */
+  background: white;
+  border-radius: 24rpx 24rpx 0 0;
   display: flex;
   flex-direction: column;
 }
@@ -465,4 +466,35 @@
   position: absolute;
   top: 8rpx;
   right: 8rpx;
+}
+/* 对话框头部 */
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24rpx 32rpx;
+  border-bottom: 1rpx solid #E5E5E5;
+  background: #F7F7F7;
+}
+
+.dialog-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.close-btn {
+  width: 56rpx;
+  height: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
+  color: rgba(0, 0, 0, 0.4);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.close-btn:active {
+  background: rgba(0, 0, 0, 0.1);
 }

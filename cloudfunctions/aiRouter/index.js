@@ -5,6 +5,8 @@
 const cloud = require('wx-server-sdk')
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const db = cloud.database()
+const _ = db.command
+const recipesCollection = db.collection('recipes')
 
 // ========== 新增：引入腾讯云SDK ==========
 const tencentcloud = require('tencentcloud-sdk-nodejs')
@@ -146,81 +148,41 @@ async function callHunyuanNLU(text) {
       },
     })
 
-    // ========== 改进的Prompt ==========
-    const prompt = `你是一个智能饮食助手的意图识别系统。
-
-用户说："${text}"
-
-请仔细分析用户意图，返回JSON格式（必须是纯JSON，不要有其他文字）：
-{
-  "intent": "意图名称",
-  "confidence": 0.85,
-  "reply": "你的自然回复"
-}
-
-### 意图列表（优先匹配饮食相关）：
-
-**高频意图：**
-1. **inspireMe** (需要灵感/推荐)
-   - 触发词：不知道吃什么、给点建议、推荐、来点、随便
-   - 例句："不知道吃什么"、"给点建议"、"推荐几道菜"
-   - 置信度：0.8-0.95
-
-2. **replaceSingleDish** (换一道菜)
-   - 触发词：换、不想吃、不要、别的、其他
-   - 例句："换个菜"、"不想吃这个"、"换别的"
-   - 置信度：0.75-0.9
-
-3. **replaceBatch** (批量替换)
-   - 触发词：全换、都换、重新、全部
-   - 例句："全换成川菜"、"都换清淡的"
-   - 置信度：0.8-0.95
-
-4. **askCooking** (询问做法)
-   - 触发词：怎么做、做法、步骤、教程
-   - 例句："怎么做"、"具体步骤"
-   - 置信度：0.85-0.95
-
-5. **askNutrition** (询问营养)
-   - 触发词：热量、卡路里、健康、营养
-   - 例句："热量多少"、"健康吗"
-   - 置信度：0.85-0.95
-
-6. **askShopping** (购物清单)
-   - 触发词：买、购物、清单、食材
-   - 例句："要买什么"、"购物清单"
-   - 置信度：0.85-0.95
-
-**其他意图：**
-- adjustPortion: 加菜、减菜、多少
-- askPrice: 多少钱、价格
-- confirmMenu: 就这样、确定、可以
-
-**域外闲聊：**
-- OutOfScope: 打招呼、天气、其他话题
-- 置信度：0.3-0.6（较低）
-
-### 判断规则：
-1. 如果明确是饮食相关，置信度应 ≥0.75
-2. 如果关键词模糊但可能相关，置信度 0.5-0.7
-3. 如果完全不相关，用OutOfScope且置信度 0.3-0.5
-4. **禁止返回置信度0！最低也要0.3**
-
-### 回复要求：
-- 饮食意图：给出具体建议或操作提示
-- 域外闲聊：友好回应但引导到饮食话题
-
-现在分析用户输入并返回JSON。`;
-
     const params = {
       Model: "hunyuan-lite",
       Messages: [
         {
+          Role: "system",
+          Content: `你是饮食助手的意图识别器。严格只输出纯JSON，结构：
+          {"intent":"意图名","confidence":0.3-0.99,"reply":"简短回复"}
+          
+          意图列表：
+          - inspireMe(推荐): 不知道、推荐、建议、吃什么、吃啥、来点
+          - replaceSingleDish(换菜): 换、不想吃、不要、别的
+          - replaceBatch(全换): 全换、都换、重新
+          - askCooking(做法): 怎么做、做法、步骤
+          - askNutrition(营养): 热量、卡路里、健康
+          - askShopping(购物): 买、购物、清单
+          - adjustPortion(调整): 加、减、多、少
+          - askPrice(价格): 多少钱、价格
+          - confirmMenu(确认): 确定、就这样、可以
+          - OutOfScope(域外): 天气、新闻等完全无关的
+          
+          **重要**：包含"吃"、"菜"、"饭"、"饮食"等词的都是饮食相关，不是OutOfScope！
+          
+          规则：饮食相关≥0.75，模糊0.5-0.7，域外0.3-0.5。**禁止返回0和1**。
+          
+          示例：
+          "吃什么"→{"intent":"inspireMe","confidence":0.85,"reply":"我来给你推荐几道"}
+          "换个菜"→{"intent":"replaceSingleDish","confidence":0.85,"reply":"好的，帮你换一道"}
+          "天气"→{"intent":"OutOfScope","confidence":0.4,"reply":"我是饮食助手哦"}`
+        },
+        {
           Role: "user",
-          Content: prompt
+          Content: `用户说："${text}"`
         }
       ],
-      Temperature: 0.3,  // ← 降低温度，更确定
+      Temperature: 0.2,
       TopP: 0.8
     }
 
@@ -243,11 +205,20 @@ async function callHunyuanNLU(text) {
     
     console.log('解析后的结果:', result)
     
-    // ========== 修正置信度（防止返回0） ==========
-    if (!result.confidence || result.confidence === 0) {
-      result.confidence = 0.5  // 默认给0.5
-      console.log('⚠️ 置信度为0，修正为0.5')
-    }
+    // 修正置信度
+// ========== 加强置信度修正 ==========
+if (!result.confidence || result.confidence === 0 || result.confidence >= 1) {
+  console.log('⚠️ 置信度异常:', result.confidence)
+  
+  // 根据意图类型设置默认置信度
+  if (result.intent === 'OutOfScope') {
+    result.confidence = 0.4  // 域外默认0.4
+  } else {
+    result.confidence = 0.75  // 饮食相关默认0.75
+  }
+  
+  console.log('✅ 修正为:', result.confidence)
+}
     
     return {
       intent: result.intent,
@@ -257,22 +228,22 @@ async function callHunyuanNLU(text) {
 
   } catch (error) {
     console.error('混元调用失败:', error)
-    console.log('使用降级方案')
     return fallbackIntentRecognition(text)
   }
 }
 
 function fallbackIntentRecognition(text) {
   const rules = [
+    { keywords: ['吃什么', '吃啥', '吃点啥', '吃点什么'], intent: 'inspireMe', confidence: 0.85 },
+    { keywords: ['不知道', '建议', '推荐', '来点', '随便', '给点'], intent: 'inspireMe', confidence: 0.75 },
+    { keywords: ['换', '不想吃', '不要', '别的', '其他'], intent: 'replaceSingleDish', confidence: 0.75 },
+    { keywords: ['全换', '都换', '重新'], intent: 'replaceBatch', confidence: 0.8 },
     { keywords: ['确定', '就这样', '可以', '好的', 'ok'], intent: 'confirmMenu', confidence: 0.8 },
-    { keywords: ['换', '不想吃', '不要', '别的'], intent: 'replaceSingleDish', confidence: 0.7 },
-    { keywords: ['全换', '都换', '重新'], intent: 'replaceBatch', confidence: 0.75 },
     { keywords: ['加', '多', '少', '减'], intent: 'adjustPortion', confidence: 0.7 },
     { keywords: ['热量', '卡路里', '健康', '营养'], intent: 'askNutrition', confidence: 0.8 },
     { keywords: ['怎么做', '做法', '步骤', '准备'], intent: 'askCooking', confidence: 0.85 },
     { keywords: ['买', '购物', '清单', '超市'], intent: 'askShopping', confidence: 0.8 },
-    { keywords: ['多少钱', '价格', '费用'], intent: 'askPrice', confidence: 0.8 },
-    { keywords: ['不知道', '建议', '推荐', '灵感'], intent: 'inspireMe', confidence: 0.7 }
+    { keywords: ['多少钱', '价格', '费用'], intent: 'askPrice', confidence: 0.8 }
   ]
 
   for (const rule of rules) {
@@ -280,16 +251,16 @@ function fallbackIntentRecognition(text) {
       return { 
         intent: rule.intent, 
         confidence: rule.confidence,
-        reply: `好的，我来帮你${rule.intent}` 
+        reply: rule.intent === 'inspireMe' ? '我来给你推荐几道' : '好的，我来帮你处理'
       }
     }
   }
 
-  // ========== 域外/闲聊，返回0.4确保走out_of_scope分支 ==========
+  // 域外，返回0.4确保走out_of_scope分支
   return { 
     intent: 'OutOfScope', 
     confidence: 0.4,
-    reply: '你好！我是你的饮食助手，有什么可以帮你的吗？'
+    reply: '你好！我是你的饮食助手，可以帮你推荐菜品哦'
   }
 }
 
@@ -522,25 +493,194 @@ async function findDishByName(name) {
 }
 
 async function fetchRandomDishes(course, count, context) {
-  // 简化版：返回兜底数据
-  return Array.from({ length: count }, (_, i) => ({
-    id: `random-${course}-${i}`,
-    name: `${course}${i + 1}`,
-    course: course,
-    time: 15,
-    tags: ['家常'],
-    reason: '营养搭配不错'
-  }))
+  try {
+    console.log('随机抽取菜品:', course, count)
+    
+    // 构建查询条件
+    const where = {}
+    
+    // 根据餐次类型筛选
+    if (course === '荤菜') {
+      where.is_meat = true
+    } else if (course === '素菜') {
+      where.is_veg = true
+    } else if (course === '汤类' || course === '汤品') {
+      where.is_soup = true
+    } else if (course === '主食') {
+      where.is_staple = true
+    }
+    
+    // 考虑用户偏好（如果有）
+    const userProfile = context?.userProfile || {}
+    if (userProfile.health_goals?.includes('减脂')) {
+      where.kcal_per_2AE = _.lt(300)  // 低于300卡
+    }
+    if (userProfile.has_child) {
+      where.for_children = true
+    }
+    
+    // 查询符合条件的菜品总数
+    const countResult = await recipesCollection
+      .where(where)
+      .count()
+    
+    const total = countResult.total
+    
+    if (total === 0) {
+      console.log('没有符合条件的菜品，返回空数组')
+      return []
+    }
+    
+    // 随机选择（避免重复）
+    const dishes = []
+    const usedIds = new Set()
+    const maxAttempts = Math.min(count * 3, total)  // 最多尝试3倍数量
+    
+    for (let attempt = 0; attempt < maxAttempts && dishes.length < count; attempt++) {
+      const randomSkip = Math.floor(Math.random() * total)
+      
+      const { data } = await recipesCollection
+        .where(where)
+        .skip(randomSkip)
+        .limit(1)
+        .get()
+      
+      if (data.length > 0 && !usedIds.has(data[0]._id)) {
+        dishes.push(data[0])
+        usedIds.add(data[0]._id)
+      }
+    }
+    
+    console.log('随机抽取成功:', dishes.length, '道菜')
+    return dishes
+    
+  } catch (error) {
+    console.error('随机抽取失败:', error)
+    // 降级：返回兜底数据
+    return Array.from({ length: count }, (_, i) => ({
+      id: `fallback-${course}-${i}`,
+      name: `${course}${i + 1}`,
+      course: course,
+      time: 15,
+      tags: ['家常'],
+      reason: '营养搭配不错'
+    }))
+  }
 }
 
 async function findDishesFromIngredients(ingredients) {
-  // 简化版：返回模拟数据
-  return {
-    immediate: [
-      { id: 'fridge-1', name: '西红柿炒鸡蛋', course: '荤菜', reason: '食材齐全' }
-    ],
-    missing1or2: []
+  try {
+    console.log('根据食材匹配菜品:', ingredients)
+    
+    if (!ingredients || ingredients.length === 0) {
+      return { immediate: [], missing1or2: [] }
+    }
+    
+    // 查询所有菜品（限制数量避免超时）
+    const { data: allDishes } = await recipesCollection
+      .limit(500)  // 限制500条，避免超时
+      .get()
+    
+    const immediate = []     // 立刻可做
+    const missing1or2 = []   // 差1-2样
+    
+    for (const dish of allDishes) {
+      const analysis = analyzeFeasibility(dish, ingredients)
+      
+      if (analysis.feasibility === 'immediate') {
+        immediate.push({
+          ...dish,
+          matchRate: analysis.matchRate,
+          missingIngredients: []
+        })
+      } else if (analysis.feasibility === 'missing1or2') {
+        missing1or2.push({
+          ...dish,
+          matchRate: analysis.matchRate,
+          missingIngredients: analysis.missing
+        })
+      }
+    }
+    
+    // 排序（匹配度从高到低）
+    immediate.sort((a, b) => b.matchRate - a.matchRate)
+    missing1or2.sort((a, b) => b.matchRate - a.matchRate)
+    
+    console.log('食材匹配结果:', {
+      immediate: immediate.length,
+      missing1or2: missing1or2.length
+    })
+    
+    return {
+      immediate: immediate.slice(0, 10),
+      missing1or2: missing1or2.slice(0, 10)
+    }
+    
+  } catch (error) {
+    console.error('食材匹配失败:', error)
+    return {
+      immediate: [{
+        id: 'fallback-1',
+        name: '西红柿炒鸡蛋',
+        course: '荤菜',
+        reason: '食材齐全',
+        matchRate: 0.8
+      }],
+      missing1or2: []
+    }
   }
+}
+
+/**
+ * 分析菜品可做度
+ */
+function analyzeFeasibility(dish, ingredients) {
+  const ingredientNames = ingredients.map(i => 
+    typeof i === 'string' ? i : (i.name || '')
+  )
+  
+  // 提取菜品的所有食材
+  const dishIngredients = []
+  if (dish.ingredients?.main) {
+    dishIngredients.push(...dish.ingredients.main)
+  }
+  if (dish.ingredients?.aux) {
+    dishIngredients.push(...dish.ingredients.aux)
+  }
+  
+  if (dishIngredients.length === 0) {
+    return { feasibility: 'not_feasible', matchRate: 0, missing: [] }
+  }
+  
+  // 计算匹配度
+  let matchedCount = 0
+  const missing = []
+  
+  for (const ingredient of dishIngredients) {
+    // 提取食材名称（去掉数量等信息）
+    const ingredientName = ingredient.split(' ')[0].split('/')[0]
+    
+    const matched = ingredientNames.some(name => 
+      ingredientName.includes(name) || name.includes(ingredientName)
+    )
+    
+    if (matched) {
+      matchedCount++
+    } else {
+      missing.push(ingredientName)
+    }
+  }
+  
+  const matchRate = matchedCount / dishIngredients.length
+  
+  // 判断可做度
+  if (matchRate >= 0.8 && missing.length === 0) {
+    return { feasibility: 'immediate', matchRate, missing: [] }
+  } else if (matchRate >= 0.6 && missing.length <= 2) {
+    return { feasibility: 'missing1or2', matchRate, missing: missing.slice(0, 2) }
+  }
+  
+  return { feasibility: 'not_feasible', matchRate: 0, missing: [] }
 }
 
 function autoCompensate(dish, context) {

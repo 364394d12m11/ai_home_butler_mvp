@@ -1,7 +1,7 @@
 // components/kqi-dashboard/index.js
 // V5.3-Plus KQI健康度看板
 
-const { analytics } = require('../../utils/rate-limiter-and-analytics')
+const { getKQIReport } = require('../../utils/analytics')
 
 Component({
   properties: {
@@ -35,13 +35,25 @@ Component({
   
   methods: {
     refreshReport() {
-      const report = analytics.getKQIReport()
-      const grade = this.calculateGrade(report.health)
-      
-      this.setData({
-        kqiReport: report,
-        healthGrade: grade
-      })
+      try {
+        const report = getKQIReport()  // ← 直接调用
+        const grade = this.calculateGrade(report.health)
+        
+        this.setData({
+          kqiReport: report,
+          healthGrade: grade
+        })
+      } catch (e) {
+        console.error('获取KQI失败:', e)
+        // 使用mock数据
+        const report = this.getMockReport()
+        const grade = this.calculateGrade(report.health)
+        
+        this.setData({
+          kqiReport: report,
+          healthGrade: grade
+        })
+      }
     },
     
     calculateGrade(health) {

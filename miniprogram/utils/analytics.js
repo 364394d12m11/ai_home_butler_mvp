@@ -321,9 +321,9 @@ const analytics = new Analytics()
 // ✅ 修改为这样
 module.exports = {
   analytics: analytics,
-  track: analytics.track.bind(analytics),  // ← 关键！单独导出 track 方法
-  pageView: analytics.pageView.bind(analytics),
-  getKQIReport: analytics.getKQIReport.bind(analytics),
+  track: (event, params) => analytics.track(event, params),
+  pageView: (pagePath, params) => analytics.pageView(pagePath, params),
+  getKQIReport: () => analytics.getKQIReport(),  // ← 改成箭头函数
   EVENTS: EVENTS,
   KQICalculator: KQICalculator
 }

@@ -2,7 +2,8 @@
   "navigationBarTitleText": "今日饮食",
   "usingComponents": {
     "assistant-fab": "/components/assistant-fab/index",
-    "dialog-ai": "/components/dialog-ai/index"
+    "dialog-ai": "/components/dialog-ai/index",
+    "kqi-dashboard": "/components/kqi-dashboard/index"
   },
   "navigationBarBackgroundColor": "#fefbf8",
   "navigationBarTextStyle": "black",

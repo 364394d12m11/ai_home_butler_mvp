@@ -557,4 +557,14 @@
     <text>导出购物清单</text>
   </button>
 </view>
+<!-- KQI看板 -->
+<kqi-dashboard 
+  show="{{showKQI}}"
+  bind:close="closeKQI"
+/>
+
+<!-- KQI浮动按钮 -->
+<view class="kqi-fab" bindtap="openKQI">
+  📊
+</view>
 </view>

@@ -25,6 +25,7 @@ Page({
     canRedo: false,   // 是否可以重做
     isGenerating: false,
     candidatePoolLocked: false,
+    showKQI: false,  // ← 添加这行
 
     userRole: 'normal',
     roleConfig: {
@@ -206,7 +207,16 @@ Page({
     
     console.log('========== 🟡 ONSHOW结束 ==========')
   },
-  
+  // 打开KQI看板
+openKQI() {
+  this.setData({ showKQI: true })
+},
+
+// 关闭KQI看板
+closeKQI() {
+  this.setData({ showKQI: false })
+},
+
   // ========== 新增：页面隐藏时清理定时器 ==========
   onHide: function() {
     if (this.undoCheckTimer) {

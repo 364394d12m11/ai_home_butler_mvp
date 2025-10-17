@@ -590,6 +590,16 @@ onMaskTap(e) {
     console.log('========== 点击遮罩，关闭Dialog ==========')
     this.close()
   }
+},
+// 关闭对话框
+close() {
+  console.log('========== 关闭Dialog ==========')
+  this.triggerEvent('close')
+},
+
+// 点击关闭按钮
+onClose() {
+  this.close()
 }
   }
 })

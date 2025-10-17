@@ -2,6 +2,12 @@
 <view class="dialog-mask" wx:if="{{show}}" catchtap="onMaskTap">
   <view class="dialog-container" catchtap="">
     
+    <!-- ========== 新增：关闭按钮 ========== -->
+    <view class="dialog-header">
+      <text class="dialog-title">AI助手</text>
+      <view class="close-btn" catchtap="onClose">✕</view>
+    </view>
+
     <!-- 对话历史 -->
     <scroll-view class="messages" scroll-y scroll-into-view="msg-{{messages.length-1}}">
       <view 
