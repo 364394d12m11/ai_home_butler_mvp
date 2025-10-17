@@ -1,8 +1,9 @@
 // miniprogram/app.js
 const config = require('./config/index')
 
+// App 定义
 App({
-  onLaunch() {
+  onLaunch: function () {
     // 初始化云环境
     try {
       wx.cloud.init({ env: config.envId, traceUser: true })

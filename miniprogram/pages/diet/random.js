@@ -1,6 +1,6 @@
 const { envId } = require('../../config/index')
 const db = wx.cloud.database({ env: envId })
-import seed from './seed'
+const seed = require('./seed')
 
 Page({
   data:{

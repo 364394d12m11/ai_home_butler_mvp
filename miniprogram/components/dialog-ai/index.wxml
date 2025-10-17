@@ -1,0 +1,86 @@
+// components/dialog-ai/index.wxml
+<view class="dialog-mask" wx:if="{{show}}" bindtap="close">
+  <view class="dialog-container" catchtap="">
+    
+    <!-- 对话历史 -->
+    <scroll-view class="messages" scroll-y scroll-into-view="msg-{{messages.length-1}}">
+      <view 
+        wx:for="{{messages}}" 
+        wx:key="index"
+        id="msg-{{index}}"
+        class="message {{item.role}}">
+        <view class="message-content">
+          <image wx:if="{{item.meta.type === 'image'}}" src="{{item.meta.url}}" mode="aspectFill" />
+          <text wx:else>{{item.content}}</text>
+        </view>
+      </view>
+      
+      <view wx:if="{{processing}}" class="message assistant typing">
+        <view class="typing-indicator">
+          <span></span><span></span><span></span>
+        </view>
+      </view>
+    </scroll-view>
+    
+    <!-- 输入区 -->
+    <view class="input-area">
+      
+      <!-- 模式切换 -->
+      <view class="mode-tabs">
+        <view 
+          class="mode-tab {{inputMode === 'text' ? 'active' : ''}}"
+          data-mode="text"
+          bindtap="switchMode">
+          文字
+        </view>
+        <view 
+          class="mode-tab {{inputMode === 'voice' ? 'active' : ''}}"
+          data-mode="voice"
+          bindtap="switchMode">
+          语音
+        </view>
+        <view 
+          class="mode-tab {{inputMode === 'image' ? 'active' : ''}}"
+          data-mode="image"
+          bindtap="switchMode">
+          图片
+        </view>
+      </view>
+      
+      <!-- 文本输入 -->
+      <view wx:if="{{inputMode === 'text'}}" class="text-input-area">
+        <input 
+          class="text-input" 
+          value="{{inputText}}"
+          placeholder="说点什么..."
+          bindinput="onInputChange"
+          confirm-type="send"
+          bindconfirm="sendText"
+        />
+        <button class="send-btn" bindtap="sendText" disabled="{{!inputText || processing}}">
+          发送
+        </button>
+      </view>
+      
+      <!-- 语音输入 -->
+      <view wx:if="{{inputMode === 'voice'}}" class="voice-input-area">
+        <button 
+          class="record-btn {{recording ? 'recording' : ''}}"
+          bindtouchstart="startRecord"
+          bindtouchend="stopRecord">
+          <text wx:if="{{!recording}}">按住说话</text>
+          <text wx:else>录音中 {{recordTime}}s</text>
+        </button>
+      </view>
+      
+      <!-- 图片输入 -->
+      <view wx:if="{{inputMode === 'image'}}" class="image-input-area">
+        <button class="upload-btn" bindtap="chooseImage" disabled="{{processing}}">
+          📷 拍冰箱照
+        </button>
+        <text class="hint">识别食材，推荐可做菜品</text>
+      </view>
+      
+    </view>
+  </view>
+</view>

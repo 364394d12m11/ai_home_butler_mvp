@@ -1,0 +1,7 @@
+<view class="assistant-fab {{position}}" wx:if="{{show}}" bindtap="openDialog">
+  <view class="fab-icon {{processing ? 'processing' : ''}}">
+    <text wx:if="{{!processing}}">🤖</text>
+    <view wx:else class="loading-spinner"></view>
+  </view>
+  <text class="fab-label">AI助手</text>
+</view>

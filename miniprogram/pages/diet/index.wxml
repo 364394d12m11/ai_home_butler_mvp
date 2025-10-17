@@ -523,4 +523,38 @@
       </scroll-view>
     </view>
   </view>
+  <!-- 在页面最底部添加，原有内容之后 -->
+
+<!-- 悬浮AI助手按钮 -->
+<assistant-fab 
+  show="{{true}}" 
+  position="bottom-right"
+  bind:open-dialog="handleOpenDialog"
+/>
+
+<!-- AI对话抽屉 -->
+<dialog-ai 
+  show="{{showDialog}}" 
+  processing="{{dialogProcessing}}"
+  bind:close="handleCloseDialog"
+  bind:send="handleDialogSend"
+/>
+
+<!-- 撤销按钮（可选，当有可撤销操作时显示）-->
+<view class="undo-fab" wx:if="{{canUndo}}" bindtap="handleUndo">
+  <text class="undo-icon">↶</text>
+  <text class="undo-label">撤销</text>
+</view>
+
+<!-- 在适当位置添加导出按钮 -->
+<view class="export-section">
+  <button 
+    class="export-btn" 
+    bindtap="handleExport"
+    disabled="{{!selectedDishes || selectedDishes.length === 0}}"
+  >
+    <text class="icon">📋</text>
+    <text>导出购物清单</text>
+  </button>
+</view>
 </view>

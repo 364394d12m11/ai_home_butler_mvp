@@ -1,0 +1,76 @@
+// components/kqi-dashboard/index.wxml
+/*
+<view class="dashboard-mask" wx:if="{{show}}" bindtap="close">
+  <view class="dashboard-container" catchtap="">
+    
+    <view class="dashboard-header">
+      <text class="title">📊 KQI健康度</text>
+      <text class="grade grade-{{healthGrade}}">{{healthGrade}}</text>
+    </view>
+    
+    <view class="dashboard-body">
+      
+<!-- 健康度评分 -->
+<view class="metric-card highlight">
+  <text class="metric-label">整体健康度</text>
+  <text class="metric-value">{{kqiReport.health}}/100</text>
+  <view class="progress-bar">
+    <view class="progress-fill" style="width: {{kqiReport.health + '%'}}"></view>
+  </view>
+</view>
+      
+      <!-- 各项指标 -->
+      <view class="metric-card">
+        <text class="metric-label">🎯 意图命中率</text>
+        <text class="metric-value {{kqiReport.hitRate >= 75 ? 'pass' : 'fail'}}">
+          {{kqiReport.hitRate}}%
+        </text>
+        <text class="metric-target">目标≥75%</text>
+      </view>
+      
+      <view class="metric-card">
+        <text class="metric-label">↩️ 撤销率</text>
+        <text class="metric-value {{kqiReport.undoRate <= 8 ? 'pass' : 'fail'}}">
+          {{kqiReport.undoRate}}%
+        </text>
+        <text class="metric-target">目标≤8%</text>
+      </view>
+      
+      <view class="metric-card">
+        <text class="metric-label">🚫 域外率</text>
+        <text class="metric-value {{kqiReport.outOfScopeRate <= 15 ? 'pass' : 'fail'}}">
+          {{kqiReport.outOfScopeRate}}%
+        </text>
+        <text class="metric-target">目标≤15%</text>
+      </view>
+      
+      <view class="metric-card">
+        <text class="metric-label">⚡ 语音平均延迟</text>
+        <text class="metric-value {{kqiReport.avgVoiceLatency < 1.8 ? 'pass' : 'fail'}}">
+          {{kqiReport.avgVoiceLatency}}s
+        </text>
+        <text class="metric-target">目标<1.8s</text>
+      </view>
+      
+      <view class="metric-card">
+        <text class="metric-label">📈 语音P95延迟</text>
+        <text class="metric-value {{kqiReport.p95VoiceLatency < 3.5 ? 'pass' : 'fail'}}">
+          {{kqiReport.p95VoiceLatency}}s
+        </text>
+        <text class="metric-target">目标<3.5s</text>
+      </view>
+      
+      <view class="metric-card">
+        <text class="metric-label">🤬 脏词次数</text>
+        <text class="metric-value">{{kqiReport.profanityCount}}</text>
+      </view>
+      
+    </view>
+    
+    <view class="dashboard-footer">
+      <button class="export-btn" bindtap="exportReport">导出报告</button>
+      <button class="close-btn" bindtap="close">关闭</button>
+    </view>
+    
+  </view>
+</view>

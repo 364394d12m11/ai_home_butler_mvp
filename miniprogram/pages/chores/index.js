@@ -1,4 +1,4 @@
-import { EVENTS, track } from '../../utils/analytics'
+
 Page({
   data:{ chores:[], parcels:[], chore:'' },
   async onShow(){

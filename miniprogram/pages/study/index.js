@@ -1,4 +1,4 @@
-import { EVENTS, track } from '../../utils/analytics'
+const { EVENTS, track } = require('../../utils/analytics')
 Page({
   data:{ task:'', pickup:'' },
   onTask(e){ this.setData({ task:e.detail.value }) },

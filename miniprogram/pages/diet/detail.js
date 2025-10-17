@@ -1,5 +1,5 @@
 // miniprogram/pages/diet/detail.js
-import { makeShoppingList } from '../../utils/menu-engine'
+const { makeShoppingList } = require('../../utils/menu-engine')
 const { RECIPES } = require('../../utils/recipes')
 
 Page({

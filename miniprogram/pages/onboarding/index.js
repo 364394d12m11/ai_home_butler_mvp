@@ -1,5 +1,12 @@
-// pages/onboarding/index.js - V5.3精简版
-import { set, get, KEY } from '../../utils/storage'
+// pages/onboarding/index.js
+
+// ✅ 定义安全的 track
+const track = function() {
+  console.log('[onboarding] track 被调用但已禁用')
+}
+const EVENT_TYPES = {}
+
+const { set, get, KEY } = require('../../utils/storage')
 
 Page({
   data: {

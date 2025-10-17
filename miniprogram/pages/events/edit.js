@@ -2,8 +2,8 @@
 const { envId, tmpls } = require('../../config/index')  // 环境 & 模板
 const db = wx.cloud.database({ env: envId })
 
-import { EventTypes } from '../../utils/schema'
-import { EVENTS, track } from '../../utils/analytics'
+const { EventTypes } = require('../../utils/schema')
+const { EVENTS, track } = require('../../utils/analytics')
 
 // UI值 <-> 存储值 的映射
 const ui2storeRemind = { '当日': 'DAY0', 'T-1': 'T-1', 'T-3': 'T-3', '每周': 'WEEK', '每月': 'MONTH', '每年': 'YEAR', '关闭': '关闭' }

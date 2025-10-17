@@ -1,4 +1,12 @@
-// pages/diet/index.js - V5.3完整版（保留所有功能）
+// pages/diet/index.js - V5.3完整版
+
+// =========== V5.3 新增工具类 ===========
+const { applyUIPatch, executeUndo } = require('../../utils/ui-patch')
+const { UndoRedoManager } = require('../../utils/undo-redo')
+const { exportShoppingList } = require('../../utils/shopping-list-exporter') 
+
+// =========== 创建实例 ===========
+const undoManager = new UndoRedoManager()
 var datetime = require('../../utils/datetime')
 const { getUserProfileV3 } = require('../../utils/storage')
 const { track, EVENT_TYPES } = require('../../utils/shadow')
@@ -10,10 +18,13 @@ Page({
     weekday: '',
     currentIntent: 'lunch',
     intentText: '午餐',
-
-    // ⚠️ 新增：防止重复调用
-    isGenerating: false,  // ← 添加这行
-    candidatePoolLocked: false,  // ← 新增：候选池锁定标志
+    
+    // ✅ V5.3 新增字段
+    showDialog: false,
+    dialogProcessing: false,
+    canUndo: false,
+    isGenerating: false,
+    candidatePoolLocked: false,
 
     userRole: 'normal',
     roleConfig: {
@@ -369,31 +380,6 @@ Page({
       return
     }
     
-    // ✅ V5.3新增：检查用户是否已设置过饮食偏好
-    const { get, KEY } = require('../../utils/storage')
-    const dietPref = get(KEY.DIET_PREF_V3, {})
-    const hasSetupPref = dietPref.setup_completed === true && 
-                         dietPref.goals && 
-                         dietPref.goals.length > 0 &&
-                         dietPref.budget
-    
-    if (!hasSetupPref) {
-      console.log('🎯 用户尚未设置饮食偏好，跳转到设置页面')
-      wx.showModal({
-        title: '首次生成菜单',
-        content: '需要先设置您的饮食偏好（目标、禁忌、预算），这样AI才能为您推荐合适的菜品。',
-        showCancel: false,
-        confirmText: '去设置',
-        success: () => {
-          wx.navigateTo({
-            url: '/pages/diet/taste-setup/index?from=first_generate'
-          })
-        }
-      })
-      return
-    }
-    
-    // ✅ 已有偏好，继续生成菜单
     console.log('1️⃣ 设置 isGenerating = true')
     this.setData({ isGenerating: true })
     
@@ -405,8 +391,6 @@ Page({
     const userDataV3 = this.data.userDataV3 || {}
     
     console.log('3️⃣ 开始获取位置')
-    
-    const { getLocationFromWX, buildFullRegionProfile } = require('../../utils/region-detector')
     
     getLocationFromWX().then(location => {
       console.log('4️⃣ 位置获取成功:', location)
@@ -487,6 +471,8 @@ Page({
           })
           
           console.log('✅ setData完成')
+          console.log('candidateMode =', self.data.candidateMode)
+          console.log('meat数量 =', self.data.candidatePool.meat.length)
           
           wx.showToast({
             title: '候选池已生成',
@@ -546,79 +532,74 @@ Page({
     console.log('切换模式:', mode)
   },
 
-// ========== 在 toggleDishSelection 中强制刷新候选池 ==========
-
-toggleDishSelection: function(e) {
-  console.log('========== 🔵 toggleDishSelection 开始 ==========')
-  
-  if (e && e.stopPropagation) {
-    e.stopPropagation()
-  }
-  
-  const { type, dishId } = e.currentTarget.dataset
-  
-  console.log('1️⃣ 点击参数:', { type, dishId })
-  
-  if (!type || !dishId) {
-    console.warn('❌ 参数缺失')
-    return
-  }
-  
-  // 深拷贝
-  const selectedDishes = JSON.parse(JSON.stringify(this.data.selectedDishes))
-  
-  // 确保数组存在
-  if (!selectedDishes[type]) {
-    selectedDishes[type] = []
-  }
-  
-  const currentList = selectedDishes[type]
-  const index = currentList.indexOf(dishId)
-  
-  if (index > -1) {
-    // 取消选择
-    currentList.splice(index, 1)
-    console.log('❌ 取消选择')
-  } else {
-    // 添加选择
-    currentList.push(dishId)
-    console.log('✅ 添加选择')
-  }
-  
-  // 更新计数
-  const selectedCount = {
-    meat: (selectedDishes.meat || []).length,
-    veg: (selectedDishes.veg || []).length,
-    soup: (selectedDishes.soup || []).length,
-    staple: (selectedDishes.staple || []).length
-  }
-  selectedCount.total = selectedCount.meat + selectedCount.veg + selectedCount.soup + selectedCount.staple
-  
-  // 🔴 关键修复：深拷贝整个候选池，强制触发重新渲染
-  const newCandidatePool = JSON.parse(JSON.stringify(this.data.candidatePool))
-  
-  // 给每个菜品添加 selected 标记
-  Object.keys(newCandidatePool).forEach(category => {
-    newCandidatePool[category] = newCandidatePool[category].map(dish => ({
-      ...dish,
-      selected: selectedDishes[category] && selectedDishes[category].includes(dish.id)
-    }))
-  })
-  
-  console.log('5️⃣ 更新后 selectedDishes:', selectedDishes)
-  console.log('6️⃣ 更新后 selectedCount:', selectedCount)
-  
-  // 🔴 一次性更新所有数据
-  this.setData({
-    selectedDishes: selectedDishes,
-    selectedCount: selectedCount,
-    candidatePool: newCandidatePool  // ← 强制刷新候选池
-  }, () => {
-    console.log('✅ setData 完成')
-  })
-  
-  console.log('========== 🔵 toggleDishSelection 结束 ==========')
-},
+  toggleDishSelection: function(e) {
+    console.log('========== 🔵 toggleDishSelection 开始 ==========')
+    
+    if (e && e.stopPropagation) {
+      e.stopPropagation()
+    }
+    
+    const { type, dishId } = e.currentTarget.dataset
+    
+    console.log('1️⃣ 点击:', { type, dishId })
+    
+    if (!type || !dishId) {
+      console.warn('❌ 参数缺失')
+      return
+    }
+    
+    // ⚠️ 关键：深拷贝整个 selectedDishes 对象
+    const selectedDishes = JSON.parse(JSON.stringify(this.data.selectedDishes))
+    
+    // 确保该类型的数组存在
+    if (!selectedDishes[type]) {
+      selectedDishes[type] = []
+    }
+    
+    const currentList = selectedDishes[type]
+    const index = currentList.indexOf(dishId)
+    
+    console.log('2️⃣ 当前选中列表:', currentList)
+    console.log('3️⃣ dishId 位置:', index)
+    
+    if (index > -1) {
+      // 取消选择
+      currentList.splice(index, 1)
+      console.log('4️⃣ 取消选择')
+    } else {
+      // 添加选择
+      currentList.push(dishId)
+      console.log('4️⃣ 添加选择')
+    }
+    
+    // 更新计数
+    const selectedCount = {
+      meat: (selectedDishes.meat || []).length,
+      veg: (selectedDishes.veg || []).length,
+      soup: (selectedDishes.soup || []).length,
+      staple: (selectedDishes.staple || []).length
+    }
+    selectedCount.total = selectedCount.meat + selectedCount.veg + selectedCount.soup + selectedCount.staple
+    
+    console.log('5️⃣ 更新后 selectedDishes:', selectedDishes)
+    console.log('6️⃣ 更新后 selectedCount:', selectedCount)
+    
+    // ⚠️ 关键：一次性更新整个对象，不用路径语法
+    this.setData({
+      selectedDishes: selectedDishes,
+      selectedCount: selectedCount
+    }, () => {
+      console.log('7️⃣ setData 完成')
+      console.log('8️⃣ 验证数据:', this.data.selectedDishes[type])
+      
+      // 强制页面更新（兜底方案）
+      this.setData({
+        _forceUpdate: Date.now()
+      })
+    })
+    
+    console.log('========== 🔵 toggleDishSelection 结束 ==========')
+  },
   
   getDishById: function(type, dishId) {
     const pool = this.data.candidatePool[type] || []
@@ -1803,11 +1784,158 @@ toggleDishSelection: function(e) {
     return numMatch ? parseFloat(numMatch[1]) : 1
   },
 
-  // 在 Page({}) 的 data 之后，其他函数之前添加
-
-goToDietSettings: function() {
-  wx.navigateTo({
-    url: '/pages/diet/taste-setup/index'
-  })
-}
+    // =========== V5.3 新增方法 ===========
+  
+    handleOpenDialog() {
+      this.setData({ showDialog: true })
+    },
+    
+    handleCloseDialog() {
+      this.setData({ showDialog: false })
+    },
+    
+    async handleDialogSend(e) {
+      const { modality, payload } = e.detail
+      this.setData({ dialogProcessing: true })
+      
+      try {
+        const res = await wx.cloud.callFunction({
+          name: 'aiRouter',
+          data: {
+            modality: modality,
+            payload: payload,
+            context: {
+              page: 'diet',
+              selectedDishes: this.data.selectedDishes,
+              candidatePool: this.data.candidatePool
+            }
+          }
+        })
+        
+        if (res.result && res.result.ui_patch) {
+          applyUIPatch(this, res.result.ui_patch)
+          this.checkUndoAvailable()
+        }
+        
+      } catch (err) {
+        console.error('对话失败:', err)
+        wx.showToast({ title: '处理失败', icon: 'none' })
+      } finally {
+        this.setData({ dialogProcessing: false })
+      }
+    },
+    
+    async handleUndo() {
+      const success = await executeUndo(this)
+      if (success) {
+        this.checkUndoAvailable()
+      }
+    },
+    
+    checkUndoAvailable() {
+      try {
+        const undoData = wx.getStorageSync('UNDO_TOKEN')
+        const canUndo = undoData && (Date.now() < undoData.expiresAt)
+        this.setData({ canUndo })
+      } catch (e) {
+        this.setData({ canUndo: false })
+      }
+    },
+    
+    async handleExport() {
+      wx.showLoading({ title: '生成中...' })
+      
+      try {
+        const ingredients = this.getSelectedIngredients()
+        
+        if (!ingredients || ingredients.length === 0) {
+          wx.showToast({ title: '请先选择菜品', icon: 'none' })
+          return
+        }
+        
+        const result = await exportShoppingList(ingredients, {
+          format: 'both',
+          size: { width: 1080, height: 1920 }
+        })
+        
+        if (result.imagePath) {
+          wx.previewImage({
+            urls: [result.imagePath],
+            current: result.imagePath
+          })
+        }
+        
+        if (result.text) {
+          wx.setClipboardData({
+            data: result.text,
+            success: () => {
+              wx.showToast({ title: '已复制到剪贴板', icon: 'success' })
+            }
+          })
+        }
+        
+      } catch (err) {
+        console.error('导出失败:', err)
+        wx.showToast({ title: '导出失败', icon: 'none' })
+      } finally {
+        wx.hideLoading()
+      }
+    },
+    
+    getSelectedIngredients() {
+      const { candidatePool, selectedDishes } = this.data
+      const ingredients = []
+      
+      // 遍历所有类型（meat, veg, soup, staple）
+      Object.keys(selectedDishes || {}).forEach(type => {
+        const dishIds = selectedDishes[type] || []  // 获取选中的菜品 ID 列表
+        const pool = candidatePool[type] || []      // 获取该类型的候选池
+        
+        // 根据 ID 找到完整的菜品对象
+        dishIds.forEach(dishId => {
+          const dish = pool.find(d => d.id === dishId)
+          
+          if (dish && dish.ingredients) {
+            // 提取食材
+            let allIngredients = []
+            
+            if (dish.ingredients.main || dish.ingredients.aux) {
+              // 新格式：{ main: [...], aux: [...], seasoning: [...] }
+              allIngredients = [
+                ...(dish.ingredients.main || []),
+                ...(dish.ingredients.aux || []),
+                ...(dish.ingredients.seasoning || [])
+              ]
+            } else if (Array.isArray(dish.ingredients)) {
+              // 旧格式：直接是数组
+              allIngredients = dish.ingredients
+            }
+            
+            ingredients.push(...allIngredients)
+          }
+        })
+      })
+      
+      // 去重合并
+      const merged = {}
+      ingredients.forEach(item => {
+        const name = typeof item === 'string' ? item : (item.name || '未知')
+        const amount = typeof item === 'object' ? (item.amount || item.qty || 1) : 1
+        
+        if (merged[name]) {
+          // 如果是数字，累加；如果是字符串（如 "3个"），保留第一个
+          if (typeof merged[name].amount === 'number' && typeof amount === 'number') {
+            merged[name].amount += amount
+          }
+        } else {
+          merged[name] = { 
+            name: name, 
+            amount: amount,
+            category: typeof item === 'object' ? item.category : '食材'
+          }
+        }
+      })
+      
+      return Object.values(merged)
+    }
 })

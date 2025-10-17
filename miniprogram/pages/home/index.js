@@ -1,17 +1,16 @@
-// pages/home/index.js - V4.0 修复版
 const { envId, tmpls, cityFallback = { name: '北京' } } = require('../../config/index')
 const db = wx.cloud.database({ env: envId })
 const { normalizeWeatherTheme } = require('../../utils/weather-theme')
-import { getRemoteIconUrl } from '../../utils/weather-icon'
-import { formatDateYMD, weekdayCN, getCurrentHour, ganzhiOfYear } from '../../utils/datetime'
-import { getLunarInfo } from '../../utils/lunar'
-import { getWeatherByLoc, getWeatherByCity } from '../../utils/weather'
-import { collectDailyData } from '../../utils/reflection_v4'
-import { generateFamilyTone, explainMeal } from '../../utils/perception_v4'
-import { buildDailyTips } from '../../utils/suggest'
-import { isInRange } from '../../utils/holiday'
-import { KEY, get, set, applyOverride, getActiveOverrides, getUserProfileV3 } from '../../utils/storage'
-import { EVENTS, track } from '../../utils/analytics'
+const { getRemoteIconUrl } = require('../../utils/weather-icon')
+const { formatDateYMD, weekdayCN, getCurrentHour, ganzhiOfYear } = require('../../utils/datetime')
+const { getLunarInfo } = require('../../utils/lunar')
+const { getWeatherByLoc, getWeatherByCity } = require('../../utils/weather')
+const { collectDailyData } = require('../../utils/reflection_v4')
+const { generateFamilyTone, explainMeal } = require('../../utils/perception_v4')
+const { buildDailyTips } = require('../../utils/suggest')
+const { isInRange } = require('../../utils/holiday')
+const { KEY, get, set, applyOverride, getActiveOverrides, getUserProfileV3 } = require('../../utils/storage')
+const { EVENTS, track } = require('../../utils/analytics')
 const { getLocalSunTimes, isNightBySunTimes } = require('../../utils/sun')
 const { decideTheme } = require('../../utils/weather-theme')
 // ✅ V5.2新增：引入AI文案引擎
