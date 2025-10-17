@@ -87,10 +87,10 @@ exports.main = async (event) => {
 
     // ===== 步骤5: 生成候选池 =====
     const candidatePool = {
-      meat: generateCategoryPool(ranked, '荤菜', 10, ctx),
-      veg: generateCategoryPool(ranked, '素菜', 8, ctx),
-      soup: generateCategoryPool(ranked, '汤类', 4, ctx),
-      staple: generateCategoryPool(ranked, '主食', 4, ctx)
+      meat: generateCategoryPool(ranked, '荤菜', 9, ctx),
+      veg: generateCategoryPool(ranked, '素菜', 6, ctx),
+      soup: generateCategoryPool(ranked, '汤类', 3, ctx),
+      staple: generateCategoryPool(ranked, '主食', 3, ctx)
     }
 
     // ===== 步骤6: 补充不足的分类 =====

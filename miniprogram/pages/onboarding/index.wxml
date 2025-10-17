@@ -2,19 +2,15 @@
   <!-- 头部 -->
   <view class="header">
     <view class="main-title">AI家庭管家 V5.3</view>
-    <view class="subtitle">{{currentStep === 1 ? '让我了解你的家庭' : '风格与语气偏好'}}</view>
-    <view class="progress-dots">
-      <view class="dot {{currentStep >= 1 ? 'active' : ''}}"></view>
-      <view class="dot {{currentStep >= 2 ? 'active' : ''}}"></view>
-    </view>
+    <view class="subtitle">让我了解你的家庭</view>
   </view>
 
-  <!-- 第1页：家庭基础 -->
-  <view class="step-content {{currentStep === 1 ? 'active' : 'hidden'}}" wx:if="{{currentStep === 1}}">
+  <!-- 内容区 -->
+  <view class="step-content">
     
     <!-- 城市位置 -->
     <view class="card compact">
-      <view class="section-title-small">📍 城市位置</view>
+      <view class="section-title">📍 城市位置</view>
       
       <view wx:if="{{locationStatus === 'pending'}}" class="location-status pending">
         <text class="status-icon">🔄</text>
@@ -23,7 +19,6 @@
       
       <view wx:elif="{{locationStatus === 'success'}}" class="location-status success">
         <view class="location-info">
-          <text class="location-icon">📍</text>
           <text class="location-name">
             {{form.city.province || ''}}{{form.city.city || ''}}{{form.city.district || ''}}
           </text>
@@ -46,7 +41,7 @@
 
     <!-- 家庭成员结构 -->
     <view class="card">
-      <view class="section-title">👥 家庭成员结构</view>
+      <view class="section-title">👥 家庭成员</view>
       <view class="family-grid">
         <view class="family-card {{form.familyType === 'single' ? 'active' : ''}}" 
               bindtap="onFamilyTypeSelect" data-value="single">
@@ -143,7 +138,7 @@
 
     <!-- 家庭帮手 -->
     <view class="card">
-      <view class="section-title">🏠 家里有人帮忙吗？</view>
+      <view class="section-title">👨‍🔧 工作人员</view>
       
       <view class="helper-list">
         <!-- 保姆 -->
@@ -258,44 +253,6 @@
       </view>
     </view>
 
-    <!-- 宠物 -->
-    <view class="card">
-      <view class="section-title">🐾 宠物</view>
-      <view class="pet-main">
-        <view class="pet-question">是否有宠物：</view>
-        <switch checked="{{form.hasPet}}" bindchange="onPetToggle"/>
-      </view>
-    </view>
-  </view>
-
-  <!-- 第2页：风格与语气 (原第3页) -->
-  <view class="step-content {{currentStep === 2 ? 'active' : 'hidden'}}" wx:if="{{currentStep === 2}}">
-    
-    <!-- 生活风格 -->
-    <view class="card">
-      <view class="section-title">🎨 生活风格</view>
-      <view class="style-grid">
-        <view class="style-card {{form.lifeStyle === '实用派' ? 'active' : ''}}"
-              bindtap="onLifeStyleSelect" data-value="实用派">
-          <view class="style-icon">⚡</view>
-          <view class="style-title">实用派</view>
-          <view class="style-desc">清晰直接</view>
-        </view>
-        <view class="style-card {{form.lifeStyle === '小资生活' ? 'active' : ''}}"
-              bindtap="onLifeStyleSelect" data-value="小资生活">
-          <view class="style-icon">🌿</view>
-          <view class="style-title">小资生活</view>
-          <view class="style-desc">暖意 + 质感</view>
-        </view>
-        <view class="style-card {{form.lifeStyle === '精致控' ? 'active' : ''}}"
-              bindtap="onLifeStyleSelect" data-value="精致控">
-          <view class="style-icon">✨</view>
-          <view class="style-title">精致控</view>
-          <view class="style-desc">克制 + 高级</view>
-        </view>
-      </view>
-    </view>
-
     <!-- AI语气偏好 -->
     <view class="card">
       <view class="section-title">🤖 AI语气偏好</view>
@@ -318,19 +275,10 @@
       </view>
     </view>
 
-    <!-- 提示信息 -->
-    <view class="tip-box">
-      <text class="tip-icon">💡</text>
-      <text class="tip-text">饮食偏好（目标、口味、预算）将在首次生成菜单时设置</text>
-    </view>
   </view>
 
   <!-- 底部按钮 -->
   <view class="bottom-actions">
-    <button wx:if="{{currentStep > 1}}" class="btn-secondary" bindtap="prevStep">上一步</button>
-    <button wx:if="{{currentStep < 2}}" class="btn-primary" bindtap="nextStep">
-      下一步 · 风格与语气
-    </button>
-    <button wx:if="{{currentStep === 2}}" class="btn-primary" bindtap="onDone">🎉 进入</button>
+    <button class="btn-primary" bindtap="onDone">🎉 进入</button>
   </view>
 </view>

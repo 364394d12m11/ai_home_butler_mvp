@@ -356,52 +356,108 @@
   </view>
   <!-- 候选池界面结束 -->
 
-  <!-- ========== 最终菜单显示 ========== -->
-  <view wx:if="{{!candidateMode && todayMenu.length > 0}}" class="final-menu-container">
-    
-    <view class="final-menu-header">
-      <text class="menu-title">✓ 今日菜单</text>
-      <text class="menu-count">共 {{todayMenu.length}} 道菜</text>
+<!-- ========== 最终菜单显示（分类3列版） ========== -->
+<view wx:if="{{!candidateMode && todayMenu.length > 0}}" class="final-menu-container">
+  
+  <view class="final-menu-header">
+    <text class="menu-title">✓ 今日菜单</text>
+    <text class="menu-count">共 {{todayMenu.length}} 道菜</text>
+  </view>
+  
+  <!-- 🔴 荤菜 -->
+  <view wx:if="{{finalMenuByCategory.meat.length > 0}}" class="final-category-section">
+    <view class="final-category-title">
+      <text class="category-icon">🍖</text>
+      <text class="category-name">荤菜</text>
+      <text class="category-count">{{finalMenuByCategory.meat.length}}道</text>
     </view>
-    
     <view class="final-menu-list">
-      <view wx:for="{{todayMenu}}" wx:key="id" class="final-dish-card">
+      <view wx:for="{{finalMenuByCategory.meat}}" wx:key="id" class="final-dish-card">
         <view class="dish-main-info">
           <text class="dish-name">{{item.name}}</text>
-          <text class="dish-course-tag">{{item.course}}</text>
         </view>
-        
         <view class="dish-meta-info">
           <text class="meta-item">⏱ {{item.time}}分钟</text>
-          <text wx:if="{{item.tags && item.tags.length > 0}}" class="meta-tag">
-            {{item.tags[0]}}
-          </text>
-        </view>
-        
-        <view wx:if="{{item.reason}}" class="dish-reason">
-          <text>{{item.reason}}</text>
         </view>
       </view>
     </view>
-    
-    <view wx:if="{{nutritionComment}}" class="nutrition-comment-card">
-      <view class="comment-icon">✨</view>
-      <view class="comment-content">
-        <text class="comment-title">营养点评</text>
-        <text class="comment-text">{{nutritionComment}}</text>
-      </view>
-    </view>
-    
-    <view class="final-menu-actions">
-      <button class="btn-back-to-pool" bindtap="backToCandidates">
-        ← 返回候选池
-      </button>
-      <button class="btn-view-shopping" bindtap="showShoppingList">
-        📝 查看购物清单 ({{shoppingList.length}})
-      </button>
-    </view>
-    
   </view>
+
+  <!-- 🔴 素菜 -->
+  <view wx:if="{{finalMenuByCategory.veg.length > 0}}" class="final-category-section">
+    <view class="final-category-title">
+      <text class="category-icon">🥬</text>
+      <text class="category-name">素菜</text>
+      <text class="category-count">{{finalMenuByCategory.veg.length}}道</text>
+    </view>
+    <view class="final-menu-list">
+      <view wx:for="{{finalMenuByCategory.veg}}" wx:key="id" class="final-dish-card">
+        <view class="dish-main-info">
+          <text class="dish-name">{{item.name}}</text>
+        </view>
+        <view class="dish-meta-info">
+          <text class="meta-item">⏱ {{item.time}}分钟</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 🔴 汤品 -->
+  <view wx:if="{{finalMenuByCategory.soup.length > 0}}" class="final-category-section">
+    <view class="final-category-title">
+      <text class="category-icon">🍲</text>
+      <text class="category-name">汤品</text>
+      <text class="category-count">{{finalMenuByCategory.soup.length}}道</text>
+    </view>
+    <view class="final-menu-list">
+      <view wx:for="{{finalMenuByCategory.soup}}" wx:key="id" class="final-dish-card">
+        <view class="dish-main-info">
+          <text class="dish-name">{{item.name}}</text>
+        </view>
+        <view class="dish-meta-info">
+          <text class="meta-item">⏱ {{item.time}}分钟</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 🔴 主食 -->
+  <view wx:if="{{finalMenuByCategory.staple.length > 0}}" class="final-category-section">
+    <view class="final-category-title">
+      <text class="category-icon">🍚</text>
+      <text class="category-name">主食</text>
+      <text class="category-count">{{finalMenuByCategory.staple.length}}道</text>
+    </view>
+    <view class="final-menu-list">
+      <view wx:for="{{finalMenuByCategory.staple}}" wx:key="id" class="final-dish-card">
+        <view class="dish-main-info">
+          <text class="dish-name">{{item.name}}</text>
+        </view>
+        <view class="dish-meta-info">
+          <text class="meta-item">⏱ {{item.time}}分钟</text>
+        </view>
+      </view>
+    </view>
+  </view>
+  
+  <view wx:if="{{nutritionComment}}" class="nutrition-comment-card">
+    <view class="comment-icon">✨</view>
+    <view class="comment-content">
+      <text class="comment-title">营养点评</text>
+      <text class="comment-text">{{nutritionComment}}</text>
+    </view>
+  </view>
+  
+  <view class="final-menu-actions">
+    <button class="btn-back-to-pool" bindtap="backToCandidates">
+      ← 返回候选池
+    </button>
+    <button class="btn-view-shopping" bindtap="showShoppingList">
+      📝 查看购物清单 ({{shoppingList.length}})
+    </button>
+  </view>
+  
+</view>
 
   <!-- V4.0主要按钮区 -->
   <view class="primary-actions" wx:if="{{!candidateMode}}">

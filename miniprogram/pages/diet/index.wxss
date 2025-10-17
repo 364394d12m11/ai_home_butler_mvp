@@ -42,11 +42,38 @@
   transition: all 300ms cubic-bezier(0.4,0,0.2,1);
 }
 
-/* 头部信息 - V4.0升级显示角色 */
+/* 右上角设置图标 */
 .header {
+  position: relative;
   text-align: center;
   margin-bottom: 56rpx;
   animation: fadeUp 400ms ease-out;
+}
+
+.settings-icon {
+  position: absolute;
+  top: 32rpx;
+  right: 32rpx;
+  width: 72rpx;
+  height: 72rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 50%;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+  z-index: 100;
+  transition: all 0.3s ease;
+}
+
+.settings-icon:active {
+  transform: scale(0.95);
+  background: rgba(255, 255, 255, 1);
+}
+
+.settings-icon .icon {
+  font-size: 40rpx;
+  line-height: 1;
 }
 
 @keyframes fadeUp {
@@ -393,9 +420,19 @@
 }
 
 .dish-meta {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  flex-wrap: wrap;
+  margin-top: 8rpx;
   font-size: 22rpx;
   color: rgba(0,0,0,0.7);
   font-weight: 400;
+}
+
+.dish-time {
+  font-size: 24rpx;
+  color: var(--text-tertiary);
 }
 
 /* ========== V4.0主要按钮区（角色差异化） ========== */
@@ -1428,104 +1465,18 @@
   background: var(--surface-elevated);
   border-radius: var(--radius-sm);
 }
-/* 右上角设置图标 */
-.header {
-  position: relative; /* 确保设置图标能绝对定位 */
+/* ========== 🔥 候选池完整样式（统一整理） ========== */
+
+/* 1. 候选池容器 */
+.candidate-pool-container {
+  position: relative;
+  z-index: 10;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+  padding-bottom: 140rpx;
 }
 
-.settings-icon {
-  position: absolute;
-  top: 32rpx;
-  right: 32rpx;
-  width: 72rpx;
-  height: 72rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 50%;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
-  z-index: 100;
-  transition: all 0.3s ease;
-}
-
-.settings-icon:active {
-  transform: scale(0.95);
-  background: rgba(255, 255, 255, 1);
-}
-
-.settings-icon .icon {
-  font-size: 40rpx;
-  line-height: 1;
-}
-
-/* ✅ 修复9：选中时的全卡片高亮动画 */
-@keyframes selected-pulse {
-  0%, 100% { 
-    box-shadow: 0 0 0 0 rgba(246,164,76,0); 
-  }
-  50% { 
-    box-shadow: 0 0 0 6rpx rgba(246,164,76,0.2); 
-  }
-}
-
-/* ✅ 修复10：修复 wxss 中重复的 .check-icon 定义冲突 */
-.shopping-item .check-mark,
-.item-checkbox .check-mark {
-  /* 购物清单的对勾 - 不受候选池样式影响 */
-  font-size: 24rpx;
-  color: white;
-  font-weight: 600;
-}
-
-/* 选中动画 */
-@keyframes selected-pulse {
-  0%, 100% { 
-    box-shadow: 0 0 0 0 rgba(246,164,76,0); 
-  }
-  50% { 
-    box-shadow: 0 0 0 6rpx rgba(246,164,76,0.2); 
-  }
-}
-
-/* 菜品名称 */
-.dish-name {
-  font-size: 30rpx;
-  font-weight: bold;
-  color: #333;
-  line-height: 1.4;
-}
-
-/* 菜品元信息 */
-.dish-meta {
-  display: flex;
-  align-items: center;
-  gap: 12rpx;
-  flex-wrap: wrap;
-  margin-top: 8rpx;
-}
-
-.dish-time {
-  font-size: 24rpx;
-  color: #999;
-}
-
-/* 推荐理由 */
-.dish-reason {
-  font-size: 24rpx;
-  color: #999;
-  line-height: 1.6;
-  margin-top: 12rpx;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* ========== 🔴 层级修复 - 添加到 index.wxss 末尾 ========== */
-
-/* 1. 降低底部按钮的层级 */
+/* 2. 底部确认按钮 */
 .pool-footer {
   position: fixed;
   bottom: 0;
@@ -1535,304 +1486,229 @@
   padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
   background: #fff;
   box-shadow: 0 -4rpx 12rpx rgba(0,0,0,0.08);
-  z-index: 50 !important;  /* ← 降低层级，不要太高 */
+  z-index: 50;
 }
 
-/* 2. 提升候选池容器的层级 */
-.candidate-pool-container {
-  position: relative;
-  z-index: 10 !important;
-  min-height: 100vh;
-  background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
-  padding-bottom: 140rpx;
-}
-
-/* 3. 提升菜品卡片的层级 */
-.dish-card {
-  position: relative;
-  z-index: 100 !important;  /* ← 提升，确保在底部按钮之上可点击 */
-  background: #F8F9FA;
-  border-radius: 16rpx;
-  padding: 24rpx;
-  border: 3rpx solid #E0E0E0;
-  transition: all 0.3s ease;
-  min-height: 200rpx;
-  overflow: visible;
-}
-
-/* 4. 复选框保持最高层级 */
-.dish-checkbox {
-  position: absolute;
-  top: 12rpx;
-  right: 12rpx;
-  width: 52rpx;
-  height: 52rpx;
-  border-radius: 50%;
-  border: 4rpx solid #D8D8D8;
-  background: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  z-index: 200 !important;  /* ← 最高层级 */
-  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.1);
-  pointer-events: auto !important;  /* ← 确保可点击 */
-}
-
-/* 5. 选中状态 */
-.dish-checkbox.checked {
-  border-color: #F6A44C !important;
-  background: #F6A44C !important;
-  transform: scale(1.15);
-  box-shadow: 0 4rpx 12rpx rgba(246,164,76,0.4);
-}
-
-/* 6. 用CSS伪元素画对勾 */
-.dish-checkbox.checked::after {
-  content: '✓';
-  display: block !important;
-  width: 100%;
-  height: 100%;
-  text-align: center;
-  line-height: 52rpx;
-  font-size: 48rpx;
-  color: #FFFFFF !important;
-  font-weight: 900;
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-
-/* 7. 隐藏原来的 text 标签，完全用CSS绘制 */
-.dish-checkbox .check-icon {
-  display: none !important;
-}
-
-/* 8. 卡片选中状态 */
-.dish-card.selected {
-  border-color: #F6A44C !important;
-  border-width: 4rpx !important;
-  background: rgba(246,164,76,0.12) !important;
-  box-shadow: 0 0 0 3rpx rgba(246,164,76,0.3) !important;
-  transform: scale(1.02);
-  z-index: 101 !important;  /* ← 选中时层级再提升一点 */
-}
-
-/* 9. 移除可能遮挡的伪元素 */
-.dish-card::after {
-  display: none !important;
-}
-
-/* 10. 确保菜品信息不遮挡复选框 */
-.dish-info {
-  display: flex;
-  flex-direction: column;
-  gap: 8rpx;
-  padding-right: 68rpx;
-  position: relative;
-  z-index: 1;  /* ← 低于复选框 */
-  pointer-events: none !important;  /* ← 不拦截点击事件 */
-}
-
-/* 11. 但text内容需要可选中 */
-.dish-info text {
-  pointer-events: auto !important;
-}
-
-/* 12. 网格布局 */
-.dish-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 28rpx;
-  padding: 0 24rpx;
-  margin-top: 24rpx;
-  position: relative;
-  z-index: 100;
-}
-
-/* 13. 分类区块 */
+/* 3. 分类区块 */
 .category-section {
   position: relative;
   z-index: 100;
   margin-bottom: 40rpx;
 }
 
-
-/* ========== 🔴 V5.3 候选池勾选修复 - 最终版 ========== */
-
-/* 1. 提升候选池容器层级 */
-.candidate-pool-container {
-  position: relative !important;
-  z-index: 10 !important;
+/* 4. 菜品网格（3列紧凑） */
+.candidate-pool-container .dish-grid {
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12rpx;
+  padding: 0 16rpx;
 }
 
-/* 2. 降低底部按钮层级 */
-.pool-footer {
-  z-index: 50 !important;
-}
-
-/* 3. 提升菜品卡片层级并确保可点击 */
+/* 5. 菜品卡片 */
 .candidate-pool-container .dish-card {
-  position: relative !important;
-  z-index: 100 !important;
-  pointer-events: auto !important;
+  position: relative;
+  z-index: 100;
+  pointer-events: auto;
+  min-height: 140rpx;
+  padding: 12rpx;
+  border-width: 2rpx;
 }
 
-/* 4. 复选框最高层级 */
+.candidate-pool-container .dish-card.selected {
+  border-color: #F6A44C;
+  border-width: 4rpx;
+  background: rgba(246,164,76,0.12);
+  box-shadow: 0 0 0 3rpx rgba(246,164,76,0.3);
+  transform: scale(1.02);
+  z-index: 101;
+}
+
+.candidate-pool-container .dish-card::after {
+  display: none;
+}
+
+/* 6. 复选框（缩小版44rpx） */
 .candidate-pool-container .dish-checkbox {
-  position: absolute !important;
-  top: 16rpx !important;
-  right: 16rpx !important;
-  width: 52rpx !important;
-  height: 52rpx !important;
-  z-index: 200 !important;
-  pointer-events: auto !important;
+  position: absolute;
+  top: 8rpx;
+  right: 8rpx;
+  width: 44rpx;
+  height: 44rpx;
+  z-index: 200;
+  pointer-events: auto;
   border-radius: 50%;
-  border: 4rpx solid #D8D8D8;
+  border: 3rpx solid #D8D8D8;
   background: white;
-  display: flex !important;
+  display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.3s ease;
 }
 
-/* 5. 选中状态的复选框 */
 .candidate-pool-container .dish-checkbox.checked {
-  border-color: #F6A44C !important;
-  background: #F6A44C !important;
-  transform: scale(1.15) !important;
+  border-color: #F6A44C;
+  background: #F6A44C;
+  transform: scale(1.15);
 }
 
-/* 6. 用CSS伪元素画白色对勾 */
 .candidate-pool-container .dish-checkbox.checked::after {
-  content: '✓' !important;
-  display: block !important;
+  content: '✓';
+  display: block;
   width: 100%;
   height: 100%;
-  text-align: center !important;
-  line-height: 52rpx !important;
-  font-size: 48rpx !important;
-  color: #FFFFFF !important;
-  font-weight: 900 !important;
+  text-align: center;
+  line-height: 44rpx;
+  font-size: 36rpx;
+  color: #FFFFFF;
+  font-weight: 900;
   position: absolute;
   top: 0;
   left: 0;
 }
 
-/* 7. 隐藏原 text 标签 */
 .candidate-pool-container .dish-checkbox .check-icon {
-  display: none !important;
+  display: none;
 }
 
-/* 8. 选中卡片的样式 */
-.candidate-pool-container .dish-card.selected {
-  border-color: #F6A44C !important;
-  border-width: 4rpx !important;
-  background: rgba(246,164,76,0.12) !important;
-  box-shadow: 0 0 0 3rpx rgba(246,164,76,0.3) !important;
-  transform: scale(1.02);
-  z-index: 101 !important;
-}
-
-/* 9. 候选池的 dish-info 不拦截点击 */
+/* 7. 菜品信息 */
 .candidate-pool-container .dish-info {
-  pointer-events: none !important;
-  padding-right: 68rpx !important;
+  pointer-events: none;
+  padding-right: 68rpx;
 }
 
-/* 10. 但文字需要可选中 */
 .candidate-pool-container .dish-info text {
-  pointer-events: auto !important;
+  pointer-events: auto;
 }
 
-/* 11. 移除可能遮挡的伪元素 */
-.candidate-pool-container .dish-card::after {
+/* 8. 菜名（2行截断） */
+.candidate-pool-container .dish-name {
+  font-size: 24rpx;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-all;
+  height: auto;
+  min-height: 62rpx;
+  margin-bottom: 6rpx;
+}
+
+/* 9. 时间标签 */
+.candidate-pool-container .dish-meta {
+  margin-top: 6rpx;
+}
+
+.candidate-pool-container .dish-time {
+  font-size: 20rpx;
+}
+
+/* 10. 推荐理由（隐藏） */
+.candidate-pool-container .dish-reason {
+  display: none;
+}
+
+/* ========== 🔥 强制3列布局（最终覆盖） ========== */
+.candidate-pool-container .dish-grid {
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 12rpx !important;
+  padding: 0 16rpx !important;
+}
+
+.candidate-pool-container .dish-card {
+  min-height: 140rpx !important;
+  padding: 12rpx !important;
+}
+
+.candidate-pool-container .dish-name {
+  font-size: 24rpx !important;
+  line-height: 1.3 !important;
+  min-height: 62rpx !important;
+}
+
+.candidate-pool-container .dish-checkbox {
+  width: 44rpx !important;
+  height: 44rpx !important;
+  top: 8rpx !important;
+  right: 8rpx !important;
+}
+
+.candidate-pool-container .dish-checkbox.checked::after {
+  line-height: 44rpx !important;
+  font-size: 36rpx !important;
+}
+
+.candidate-pool-container .dish-time {
+  font-size: 20rpx !important;
+}
+
+.category-header {
+  padding: 0 16rpx !important;
+}
+
+.category-icon {
+  font-size: 28rpx !important;
+}
+
+.category-title {
+  font-size: 28rpx !important;
+}
+
+/* 最终菜单缩小 */
+.final-menu-container .final-dish-card {
+  padding: 16rpx !important;
+  margin-bottom: 12rpx !important;
+}
+
+.final-menu-container .dish-name {
+  font-size: 26rpx !important;
+}
+
+.final-menu-container .meta-item {
+  font-size: 22rpx !important;
+}
+
+/* ========== 🔥 最终菜单改成3列网格 ========== */
+.final-menu-list {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 12rpx !important;
+  padding: 0 16rpx !important;
+}
+
+.final-menu-container .final-dish-card {
+  padding: 12rpx !important;
+  margin-bottom: 0 !important;
+  min-height: 140rpx !important;
+}
+
+.final-menu-container .dish-main-info {
+  margin-bottom: 8rpx;
+}
+
+.final-menu-container .dish-name {
+  font-size: 24rpx !important;
+  line-height: 1.3 !important;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  word-break: break-all;
+}
+
+.final-menu-container .dish-course-tag {
+  font-size: 20rpx !important;
+  padding: 2rpx 8rpx;
+}
+
+.final-menu-container .dish-meta-info {
+  margin-top: 6rpx !important;
+}
+
+.final-menu-container .meta-item {
+  font-size: 20rpx !important;
+}
+
+.final-menu-container .dish-reason {
   display: none !important;
-}
-/* 撤销按钮样式 */
-.undo-fab {
-  position: fixed;
-  bottom: 120rpx;
-  left: 32rpx;
-  z-index: 998;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8rpx;
-}
-
-.undo-icon {
-  width: 96rpx;
-  height: 96rpx;
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-size: 48rpx;
-  box-shadow: 0 8rpx 24rpx rgba(240, 147, 251, 0.4);
-  transition: all 0.3s ease;
-}
-
-.undo-icon:active {
-  transform: scale(0.95);
-}
-
-.undo-label {
-  font-size: 22rpx;
-  color: rgba(0, 0, 0, 0.6);
-  font-weight: 500;
-}
-/* 导出区域 */
-.export-section {
-  padding: 32rpx;
-  background: #fff;
-  border-radius: 16rpx;
-  margin: 24rpx;
-}
-
-.export-btn {
-  width: 100%;
-  height: 88rpx;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #fff;
-  border-radius: 12rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16rpx;
-  font-size: 32rpx;
-  font-weight: 500;
-  border: none;
-}
-
-.export-btn[disabled] {
-  background: #e0e0e0;
-  color: #999;
-}
-
-.export-btn .icon {
-  font-size: 40rpx;
-}
-/* KQI浮动按钮 */
-.kqi-fab {
-  position: fixed;
-  bottom: 240rpx;  /* 在AI助手上方 */
-  right: 32rpx;
-  width: 88rpx;
-  height: 88rpx;
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 40rpx;
-  color: white;
-  box-shadow: 0 8rpx 24rpx rgba(245, 87, 108, 0.4);
-  z-index: 998;
-}
-
-.kqi-fab:active {
-  transform: scale(0.95);
 }

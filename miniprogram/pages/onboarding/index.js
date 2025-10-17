@@ -10,7 +10,6 @@ const { set, get, KEY } = require('../../utils/storage')
 
 Page({
   data: {
-    currentStep: 1,
     regionText: '',
     locationStatus: 'pending',
     
@@ -26,9 +25,7 @@ Page({
         cleaner: { enabled: false, count: 1, frequency: '' },
         driver: { enabled: false, count: 1 }
       },
-      hasPet: false,
-      // ✅ V5.3: 第二页仅保留生活风格和AI语气
-      lifeStyle: '',
+      // ✅ V5.3: 单页版本，只保留AI语气
       aiTone: ''
     },
     
@@ -213,73 +210,39 @@ Page({
     this.setData({ [`form.helpers.${type}.frequency`]: value })
   },
 
-  onPetToggle(e) {
-    this.setData({ 'form.hasPet': e.detail.value })
-  },
-
-  onLifeStyleSelect(e) {
-    this.setData({ 'form.lifeStyle': e.currentTarget.dataset.value })
-  },
-
   onAiToneSelect(e) {
     this.setData({ 'form.aiTone': e.currentTarget.dataset.value })
   },
 
-  nextStep() {
-    if (!this.validateCurrentStep()) return
-    const nextStep = Math.min(this.data.currentStep + 1, 2)  // ✅ 改为最多2步
-    this.setData({ currentStep: nextStep })
-    wx.vibrateShort()
-    setTimeout(() => {
-      wx.pageScrollTo({ scrollTop: 0, duration: 300 })
-    }, 100)
-    if (nextStep === 2) {
-      wx.showToast({ title: '了解啦，最后设置下风格和语气～', icon: 'none', duration: 2000 })
+  validateForm() {
+    const { form, locationStatus } = this.data
+    
+    if (locationStatus !== 'success') {
+      wx.showToast({ title: '请先完成城市定位', icon: 'none' })
+      return false
     }
-  },
-
-  prevStep() {
-    const prevStep = Math.max(this.data.currentStep - 1, 1)
-    this.setData({ currentStep: prevStep })
-  },
-
-  validateCurrentStep() {
-    const { currentStep, form, locationStatus } = this.data
-    switch (currentStep) {
-      case 1:
-        if (locationStatus !== 'success') {
-          wx.showToast({ title: '请先完成城市定位', icon: 'none' })
-          return false
-        }
-        if (!form.familyType) {
-          wx.showToast({ title: '请选择家庭成员结构', icon: 'none' })
-          return false
-        }
-        if (form.familyType === 'single' && !form.gender) {
-          wx.showToast({ title: '请选择性别', icon: 'none' })
-          return false
-        }
-        if (form.familyType === 'hasChild' && form.childCount === 0) {
-          wx.showToast({ title: '请选择孩子数量', icon: 'none' })
-          return false
-        }
-        break
-      case 2:
-        if (!form.lifeStyle) {
-          wx.showToast({ title: '请选择生活风格', icon: 'none' })
-          return false
-        }
-        if (!form.aiTone) {
-          wx.showToast({ title: '请选择AI语气偏好', icon: 'none' })
-          return false
-        }
-        break
+    if (!form.familyType) {
+      wx.showToast({ title: '请选择家庭成员结构', icon: 'none' })
+      return false
     }
+    if (form.familyType === 'single' && !form.gender) {
+      wx.showToast({ title: '请选择性别', icon: 'none' })
+      return false
+    }
+    if (form.familyType === 'hasChild' && form.childCount === 0) {
+      wx.showToast({ title: '请选择孩子数量', icon: 'none' })
+      return false
+    }
+    if (!form.aiTone) {
+      wx.showToast({ title: '请选择AI语气偏好', icon: 'none' })
+      return false
+    }
+    
     return true
   },
 
   onDone() {
-    if (!this.validateCurrentStep()) return
+    if (!this.validateForm()) return
     
     // ✅ V5.3: 精简版保存逻辑（内联实现）
     const formData = this.data.form
@@ -338,9 +301,7 @@ Page({
       has_child: formData.familyType === 'hasChild',
       child_count: formData.childCount || 0,
       children_info: formData.childrenInfo || [],
-      life_style: formData.lifeStyle,
       ai_tone: mapAiTone(formData.aiTone),
-      has_pet: formData.hasPet || false,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       onboarding_done: true
@@ -381,8 +342,6 @@ Page({
       childCount: formData.childCount,
       childrenInfo: formData.childrenInfo,
       helpers: formData.helpers,
-      hasPet: formData.hasPet,
-      lifeStyle: formData.lifeStyle,
       aiTone: formData.aiTone,
       onboarding_done: true,
       setup_completed: false,
@@ -409,22 +368,12 @@ Page({
     this.trackOnboardingComplete(profileV3)
   },
 
-  calculateTotalMembers() {
-    const { familyType, childCount } = this.data.form
-    let total = 0
-    if (familyType === 'single') total = 1
-    else if (familyType === 'couple') total = 2
-    else if (familyType === 'hasChild') total = 2 + childCount
-    return total
-  },
-
   trackOnboardingComplete(profile) {
     try {
       console.log('V5.3 Onboarding completed:', {
-        familyType: profile.familyType,
-        totalMembers: profile.totalMembers,
-        lifeStyle: profile.lifeStyle,
-        aiTone: profile.aiTone
+        familyType: profile.family_type,
+        totalMembers: profile.total_members,
+        aiTone: profile.ai_tone
       })
     } catch (e) {
       console.log('Track error:', e)
@@ -433,7 +382,6 @@ Page({
 
   onHide() {
     const draft = {
-      currentStep: this.data.currentStep,
       form: this.data.form,
       regionText: this.data.regionText,
       locationStatus: this.data.locationStatus

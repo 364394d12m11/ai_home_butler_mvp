@@ -14,8 +14,7 @@
   </view>
 </view>
 
-  <!-- 星星（仅夜晚） -->
-<!-- 星星（仅晴朗夜晚）- 修复后 ✅ -->
+  <!-- 星星（仅晴朗夜晚） -->
 <view class="stars" wx:if="{{stars.length > 0 && enableAnimations && weatherTheme.showStars}}">
   <view class="star-light" 
     wx:for="{{stars}}" 
@@ -41,7 +40,6 @@
     <text class="hero-desc">{{weather.now.text || '获取中'}}</text>
     <text class="hero-temp-range">最高 {{weather.daily.max}}° 最低 {{weather.daily.min}}°</text>
 
-    <!-- ✅ 恢复位置行 -->
     <view class="hero-location">
       <text class="location-icon">•</text>
       <text class="location-text">{{cityName}}</text>
@@ -54,11 +52,15 @@
   <view class="date-row">
     <text class="date-text">{{dateYmd}}</text>
     <text class="weekday-text">{{weekday}}</text>
-    <text class="lunar-text" wx:if="{{lunar.lunarDate}}">{{lunar.lunarDate}}</text>
+    <text class="lunar-text" wx:if="{{featureFlags.lunarGanzhi && lunarText}}">{{lunarText}}</text>
   </view>
-  
-  <view class="solar-term-tag" wx:if="{{solarTerm && solarTerm.name}}">
-    <text class="term-name">{{solarTerm.name}}</text>
+</view>
+
+<!-- ✅ 新增：轻量信息条（节气 / 假日，移除农历） -->
+<view wx:if="{{featureFlags.solarTerm || featureFlags.holiday}}">
+  <view class="meta-bar" wx:if="{{solarTermText || holidayBadge}}">
+    <view class="meta-item" wx:if="{{featureFlags.solarTerm && solarTermText}}">{{solarTermText}}</view>
+    <view class="meta-badge" wx:if="{{featureFlags.holiday && holidayBadge}}">{{holidayBadge}}</view>
   </view>
 </view>
 
@@ -128,7 +130,7 @@
         </view>
       </view>
 
-      <view class="task-item highlight" bindtap="showPeopleAdjuster" wx:if="{{activeOverrides.length > 0}}">
+      <view class="task-item highlight" bindtap="showPeopleAdjuster" wx:if="{{featureFlags.peopleAdjust && activeOverrides.length > 0}}">
         <text class="task-icon">👥</text>
         <view class="task-content">
           <text class="task-title">{{activeOverrides[0].reason}}安排</text>
@@ -139,14 +141,8 @@
     </view>
   </view>
 
-  <!-- AI优化提示 -->
-  <view class="ai-badge" wx:if="{{userDataV3.isV3}}">
-    <text class="badge-icon">🍃</text>
-    <text class="badge-text">AI 已优化</text>
-  </view>
-
   <!-- 事件提醒 -->
-  <view class="glass-card events-card" wx:if="{{events.length > 0}}">
+  <view class="glass-card events-card" wx:if="{{featureFlags.eventsCard && events.length > 0}}">
     <view class="card-header">
       <view class="header-left">
         <text class="card-emoji">📅</text>
@@ -169,26 +165,10 @@
     </view>
   </view>
 
-<!-- 调试按钮 -->
-<view class="debug-fab" wx:if="{{__DEV__}}" bindtap="toggleDebug">
-  <text>🛠</text>
+<!-- ✅ 新增：订阅消息入口 -->
+<view wx:if="{{featureFlags.askSub}}" class="sub-entry" bindtap="askSub">
+  <text class="sub-icon">🔔</text>
+  <text class="sub-text">开启提醒</text>
 </view>
 
-<!-- V3.3 完整调试面板 -->
-<view class="debug-panel" wx:if="{{showDebugPanel}}">
-  <view class="debug-header">
-    <text class="debug-title">🔍 天气调试面板</text>
-    <text class="debug-close" bindtap="toggleDebugPanel">×</text>
-  </view>
-
-  <!-- ……（面板内部的所有 section 保持你现在的内容，不变）…… -->
-
-  <view class="debug-info">
-    <text>当前主题: {{weatherTheme.type || 'default'}}</text>
-    <text>性能模式: {{performanceMode}}</text>
-    <text>动画启用: {{enableAnimations ? '是' : '否'}}</text>
-  </view>
-</view>
-
-<!-- ✅ 只保留这一枚，关闭最外层 .page -->
 </view>

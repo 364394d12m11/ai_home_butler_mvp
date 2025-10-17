@@ -1321,6 +1321,14 @@ updateSelectedCount() {
     const peopleCount = this.data.userDataV3?.family?.adults || 2
     const shoppingList = this.generateShoppingListV2(finalMenu, peopleCount)
     
+    // ✅ 新增：按分类整理最终菜单
+    const finalMenuByCategory = {
+      meat: selectedMeat,
+      veg: selectedVeg,
+      soup: selectedSoup,
+      staple: selectedStaple
+    }
+    
     try {
       wx.setStorageSync('DIET_FINAL_MENU', {
         date: this.data.todayDate,
@@ -1335,10 +1343,11 @@ updateSelectedCount() {
     this.setData({
       todayMenu: finalMenu,
       allMenuData: finalMenu,
+      finalMenuByCategory: finalMenuByCategory,  // ← 这行必须有！
       totalDishes: finalMenu.length,
       shoppingList: shoppingList,
       candidateMode: false,
-      candidatePoolLocked: false,  // ← 解锁
+      candidatePoolLocked: false,
       showNutritionComment: true
     })
     
