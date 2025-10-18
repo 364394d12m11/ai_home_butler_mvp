@@ -9,6 +9,29 @@ const _ = db.command
 // ✅ 引入 AI 文案引擎（如果有的话）
 // const { generateDishReason, TONE } = require('./diet-ai-writer')
 
+function deduplicateByName(dishes = []) {
+  const seen = new Set()
+  const result = []
+  
+  for (const dish of dishes) {
+    if (!dish || !dish.name) continue
+    
+    // 标准化菜名（去掉空格、括号内容等）
+    const normalizedName = dish.name
+      .replace(/\s+/g, '')           // 去空格
+      .replace(/（.*?）/g, '')        // 去中文括号
+      .replace(/\(.*?\)/g, '')        // 去英文括号
+      .toLowerCase()
+    
+    if (!seen.has(normalizedName)) {
+      seen.add(normalizedName)
+      result.push(dish)
+    }
+  }
+  
+  return result
+}
+
 exports.main = async (event) => {
   const {
     date, 
@@ -93,6 +116,13 @@ exports.main = async (event) => {
       staple: generateCategoryPool(ranked, '主食', 3, ctx)
     }
 
+    // ✅ 新增：给每个分类去重
+const dedupedPool = {
+  meat: deduplicateByName(candidatePool.meat),
+  veg: deduplicateByName(candidatePool.veg),
+  soup: deduplicateByName(candidatePool.soup),
+  staple: deduplicateByName(candidatePool.staple)
+}
     // ===== 步骤6: 补充不足的分类 =====
     console.log('候选池数量:', {
       荤菜: candidatePool.meat.length,
@@ -131,6 +161,7 @@ exports.main = async (event) => {
 
     return { 
       ok: true,
+      candidatePool: dedupedPool,  // ← 改这里
       candidatePool: candidatePool,
       shoppingList: shoppingList || [],
       mealConfig: {

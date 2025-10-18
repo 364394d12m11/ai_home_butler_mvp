@@ -1,6 +1,6 @@
-/* pages/diet/index.wxss - V4.0升级版（保留原有设计系统+新增角色样式） */
+/* pages/diet/index.wxss - 精简完整版 */
 
-/* CSS 变量定义 */
+/* ========== CSS 变量定义 ========== */
 :root, page {
   --color-primary: #F6A44C;
   --color-secondary: #BCA9F5;
@@ -29,7 +29,7 @@
   --shadow-card: 0 4rpx 12rpx rgba(0,0,0,0.08);
 }
 
-/* 全局设计系统 */
+/* ========== 全局设计系统 ========== */
 .page {
   background: linear-gradient(180deg, #fefbf8 0%, #faf9f6 100%);
   min-height: 100vh;
@@ -37,17 +37,27 @@
   padding: 32rpx;
 }
 
-/* 通用过渡效果 */
 .transition-smooth {
   transition: all 300ms cubic-bezier(0.4,0,0.2,1);
 }
 
-/* 右上角设置图标 */
+/* ========== 头部信息 ========== */
 .header {
   position: relative;
   text-align: center;
   margin-bottom: 56rpx;
   animation: fadeUp 400ms ease-out;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(24rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .settings-icon {
@@ -74,17 +84,6 @@
 .settings-icon .icon {
   font-size: 40rpx;
   line-height: 1;
-}
-
-@keyframes fadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(24rpx);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .date-info {
@@ -114,30 +113,64 @@
   line-height: 1.5;
 }
 
-/* 布局模式切换器（调试用） */
-.layout-switcher {
+/* ========== 模式选择器 ========== */
+.mode-selector {
+  padding: 20rpx;
+  background: #fff;
+  margin-bottom: 20rpx;
+  border-radius: 12rpx;
+}
+
+.mode-tabs {
   display: flex;
-  justify-content: center;
-  gap: 16rpx;
-  margin-bottom: 32rpx;
+  justify-content: space-around;
+  background: #f5f5f5;
+  border-radius: 12rpx;
   padding: 8rpx;
-  background: rgba(255,255,255,0.5);
-  border-radius: 16rpx;
 }
 
-.switch-item {
-  padding: 8rpx 16rpx;
-  font-size: 24rpx;
+.mode-tab {
+  flex: 1;
+  text-align: center;
+  padding: 16rpx 0;
   border-radius: 8rpx;
-  transition: all 200ms ease;
+  font-size: 28rpx;
+  color: #666;
+  transition: all 0.3s;
 }
 
-.switch-item.active {
-  background: #F6A44C;
-  color: white;
+.mode-tab.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 4rpx 12rpx rgba(102, 126, 234, 0.3);
 }
 
-/* ========== A) 摘要模式 ========== */
+/* ========== 生成菜单按钮 ========== */
+.generate-menu-section {
+  padding: var(--spacing-card);
+  margin-bottom: var(--spacing-section);
+}
+
+.btn-generate-menu {
+  width: 100%;
+  height: 88rpx;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  color: var(--text-white);
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: var(--font-h2);
+  font-weight: var(--weight-bold);
+  box-shadow: var(--shadow-card);
+  transition: all var(--duration-fast) var(--timing-gentle);
+}
+
+.btn-generate-menu:active {
+  transform: scale(0.98);
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.1);
+}
+
+/* ========== 摘要模式 ========== */
 .summary-layout {
   margin-bottom: 56rpx;
 }
@@ -201,7 +234,7 @@
   margin-left: 16rpx;
 }
 
-/* ========== B) Wallet横滑卡片 ========== */
+/* ========== Wallet横滑卡片 ========== */
 .wallet-layout {
   margin-bottom: 56rpx;
 }
@@ -294,7 +327,6 @@
   font-weight: 400;
 }
 
-/* Page Control */
 .page-control {
   display: flex;
   justify-content: center;
@@ -315,7 +347,7 @@
   border-radius: 6rpx;
 }
 
-/* ========== C) 分段控件Tabs ========== */
+/* ========== 分段控件Tabs ========== */
 .tabs-layout {
   margin-bottom: 56rpx;
 }
@@ -353,7 +385,7 @@
   box-shadow: 0 6rpx 16rpx rgba(0,0,0,0.04);
 }
 
-/* ========== D) 精致列表（原版） ========== */
+/* ========== 精致列表（原版） ========== */
 .detail-layout {
   margin-bottom: 56rpx;
 }
@@ -410,6 +442,9 @@
   margin-right: 16rpx;
 }
 
+.dish-info {
+  flex: 1;
+}
 
 .dish-name {
   font-size: 28rpx;
@@ -435,7 +470,85 @@
   color: var(--text-tertiary);
 }
 
-/* ========== V4.0主要按钮区（角色差异化） ========== */
+/* ========== AI解释卡片 ========== */
+.explain-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12rpx;
+  margin: 24rpx 32rpx;
+  padding: 20rpx 24rpx;
+  background: linear-gradient(135deg, rgba(174, 194, 224, 0.08), rgba(174, 194, 224, 0.15));
+  border-radius: 16rpx;
+  border-left: 4rpx solid rgba(174, 194, 224, 0.6);
+  animation: explain-fade-in 800ms ease-out;
+  box-shadow: 0 4rpx 16rpx rgba(174, 194, 224, 0.08);
+}
+
+@keyframes explain-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.explain-icon {
+  font-size: 28rpx;
+  flex-shrink: 0;
+  margin-top: 2rpx;
+  opacity: 0.7;
+}
+
+.explain-text {
+  flex: 1;
+  font-size: 24rpx;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.7);
+  line-height: 1.6;
+  letter-spacing: 0.3rpx;
+  font-style: italic;
+}
+
+/* ========== 营养点评卡片 ========== */
+.nutrition-comment-card {
+  margin: 30rpx;
+  padding: 30rpx;
+  background: linear-gradient(135deg, #fff5e6 0%, #ffe8cc 100%);
+  border-radius: 16rpx;
+  border-left: 6rpx solid #ff9800;
+  display: flex;
+  align-items: flex-start;
+  gap: 20rpx;
+  box-shadow: 0 4rpx 12rpx rgba(255, 152, 0, 0.15);
+}
+
+.comment-icon {
+  font-size: 48rpx;
+  flex-shrink: 0;
+}
+
+.comment-content {
+  flex: 1;
+}
+
+.comment-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8rpx;
+  display: block;
+}
+
+.comment-text {
+  font-size: 26rpx;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* ========== 主要按钮区 ========== */
 .primary-actions {
   display: flex;
   flex-direction: column;
@@ -450,10 +563,8 @@
   font-weight: 600;
   border: none;
   transition: all 120ms ease;
-  position: relative;
 }
 
-/* V4.0新增：角色差异化主按钮 */
 .action-btn.role-primary {
   background: linear-gradient(135deg, #F6A44C 0%, #FF8C42 100%);
   color: white;
@@ -479,7 +590,6 @@
   background: rgba(255,255,255,1);
 }
 
-/* V4.0新增：购物清单按钮 */
 .action-btn.shopping {
   background: linear-gradient(135deg, #4CAF50 0%, #45A047 100%);
   color: white;
@@ -568,7 +678,7 @@
   color: #F6A44C;
 }
 
-/* ========== V4.0购物清单弹层 ========== */
+/* ========== 购物清单弹层 ========== */
 .shopping-sheet-overlay {
   position: fixed;
   top: 0;
@@ -581,6 +691,11 @@
   animation: fadeIn 300ms cubic-bezier(0.2,0.7,0.2,1);
 }
 
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 .shopping-sheet {
   position: absolute;
   bottom: 0;
@@ -591,6 +706,11 @@
   border-radius: 24rpx 24rpx 0 0;
   box-shadow: 0 -8rpx 32rpx rgba(0,0,0,0.12);
   animation: slideUpSheet 300ms cubic-bezier(0.2,0.7,0.2,1);
+}
+
+@keyframes slideUpSheet {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
 }
 
 .shopping-sheet .sheet-header {
@@ -626,7 +746,6 @@
   padding: 0 32rpx 32rpx;
 }
 
-/* V4.0购物清单列表 */
 .shopping-list {
   padding-top: 24rpx;
 }
@@ -708,7 +827,6 @@
   font-weight: 500;
 }
 
-/* 购物清单空状态 */
 .shopping-empty {
   display: flex;
   flex-direction: column;
@@ -728,7 +846,6 @@
   font-weight: 500;
 }
 
-/* V4.0购物清单底部操作 */
 .sheet-actions {
   padding: 24rpx 0;
   border-top: 1rpx solid rgba(0,0,0,0.06);
@@ -769,11 +886,6 @@
   animation: fadeIn 300ms cubic-bezier(0.2,0.7,0.2,1);
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
 .menu-sheet {
   position: absolute;
   bottom: 0;
@@ -784,11 +896,6 @@
   border-radius: 24rpx 24rpx 0 0;
   box-shadow: 0 -8rpx 32rpx rgba(0,0,0,0.1);
   animation: slideUpSheet 300ms cubic-bezier(0.2,0.7,0.2,1);
-}
-
-@keyframes slideUpSheet {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
 }
 
 .menu-sheet .sheet-header {
@@ -941,46 +1048,398 @@
   transform: scale(0.95);
 }
 
-/* ========== V3.3 AI解释卡片样式 ========== */
-.explain-card {
-  display: flex;
-  align-items: flex-start;
-  gap: 12rpx;
-  margin: 24rpx 32rpx;
-  padding: 20rpx 24rpx;
-  background: linear-gradient(135deg, rgba(174, 194, 224, 0.08), rgba(174, 194, 224, 0.15));
+/* ========== 候选池界面 ========== */
+.candidate-pool-container {
+  position: relative;
+  z-index: 10;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+  padding-bottom: 140rpx;
+}
+
+.pool-header {
+  padding: 40rpx 30rpx 30rpx;
+  text-align: center;
+  background: #fff;
+  margin-bottom: 20rpx;
   border-radius: 16rpx;
-  border-left: 4rpx solid rgba(174, 194, 224, 0.6);
-  animation: explain-fade-in 800ms ease-out;
-  box-shadow: 0 4rpx 16rpx rgba(174, 194, 224, 0.08);
 }
 
-@keyframes explain-fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(10rpx);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.header-title {
+  display: block;
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 12rpx;
 }
 
-.explain-icon {
+.header-subtitle {
+  display: block;
+  font-size: 26rpx;
+  color: #999;
+}
+
+.pool-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20rpx 30rpx;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  background: #fff;
+  box-shadow: 0 -4rpx 12rpx rgba(0,0,0,0.08);
+  z-index: 50;
+}
+
+.btn-confirm-large {
+  width: 100%;
+  height: 88rpx;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  font-size: 32rpx;
+  font-weight: 600;
+  border: none;
+  border-radius: 44rpx;
+  box-shadow: 0 8rpx 24rpx rgba(102, 126, 234, 0.4);
+}
+
+.btn-confirm-large::after {
+  border: none;
+}
+
+/* ========== 分类区块 ========== */
+.category-section {
+  position: relative;
+  z-index: 100;
+  margin-bottom: 40rpx;
+}
+
+.category-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16rpx;
+  margin-bottom: 20rpx;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.category-icon {
   font-size: 28rpx;
-  flex-shrink: 0;
-  margin-top: 2rpx;
-  opacity: 0.7;
 }
 
-.explain-text {
-  flex: 1;
+.category-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.category-count {
+  font-size: 22rpx;
+  color: #999;
+  padding: 4rpx 12rpx;
+  background: #f5f5f5;
+  border-radius: 8rpx;
+}
+
+.btn-replace-mini {
+  font-size: 22rpx;
+  color: #F6A44C;
+  background: rgba(246,164,76,0.1);
+  border: none;
+  padding: 6rpx 16rpx;
+  border-radius: 12rpx;
+}
+
+.btn-replace-mini::after {
+  border: none;
+}
+
+/* ========== 候选池菜品网格（3列紧凑） ========== */
+.candidate-pool-container .dish-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12rpx;
+  padding: 0 16rpx;
+}
+
+.candidate-pool-container .dish-card {
+  position: relative;
+  z-index: 100;
+  pointer-events: auto;
+  background: #fff;
+  border-radius: 12rpx;
+  padding: 12rpx;
+  border: 2rpx solid #E0E0E0;
+  transition: all 0.3s ease;
+  min-height: 140rpx;
+}
+
+.candidate-pool-container .dish-card.selected {
+  border-color: #F6A44C;
+  border-width: 3rpx;
+  background: rgba(246,164,76,0.12);
+  box-shadow: 0 0 0 3rpx rgba(246,164,76,0.3);
+  transform: scale(1.02);
+  z-index: 101;
+}
+
+.candidate-pool-container .dish-card:active {
+  transform: scale(0.98);
+  opacity: 0.9;
+}
+
+.candidate-pool-container .dish-card::after {
+  display: none;
+}
+
+/* ========== 候选池复选框（44rpx） ========== */
+.candidate-pool-container .dish-checkbox {
+  position: absolute;
+  top: 8rpx;
+  right: 8rpx;
+  width: 44rpx;
+  height: 44rpx;
+  z-index: 200;
+  pointer-events: auto;
+  border-radius: 50%;
+  border: 3rpx solid #D8D8D8;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.1);
+}
+
+.candidate-pool-container .dish-checkbox.checked {
+  border-color: #F6A44C;
+  background: #F6A44C;
+  transform: scale(1.15);
+  box-shadow: 0 4rpx 12rpx rgba(246,164,76,0.4);
+}
+
+.candidate-pool-container .dish-checkbox.checked::after {
+  content: '✓';
+  display: block;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  line-height: 44rpx;
+  font-size: 36rpx;
+  color: #FFFFFF;
+  font-weight: 900;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.candidate-pool-container .dish-checkbox .check-icon {
+  display: none;
+}
+
+/* ========== 候选池菜品信息 ========== */
+.candidate-pool-container .dish-info {
+  pointer-events: none;
+  padding-right: 52rpx;
+}
+
+.candidate-pool-container .dish-info text {
+  pointer-events: auto;
+}
+
+.candidate-pool-container .dish-name {
   font-size: 24rpx;
-  font-weight: 500;
-  color: rgba(0, 0, 0, 0.7);
-  line-height: 1.6;
-  letter-spacing: 0.3rpx;
-  font-style: italic;
+  font-weight: 600;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-all;
+  min-height: 62rpx;
+  margin-bottom: 6rpx;
+  color: #333;
+}
+
+.candidate-pool-container .dish-meta {
+  margin-top: 6rpx;
+}
+
+.candidate-pool-container .dish-time {
+  font-size: 20rpx;
+  color: #999;
+}
+
+.candidate-pool-container .dish-reason {
+  display: none;
+}
+
+/* ========== 最终菜单容器 ========== */
+.final-menu-container {
+  padding: 30rpx;
+  padding-bottom: 140rpx;
+}
+
+.final-menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30rpx;
+  padding-bottom: 20rpx;
+  border-bottom: 2rpx solid #e0e0e0;
+}
+
+.menu-title {
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #333;
+}
+
+.menu-count {
+  font-size: 24rpx;
+  color: #999;
+}
+
+/* ========== 最终菜单分类区 ========== */
+.final-category-section {
+  margin-bottom: 40rpx;
+}
+
+.final-category-title {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  margin-bottom: 20rpx;
+  padding: 0 8rpx;
+}
+
+.final-category-title .category-icon {
+  font-size: 32rpx;
+}
+
+.final-category-title .category-name {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333;
+}
+
+.final-category-title .category-count {
+  font-size: 22rpx;
+  color: #999;
+  background: #f5f5f5;
+  padding: 4rpx 12rpx;
+  border-radius: 12rpx;
+  margin-left: auto;
+}
+
+/* ========== 🔥 最终菜单3列网格 ========== */
+.final-menu-list {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 12rpx !important;
+}
+
+.final-dish-card {
+  background: #fff;
+  border-radius: 12rpx;
+  padding: 16rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+  min-height: 100rpx;
+}
+
+.final-dish-card .dish-main-info {
+  flex: 1;
+}
+
+.final-dish-card .dish-name {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #333;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-all;
+  min-height: 62rpx;
+}
+
+.final-dish-card .dish-course-tag {
+  font-size: 20rpx;
+  color: #666;
+  background: #f0f0f0;
+  padding: 2rpx 8rpx;
+  border-radius: 8rpx;
+  display: inline-block;
+  margin-top: 4rpx;
+}
+
+.final-dish-card .dish-meta-info {
+  margin-top: 8rpx;
+}
+
+.final-dish-card .meta-item {
+  font-size: 20rpx;
+  color: #999;
+}
+
+.final-dish-card .dish-reason {
+  display: none;
+}
+
+/* ========== 最终菜单底部按钮 ========== */
+.final-menu-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  margin-top: 40rpx;
+}
+
+.btn-back-to-pool,
+.btn-view-shopping {
+  width: 100%;
+  height: 80rpx;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  border: none;
+}
+
+.btn-back-to-pool {
+  background: #fff;
+  color: #667eea;
+  border: 2rpx solid #667eea;
+}
+
+.btn-view-shopping {
+  background: linear-gradient(135deg, #4CAF50 0%, #45A047 100%);
+  color: #fff;
+}
+
+/* ========== 角色主题色扩展 ========== */
+.page.role-helper .action-btn.role-primary {
+  background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%);
+  box-shadow: 0 4rpx 16rpx rgba(156,39,176,0.3);
+}
+
+.page.role-parent .action-btn.role-primary {
+  background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+  box-shadow: 0 4rpx 16rpx rgba(255,152,0,0.3);
+}
+
+.page.role-health .action-btn.role-primary {
+  background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+  box-shadow: 0 4rpx 16rpx rgba(76,175,80,0.3);
 }
 
 /* ========== 响应式适配 ========== */
@@ -1021,694 +1480,4 @@
   .shopping-sheet-overlay {
     background: rgba(0,0,0,0.3);
   }
-}
-
-/* V4.0角色主题色（可选扩展） */
-.page.role-helper .action-btn.role-primary {
-  background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%);
-  box-shadow: 0 4rpx 16rpx rgba(156,39,176,0.3);
-}
-
-.page.role-parent .action-btn.role-primary {
-  background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
-  box-shadow: 0 4rpx 16rpx rgba(255,152,0,0.3);
-}
-
-.page.role-health .action-btn.role-primary {
-  background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
-  box-shadow: 0 4rpx 16rpx rgba(76,175,80,0.3);
-}
-
-/* pages/diet/index.wxss - V5.3 新增样式 */
-
-/* ========== 模式选择器 ========== */
-.mode-selector {
-  padding: 20rpx;
-  background: #fff;
-  margin-bottom: 20rpx;
-}
-
-.mode-tabs {
-  display: flex;
-  justify-content: space-around;
-  background: #f5f5f5;
-  border-radius: 12rpx;
-  padding: 8rpx;
-}
-
-.mode-tab {
-  flex: 1;
-  text-align: center;
-  padding: 16rpx 0;
-  border-radius: 8rpx;
-  font-size: 28rpx;
-  color: #666;
-  transition: all 0.3s;
-}
-
-.mode-tab.active {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #fff;
-  font-weight: 600;
-  box-shadow: 0 4rpx 12rpx rgba(102, 126, 234, 0.3);
-}
-
-
-.pool-header {
-  padding: 40rpx 30rpx 30rpx;
-  text-align: center;
-  background: #fff;
-  margin-bottom: 20rpx;
-}
-
-.header-title {
-  display: block;
-  font-size: 40rpx;
-  font-weight: 700;
-  color: #333;
-  margin-bottom: 12rpx;
-}
-
-.header-subtitle {
-  display: block;
-  font-size: 26rpx;
-  color: #999;
-}
-
-/* ========== 分类区块 ========== */
-.category-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 var(--spacing-card);
-  margin-bottom: 24rpx;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 12rpx;
-}
-
-.category-icon {
-  font-size: 36rpx;
-}
-
-.category-title {
-  font-size: 32rpx;
-  font-weight: bold;
-  color: var(--text-primary);
-}
-
-.category-count {
-  font-size: 24rpx;
-  color: var(--text-tertiary);
-  padding: 4rpx 12rpx;
-  background: var(--surface-elevated);
-  border-radius: 8rpx;
-}
-
-.btn-replace-mini {
-  font-size: 24rpx;
-  color: var(--color-primary);
-  background: rgba(246,164,76,0.1);
-  border: none;
-  padding: 8rpx 20rpx;
-  border-radius: 12rpx;
-}
-
-.btn-replace-mini::after {
-  border: none;
-}
-
-/* ========== 菜品网格 ========== */
-
-.dish-card.selected .dish-checkbox {
-  border-color: #F6A44C;
-  background: #F6A44C;
-  transform: scale(1.1);
-}
-
-/* 勾选图标 - 终极强制显示版本 */
-.check-icon {
-  color: white;
-  font-size: 32rpx;
-  font-weight: bold;
-  line-height: 1;
-}
-
-/* 未选中时的圆圈 */
-.dish-card:not(.selected) .dish-checkbox {
-  background: #f5f5f5;
-  border-color: #ddd;
-}
-
-/* 点击反馈 */
-.dish-card:active {
-  transform: scale(0.98);
-  opacity: 0.9;
-}
-
-/* 菜品名称 */
-.dish-name {
-  font-size: 30rpx;  /* ← 增大字号 */
-  font-weight: bold;
-  color: var(--text-primary);
-  line-height: 1.4;
-}
-
-/* 菜品元信息（时间、标签） */
-.dish-meta {
-  display: flex;
-  align-items: center;
-  gap: 12rpx;
-  flex-wrap: wrap;
-  margin-top: 8rpx;
-}
-
-.dish-time {
-  font-size: 24rpx;
-  color: var(--text-tertiary);
-}
-
-.dish-tag {
-  font-size: 22rpx;
-  padding: 4rpx 12rpx;
-  background: rgba(246,164,76,0.1);
-  color: #F6A44C;
-  border-radius: 8rpx;
-}
-
-.dish-tag.trendy {
-  background: rgba(188,169,245,0.1);
-  color: #BCA9F5;
-}
-
-/* 推荐理由 */
-.dish-reason {
-  font-size: 24rpx;
-  color: var(--text-tertiary);
-  line-height: 1.6;
-  margin-top: 12rpx;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;  /* 最多显示2行 */
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.btn-confirm-large {
-  width: 100%;
-  height: 88rpx;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #fff;
-  font-size: 32rpx;
-  font-weight: 600;
-  border: none;
-  border-radius: 44rpx;
-  box-shadow: 0 8rpx 24rpx rgba(102, 126, 234, 0.4);
-}
-
-.btn-confirm-large::after {
-  border: none;
-}
-
-/* ========== 营养点评卡片 ========== */
-.nutrition-comment-card {
-  margin: 30rpx;
-  padding: 30rpx;
-  background: linear-gradient(135deg, #fff5e6 0%, #ffe8cc 100%);
-  border-radius: 16rpx;
-  border-left: 6rpx solid #ff9800;
-  display: flex;
-  align-items: flex-start;
-  gap: 20rpx;
-  box-shadow: 0 4rpx 12rpx rgba(255, 152, 0, 0.15);
-}
-
-.comment-icon {
-  font-size: 48rpx;
-  flex-shrink: 0;
-}
-
-.comment-text {
-  flex: 1;
-  font-size: 28rpx;
-  color: #333;
-  line-height: 1.6;
-}
-
-.btn-back-to-candidates {
-  width: calc(100% - 60rpx);
-  margin: 30rpx;
-  height: 80rpx;
-  background: #fff;
-  color: #667eea;
-  font-size: 28rpx;
-  border: 2rpx solid #667eea;
-  border-radius: 12rpx;
-}
-
-.btn-back-to-candidates::after {
-  border: none;
-}
-/* 最终菜单样式 */
-.menu-mode {
-  padding: 30rpx;
-}
-
-.final-menu-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30rpx;
-  padding-bottom: 20rpx;
-  border-bottom: 2rpx solid #e0e0e0;
-}
-
-.menu-title {
-  font-size: 36rpx;
-  font-weight: 700;
-  color: #333;
-}
-
-.menu-count {
-  font-size: 24rpx;
-  color: #999;
-}
-
-.menu-item {
-  background: #fff;
-  margin-bottom: 20rpx;
-  padding: 30rpx;
-  border-radius: 16rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.08);
-}
-
-.menu-item .dish-name {
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #333;
-}
-
-.menu-item .dish-course {
-  font-size: 24rpx;
-  color: #666;
-  background: #f0f0f0;
-  padding: 4rpx 12rpx;
-  border-radius: 8rpx;
-  display: inline-block;
-  width: fit-content;
-}
-
-.menu-item .dish-meta {
-  display: flex;
-  gap: 16rpx;
-  align-items: center;
-}
-
-.menu-item .dish-time {
-  font-size: 24rpx;
-  color: #999;
-}
-
-.menu-item .dish-tags {
-  font-size: 20rpx;
-  background: rgba(246, 164, 76, 0.12);
-  color: #F6A44C;
-  padding: 4rpx 12rpx;
-  border-radius: 12rpx;
-}
-
-.menu-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 16rpx;
-  margin-top: 30rpx;
-}
-
-.btn-back, .btn-shopping {
-  width: 100%;
-  height: 88rpx;
-  line-height: 88rpx;
-  border-radius: 12rpx;
-  font-size: 28rpx;
-  font-weight: 600;
-}
-
-.btn-back {
-  background: #fff;
-  color: #667eea;
-  border: 2rpx solid #667eea;
-}
-
-.btn-shopping {
-  background: linear-gradient(135deg, #4CAF50 0%, #45A047 100%);
-  color: #fff;
-}
-
-/* 生成菜单按钮 */
-.generate-menu-section {
-  padding: var(--spacing-card);
-  margin-bottom: var(--spacing-section);
-}
-
-.btn-generate-menu {
-  width: 100%;
-  height: 88rpx;
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
-  color: var(--text-white);
-  border: none;
-  border-radius: var(--radius-lg);
-  font-size: var(--font-h2);
-  font-weight: var(--weight-bold);
-  box-shadow: var(--shadow-card);
-  transition: all var(--duration-fast) var(--timing-gentle);
-}
-
-.btn-generate-menu:active {
-  transform: scale(0.98);
-  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.1);
-}
-
-/* 购物清单项 */
-.shopping-item {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-inner);
-  padding: var(--spacing-inner);
-  background: var(--surface-main);
-  border-radius: var(--radius-lg);
-  margin-bottom: var(--spacing-tight);
-  border: 1rpx solid var(--border-subtle);
-  transition: all var(--duration-fast) var(--timing-gentle);
-}
-
-.shopping-item:active {
-  transform: scale(0.98);
-  background: var(--surface-elevated);
-}
-
-.item-checkbox {
-  width: 40rpx;
-  height: 40rpx;
-  border-radius: 50%;
-  border: 2rpx solid var(--border-subtle);
-  background: var(--surface-main);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: all var(--duration-fast) var(--timing-gentle);
-}
-
-.item-checkbox.checked {
-  border-color: var(--color-primary);
-  background: var(--color-primary);
-}
-
-.check-mark {
-  font-size: 24rpx;
-  color: var(--text-white);
-  font-weight: var(--weight-bold);
-}
-
-.item-info {
-  flex: 1;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.item-name {
-  font-size: var(--font-body);
-  color: var(--text-secondary);
-  font-weight: var(--weight-regular);
-  transition: all var(--duration-fast) var(--timing-gentle);
-}
-
-.item-name.completed {
-  color: var(--text-quaternary);
-  text-decoration: line-through;
-}
-
-.item-amount {
-  font-size: var(--font-sub);
-  color: var(--text-tertiary);
-  margin-left: var(--spacing-tight);
-}
-
-.item-category {
-  font-size: var(--font-caption);
-  color: var(--text-quaternary);
-  padding: 4rpx 12rpx;
-  background: var(--surface-elevated);
-  border-radius: var(--radius-sm);
-}
-/* ========== 🔥 候选池完整样式（统一整理） ========== */
-
-/* 1. 候选池容器 */
-.candidate-pool-container {
-  position: relative;
-  z-index: 10;
-  min-height: 100vh;
-  background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
-  padding-bottom: 140rpx;
-}
-
-/* 2. 底部确认按钮 */
-.pool-footer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 20rpx 30rpx;
-  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
-  background: #fff;
-  box-shadow: 0 -4rpx 12rpx rgba(0,0,0,0.08);
-  z-index: 50;
-}
-
-/* 3. 分类区块 */
-.category-section {
-  position: relative;
-  z-index: 100;
-  margin-bottom: 40rpx;
-}
-
-/* 4. 菜品网格（3列紧凑） */
-.candidate-pool-container .dish-grid {
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12rpx;
-  padding: 0 16rpx;
-}
-
-/* 5. 菜品卡片 */
-.candidate-pool-container .dish-card {
-  position: relative;
-  z-index: 100;
-  pointer-events: auto;
-  min-height: 140rpx;
-  padding: 12rpx;
-  border-width: 2rpx;
-}
-
-.candidate-pool-container .dish-card.selected {
-  border-color: #F6A44C;
-  border-width: 4rpx;
-  background: rgba(246,164,76,0.12);
-  box-shadow: 0 0 0 3rpx rgba(246,164,76,0.3);
-  transform: scale(1.02);
-  z-index: 101;
-}
-
-.candidate-pool-container .dish-card::after {
-  display: none;
-}
-
-/* 6. 复选框（缩小版44rpx） */
-.candidate-pool-container .dish-checkbox {
-  position: absolute;
-  top: 8rpx;
-  right: 8rpx;
-  width: 44rpx;
-  height: 44rpx;
-  z-index: 200;
-  pointer-events: auto;
-  border-radius: 50%;
-  border: 3rpx solid #D8D8D8;
-  background: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-}
-
-.candidate-pool-container .dish-checkbox.checked {
-  border-color: #F6A44C;
-  background: #F6A44C;
-  transform: scale(1.15);
-}
-
-.candidate-pool-container .dish-checkbox.checked::after {
-  content: '✓';
-  display: block;
-  width: 100%;
-  height: 100%;
-  text-align: center;
-  line-height: 44rpx;
-  font-size: 36rpx;
-  color: #FFFFFF;
-  font-weight: 900;
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-
-.candidate-pool-container .dish-checkbox .check-icon {
-  display: none;
-}
-
-/* 7. 菜品信息 */
-.candidate-pool-container .dish-info {
-  pointer-events: none;
-  padding-right: 68rpx;
-}
-
-.candidate-pool-container .dish-info text {
-  pointer-events: auto;
-}
-
-/* 8. 菜名（2行截断） */
-.candidate-pool-container .dish-name {
-  font-size: 24rpx;
-  line-height: 1.3;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  word-break: break-all;
-  height: auto;
-  min-height: 62rpx;
-  margin-bottom: 6rpx;
-}
-
-/* 9. 时间标签 */
-.candidate-pool-container .dish-meta {
-  margin-top: 6rpx;
-}
-
-.candidate-pool-container .dish-time {
-  font-size: 20rpx;
-}
-
-/* 10. 推荐理由（隐藏） */
-.candidate-pool-container .dish-reason {
-  display: none;
-}
-
-/* ========== 🔥 强制3列布局（最终覆盖） ========== */
-.candidate-pool-container .dish-grid {
-  grid-template-columns: repeat(3, 1fr) !important;
-  gap: 12rpx !important;
-  padding: 0 16rpx !important;
-}
-
-.candidate-pool-container .dish-card {
-  min-height: 140rpx !important;
-  padding: 12rpx !important;
-}
-
-.candidate-pool-container .dish-name {
-  font-size: 24rpx !important;
-  line-height: 1.3 !important;
-  min-height: 62rpx !important;
-}
-
-.candidate-pool-container .dish-checkbox {
-  width: 44rpx !important;
-  height: 44rpx !important;
-  top: 8rpx !important;
-  right: 8rpx !important;
-}
-
-.candidate-pool-container .dish-checkbox.checked::after {
-  line-height: 44rpx !important;
-  font-size: 36rpx !important;
-}
-
-.candidate-pool-container .dish-time {
-  font-size: 20rpx !important;
-}
-
-.category-header {
-  padding: 0 16rpx !important;
-}
-
-.category-icon {
-  font-size: 28rpx !important;
-}
-
-.category-title {
-  font-size: 28rpx !important;
-}
-
-/* 最终菜单缩小 */
-.final-menu-container .final-dish-card {
-  padding: 16rpx !important;
-  margin-bottom: 12rpx !important;
-}
-
-.final-menu-container .dish-name {
-  font-size: 26rpx !important;
-}
-
-.final-menu-container .meta-item {
-  font-size: 22rpx !important;
-}
-
-/* ========== 🔥 最终菜单改成3列网格 ========== */
-.final-menu-list {
-  display: grid !important;
-  grid-template-columns: repeat(3, 1fr) !important;
-  gap: 12rpx !important;
-  padding: 0 16rpx !important;
-}
-
-.final-menu-container .final-dish-card {
-  padding: 12rpx !important;
-  margin-bottom: 0 !important;
-  min-height: 140rpx !important;
-}
-
-.final-menu-container .dish-main-info {
-  margin-bottom: 8rpx;
-}
-
-.final-menu-container .dish-name {
-  font-size: 24rpx !important;
-  line-height: 1.3 !important;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
-  word-break: break-all;
-}
-
-.final-menu-container .dish-course-tag {
-  font-size: 20rpx !important;
-  padding: 2rpx 8rpx;
-}
-
-.final-menu-container .dish-meta-info {
-  margin-top: 6rpx !important;
-}
-
-.final-menu-container .meta-item {
-  font-size: 20rpx !important;
-}
-
-.final-menu-container .dish-reason {
-  display: none !important;
 }

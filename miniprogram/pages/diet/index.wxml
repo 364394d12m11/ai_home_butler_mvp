@@ -356,7 +356,7 @@
   </view>
   <!-- 候选池界面结束 -->
 
-<!-- ========== 最终菜单显示（分类3列版） ========== -->
+<!-- ========== 最终菜单显示（分类3列版 + 安全判断） ========== -->
 <view wx:if="{{!candidateMode && todayMenu.length > 0}}" class="final-menu-container">
   
   <view class="final-menu-header">
@@ -364,8 +364,8 @@
     <text class="menu-count">共 {{todayMenu.length}} 道菜</text>
   </view>
   
-  <!-- 🔴 荤菜 -->
-  <view wx:if="{{finalMenuByCategory.meat.length > 0}}" class="final-category-section">
+  <!-- 🔴 荤菜 - 加上安全判断 -->
+  <view wx:if="{{finalMenuByCategory && finalMenuByCategory.meat && finalMenuByCategory.meat.length > 0}}" class="final-category-section">
     <view class="final-category-title">
       <text class="category-icon">🍖</text>
       <text class="category-name">荤菜</text>
@@ -384,7 +384,7 @@
   </view>
 
   <!-- 🔴 素菜 -->
-  <view wx:if="{{finalMenuByCategory.veg.length > 0}}" class="final-category-section">
+  <view wx:if="{{finalMenuByCategory && finalMenuByCategory.veg && finalMenuByCategory.veg.length > 0}}" class="final-category-section">
     <view class="final-category-title">
       <text class="category-icon">🥬</text>
       <text class="category-name">素菜</text>
@@ -403,7 +403,7 @@
   </view>
 
   <!-- 🔴 汤品 -->
-  <view wx:if="{{finalMenuByCategory.soup.length > 0}}" class="final-category-section">
+  <view wx:if="{{finalMenuByCategory && finalMenuByCategory.soup && finalMenuByCategory.soup.length > 0}}" class="final-category-section">
     <view class="final-category-title">
       <text class="category-icon">🍲</text>
       <text class="category-name">汤品</text>
@@ -422,7 +422,7 @@
   </view>
 
   <!-- 🔴 主食 -->
-  <view wx:if="{{finalMenuByCategory.staple.length > 0}}" class="final-category-section">
+  <view wx:if="{{finalMenuByCategory && finalMenuByCategory.staple && finalMenuByCategory.staple.length > 0}}" class="final-category-section">
     <view class="final-category-title">
       <text class="category-icon">🍚</text>
       <text class="category-name">主食</text>

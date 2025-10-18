@@ -1343,7 +1343,7 @@ updateSelectedCount() {
     this.setData({
       todayMenu: finalMenu,
       allMenuData: finalMenu,
-      finalMenuByCategory: finalMenuByCategory,  // ← 这行必须有！
+      finalMenuByCategory: finalMenuByCategory,  // ← 新增分类数据
       totalDishes: finalMenu.length,
       shoppingList: shoppingList,
       candidateMode: false,
@@ -2029,5 +2029,12 @@ updateSelectedCount() {
       })
       
       return Object.values(merged)
-    }
+    },
+    // 在 Page({}) 的最后一个方法后面加上：
+
+goToDietSettings: function() {
+  wx.navigateTo({
+    url: '/pages/diet/taste-setup/index'
+  })
+}
 })
